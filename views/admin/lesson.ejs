@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/lesson.css">
+    <title>Lesson</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
+            <aside class="col-md-2 sidebar section greeting-text p-2 font-weight-bold text-muted" style="background-color: #E0F4F9;">
+                Hello <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid">
+            </aside>
+            <main class="col-md-8 bg-main section">
+                <select class="form-control mr-2">
+                    <option value="">Select Level</option>
+                    <script>
+                        for (let i = 1; i <= 30; i++) {
+                            document.write(`<option value="level${i}.html">Level ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </main>
+            <div class="col-md-2 bg-right-side section">
+                <select class="form-control">
+                    <option value="">Select Week</option>
+                    <script>
+                        for (let i = 1; i <= 6; i++) {
+                            document.write(`<option value="week${i}.html">Week ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+        </div>
+
+        <div class="containers row">
+            <aside class="col-md-1 sidebar text-center p-3" style="height: 700px;">
+                <nav>
+                    <ul class="list-unstyled">
+                        <li style="margin-bottom: 35px;">
+                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
+                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
+                                Dashboard
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 35px;">
+                            <a href="/admin/lesson/<%= room._id %>" class="text-dark font-weight-bold" style="background-color: #FFDF9F; padding: 10px; border-radius: 5px;">
+                                <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
+                                Lesson
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 35px;">
+                            <a href="/admin/activities/<%= room._id %>"  class="text-dark">
+                                <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
+                                Activities
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 35px;">
+                            <a href="/admin/educGames/<%= room._id %>" class="text-dark">
+                                <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
+                                Educational Games
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <main class="col-md-11">
+                <div class="d-flex align-items-center mb-4">
+                    <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
+                    <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
+                </div>
+
+                <!-- Addition, Subtraction, Multiplication, Division buttons -->
+                <div class="d-flex flex-wrap mb-4">
+                    <a href="addition.html" class="btn button-card" style="background-color: #F9B4AB;">
+                        Addition
+                        <img src="/assets/english-4.svg" alt="English Icon">
+                        <button class="btn btn-sm upcoming">upcoming</button>
+                    </a>
+
+                    <a href="subtraction.html" class="btn button-card" style="background-color: #CECBEC;">
+                        Subtraction
+                        <img src="/assets/layer-1.svg" alt="Layer Icon">
+                        <button class="btn btn-sm upcoming">upcoming</button>
+                    </a>
+
+                    <a href="multiplication.html" class="btn button-card" style="background-color: #FFDF9F;">
+                        Multiplication
+                        <img src="/assets/geography-1.svg" alt="Geography Icon">
+                        <button class="btn btn-sm upcoming">upcoming</button>
+                    </a>
+
+                    <a href="division.html" class="btn button-card" style="background-color: #C1EAF4;">
+                        Division
+                        <img src="/assets/socio-1.svg" alt="Socio Icon">
+                        <button class="btn btn-sm upcoming">upcoming</button>
+                    </a>
+                </div>
+
+                <div class="big-box">
+                    <div class="content-wrapper">
+                        <div class="left-content"> 
+                            <h5 class="text-dark">Upload PDF</h5>
+                            <form action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" value="<%= room._id %>">
+                                <div class="form-group">
+                                    <label for="pdfFile">Choose PDF file:</label>
+                                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload PDF</button>
+                            </form>
+                            
+                        
+                            <div class="lesson-content">
+                              
+                            
+                                <% if (lesson && lesson.pdfFiles && lesson.pdfFiles.length > 0) { %>
+                                    <h3>Uploaded PDFs</h3>
+                                    <ul>
+                                        <% lesson.pdfFiles.forEach(function(pdf) { %>
+                                            <li>
+                                                <a href="/admin/pdf/<%= pdf.pdfFileId %>" target="_blank">
+                                                    <%= pdf.pdfFileName %>
+                                                </a>
+                                            </li>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    <p>No PDFs uploaded for this lesson.</p>
+                                <% } %>
+                            </div>
+                            
+                            
+                            
+                            
+                        </div>
+                        
+                        
+                        <div class="right-content">
+                            <h5 class="text-dark">Upload Video</h5>
+                            <form action="/admin/upload-video/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                                <div class="form-group">
+                                    <label for="videoFile">Choose MP4 video:</label>
+                                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload Video</button>
+                            </form>
+                        
+                            <!-- Display uploaded videos if available -->
+                            <div class="lesson-content">
+                                <% if (lesson && lesson.videoFiles && lesson.videoFiles.length > 0) { %>
+                                    <h3>Uploaded Videos</h3>
+                                    <ul>
+                                        <% lesson.videoFiles.forEach(function(video) { %>
+                                            <li>
+                                                <a href="/admin/video/<%= video.videoFileId %>" target="_blank">
+                                                    <%= video.videoFileName %>
+                                                </a>
+                                            </li>
+                                        <% }); %>
+                                    </ul>
+                                <% } else { %>
+                                    <p>No videos uploaded for this lesson.</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PDF Modal -->
+                <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="pdfModalLabel">PDF Viewer</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <embed id="pdfViewer" src="" type="application/pdf" width="100%" height="600px" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <script>
+                    function openPdfModal(pdfSrc) {
+                        // Set the src of the modal's PDF viewer
+                        document.getElementById('pdfViewer').src = pdfSrc;
+                
+                        // Show the modal
+                        $('#pdfModal').modal('show');
+                    }
+                
+                    // Clear the PDF source when the modal is hidden
+                    $('#pdfModal').on('hidden.bs.modal', function () {
+                        document.getElementById('pdfViewer').src = '';
+                    });
+                </script>
+                
+            </main>
+        </div>
+
+        <!-- Logo added outside the sidebar and positioned in the left corner -->
+        <div class="container-fluid">
+            <img src="/assets/logo.png" alt="Logo" class="img-fluid text-left mt-2" style="width: 80px;">
+            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+        </div>
+    </div>
+</body>
+</html>

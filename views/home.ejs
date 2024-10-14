@@ -1,0 +1,100 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="homepage.css">
+</head>
+<body class="bg-light">
+    <div class="container-fluid">
+       
+        <div class="upper-side row no-gutters p-3">
+            <!-- Sidebar (20% width) -->
+            <aside class="col-md-2 bg-sidebar section greeting-text p-2 font-weight-bold text-muted">
+                Hello
+                <img src="assets/settings-1.svg" alt="Settings" class="img-fluid">
+            </aside>
+
+            <!-- Main Content (60% width) -->
+            <main class="col-md-8 bg-main section">
+                <select class="form-control mr-2">
+                    <option value="">Select Level</option>
+                    <script>
+                        for (let i = 1; i <= 30; i++) {
+                            document.write(`<option value="level${i}.html">Level ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </main>
+
+            <!-- Right Side Container (30% width) -->
+            <div class="col-md-2 bg-right-side section">
+                <select class="form-control">
+                    <option value="">Select Week</option>
+                    <script>
+                        for (let i = 1; i <= 6; i++) {
+                            document.write(`<option value="week${i}.html">Week ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+        </div>
+
+        <div class="containers row">
+            <!-- Sidebar -->
+            <aside class="bg-info col-md-1 text-center p-3">
+                <nav>
+                    <ul class="list-unstyled">
+                        <li style="margin-bottom: 35px;"><a href="homepage.html" class="text-dark font-weight-bold">Home</a></li>
+                        <li style="margin-bottom: 35px;"><a href="lesson.html" class="text-dark">Lesson</a></li>
+                        <li style="margin-bottom: 35px;"><a href="activities.html" class="text-dark">Activities</a></li>
+                        <li style="margin-bottom: 35px;"><a href="educational-games.html" class="text-dark">Educational Games</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="col-md-9 bg-main section">
+                <div class="big-box1 p-3 bg-main section">
+                    <div class="big-box"></div>
+                </div>
+            </main>
+
+            <!-- Right Sidebar -->
+            <aside class="col-md-2 bg-right-side section p-0">
+                <div class="d-flex flex-column h-100">
+                    <div class="updates updates-container flex-fill bg-light p-3">
+                        <div class="updates-header d-flex align-items-center mb-2">
+                            <img src="assets/codesandbox.svg" alt="CodeSandbox Icon" class="icon">
+                            <h3 class="h6 mb-0 ml-2">Updates</h3>
+                            <a href="#" class="ml-auto text-primary">View All</a>
+                        </div>
+                    </div>
+
+                    <div class="updates videos-container flex-fill bg-light p-3 mt-3">
+                        <div class="videos-header d-flex align-items-center mb-2">
+                            <img src="assets/youtube.svg" alt="YouTube Icon" class="icon">
+                            
+                            <h3 class="h6 mb-0 ml-2">Videos</h3>
+                            <a href="lesson.html" class="ml-auto text-primary">View All</a>
+                            
+                        </div>
+                       
+                        
+                    </div>
+
+                    <div class="updates contact-container flex-fill bg-light p-3 mt-3">
+                        <div class="contact-header d-flex align-items-center mb-2">
+                            <img src="assets/headphones.svg" alt="Headphones Icon" class="icon">
+                            <h3 class="h6 mb-0 ml-2">Contact</h3>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</body>
+</html>

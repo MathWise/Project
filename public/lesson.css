@@ -1,0 +1,113 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #E0F4F9; /* Set body background color */
+    
+}
+
+.container-fluid {
+    padding-bottom: 20px; /* Added padding for bottom spacing */
+}
+
+.big-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 450px; /* Adjusted height */
+    margin: 20px 0;
+    background-image: url('assets/bg.png'); /* Set background image */
+    background-size: cover; /* Cover the entire box */
+    background-position: center; /* Center the image */
+}
+
+.big-box > div {
+    flex: 1 1 100%; /* Responsive sizing for small screens */
+    margin: 10px; /* Margin for spacing */
+    height: 100%; /* Ensure full height */
+}
+
+.button-card {
+    display: block; /* Ensures the button occupies the full area */
+    height: 150px; /* Fixed height */
+    position: relative; /* For absolute positioning of elements inside */
+    text-align: center; /* Center text and images */
+    color: #000; /* Default text color */
+    text-decoration: none; /* Remove underline from links */
+    margin: 10px; /* Adds margin for spacing */
+    flex: 1; /* Allow buttons to grow equally */
+    min-width: 150px; /* Set a minimum width for buttons */
+}
+
+.button-card img {
+    position: absolute; /* Position icon */
+    top: 10px; 
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust position */
+    width: 100px; /* Bigger size for the button icons */
+    height: 100px; /* Maintain aspect ratio */
+}
+
+.button-card .upcoming {
+    position: absolute; 
+    bottom: 10px; 
+    left: 10px; 
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #17A2B8; /* Sidebar color */
+}
+
+.sidebar a {
+    color: #000;
+    text-decoration: none;
+    display: block; /* Ensure full clickable area */
+}
+
+/* Flexbox for content layout */
+.content-wrapper {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    height: 100%; /* Ensure full height for content */
+}
+
+.left-content {
+    flex: 1; /* Take available space */
+    margin-right: 20px; /* Space between the iframes */
+}
+
+.right-content {
+    flex: 1; /* Take available space */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .big-box {
+        flex-direction: column; /* Stack vertically on small screens */
+    }
+
+    .left-content,
+    .right-content {
+        margin-right: 0; /* Remove right margin for mobile */
+        margin-bottom: 20px; /* Add bottom margin for spacing */
+    }
+}
+
+/* Logs image style */
+.logs {
+    position: absolute;
+    bottom: 10px; 
+    left: 10px; 
+    width: 180px; /* Adjust the size as needed */
+    height: auto; 
+}
+
+/* MW image style */
+.mw {
+    position: absolute;
+    bottom: 10px; 
+    right: 10px; 
+    width: 180px; /* Adjust the size as needed */
+    height: auto; 
+}

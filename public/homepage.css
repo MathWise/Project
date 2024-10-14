@@ -1,0 +1,108 @@
+/* General Styling */
+body, html {
+    height: 100%;
+    font-family: 'Baloo 2', sans-serif;
+    background-color: #E0F4F9;
+}
+
+.greeting-text {
+    font-size: 18px;
+}
+
+.form-control {
+    border-radius: 10px;
+}
+
+.containers {
+    min-height: 607px;
+}
+
+.big-box1 {
+    margin-left: 10px;
+    width: 100%;
+    max-width: 1500px;
+    height: 100%;
+    background-image: url('shape.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: inherit;
+    border-radius: 15px;
+    position: relative;
+}
+
+.girl-image {
+    position: absolute;
+    bottom: -25px;
+    right: -25px;
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+}
+
+.settings-icon {
+    transition: transform 0.3s, opacity 0.3s;
+}
+
+.settings-icon:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+
+/* Updates styling */
+.updates-container {
+    border-radius: 10px;
+    background-color: #E0F4F9;
+}
+
+.update-item {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.emoji {
+    margin-right: 8px;
+}
+
+/* Left Sidebar Styling */
+.bg-info {
+    border-top-right-radius: 15px; /* Rounded corners on the top right */
+    border-bottom-right-radius: 15px; /* Rounded corners on the bottom right */
+    border-left: none; /* No left border */
+    padding: 20px; /* Adjust padding if needed */
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+    .upper-side, .containers {
+        flex-direction: column;
+    }
+
+    .greeting-text {
+        font-size: 14px;
+    }
+
+    .big-box1 {
+        height: 300px;
+    }
+
+    .form-control {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .updates-container {
+        width: 100%;
+    }
+
+    /* Adjust .bg-info height for mobile view */
+    .bg-info {
+        height: 50vh; /* Set desired height */
+    }
+}
+
+/* For screens larger than 1200px */
+@media (min-width: 1200px) {
+    .greeting-text {
+        font-size: 20px;
+    }
+}
