@@ -1,70 +1,87 @@
-<!-- views/admin/manageAccess.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage User Access</title>
+    
+    <!-- Import the Baloo 2 font -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="/homepage.css">
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f6;
+        /* Disable scrolling */
+        html, body {
             margin: 0;
             padding: 0;
+            height: 100%;
+            overflow: hidden; 
+            font-family: 'Arial', sans-serif;
         }
 
+        body {
+            background-image: url('/assets/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Main container styling */
         .container {
+            max-width: 900px;
+            width: 90%;
+            height: 80%;
+            margin: 50px auto;
+            background-color: #fff; /* White background */
+            position: relative;
             padding: 2rem;
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            background-image: url('/assets/vector.png');
+            background-size: 100% 500px; 
+            background-position: top center; 
+            background-repeat: no-repeat;
         }
 
+        
         h2 {
             text-align: center;
-            margin-bottom: 1.5rem;
+            font-family: 'Baloo 2', cursive; 
+            color: #5a2d82; 
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
         }
 
-        .alert {
-            padding: 10px;
-            color: white;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .alert-danger {
-            background-color: #dc3545;
-        }
-
-        .alert-success {
-            background-color: #28a745;
-        }
-
+        /* Table styling */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
         }
 
         th, td {
-            padding: 10px;
+            padding: 15px;
             border: 1px solid #ddd;
-            text-align: left;
+            text-align: center;
+            font-size: 1rem;
         }
 
         th {
-            background-color: #f2f2f2;
+            background-color: #f7f7f7;
+            color: #555;
+        }
+
+        td {
+            background-color: #ffffff;
         }
 
         button {
             border: none;
-            padding: 5px 10px;
+            padding: 7px 12px;
             color: white;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 12px;
+            font-size: 0.9rem;
         }
 
         .btn-primary {
@@ -82,57 +99,68 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+
+        /* Styling for the table container */
+        .table-container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-top: 20px;
+            padding: 10px;
+            width: 95%; /* Increase the size of the table container */
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h2>User Access Management</h2>
+        <h2>User Management</h2>
 
         <% if (errorMessage && errorMessage.length > 0) { %>
             <div class="alert alert-danger">
                 <%= errorMessage %>
             </div>
         <% } %>
-        
+
         <% if (successMessage && successMessage.length > 0) { %>
             <div class="alert alert-success">
                 <%= successMessage %>
             </div>
         <% } %>
-        
-       
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% users.forEach(user => { %>
+        <div class="table-container">
+            <table>
+                <thead>
                     <tr>
-                        <td><%= user.firstName %> <%= user.lastName %></td>
-                        <td><%= user.email %></td>
-                        <td><%= user.role %></td>
-                        <td>
-                            <% if (user.role === 'student') { %>
-                                <form action="/admin/give-access/<%= user._id %>" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-primary">Grant Access</button>
-                                </form>
-                            <% } else if (user.role === 'admin') { %>
-                                <form action="/admin/remove-access/<%= user._id %>" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Remove Access</button>
-                                </form>
-                            <% } %>
-                        </td>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% users.forEach(user => { %>
+                        <tr>
+                            <td><%= user.firstName %> <%= user.lastName %></td>
+                            <td><%= user.email %></td>
+                            <td><%= user.role %></td>
+                            <td>
+                                <% if (user.role === 'student') { %>
+                                    <form action="/admin/give-access/<%= user._id %>" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-primary">Grant Access</button>
+                                    </form>
+                                <% } else if (user.role === 'admin') { %>
+                                    <form action="/admin/remove-access/<%= user._id %>" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn btn-danger">Remove Access</button>
+                                    </form>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
     </div>
 
 </body>
