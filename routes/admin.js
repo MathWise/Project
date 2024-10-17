@@ -5,6 +5,7 @@ const Lesson = require('../models/lesson.js');
 const mongoose = require('mongoose');
 const router = express.Router();
 const Room = require('../models/room');
+const LessonRoom = require('../models/lessonRoom');
 const middleware = require('../middleware'); // Ensure this import is correct
 const { ensureLoggedIn, ensureAdminLoggedIn } = middleware;
 const User = require('../models/user'); // Use your existing User model
@@ -74,6 +75,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, async (req, res) => {
 // Route to handle lessons for a specific room
 router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const roomId = req.params.roomId;
+    console.log('Rendering lesson page for Room ID:', roomId);
 
     try {
         const room = await Room.findById(roomId);
@@ -83,7 +85,9 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
         }
 
         const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
-        res.render('admin/lesson', { room, lesson }); // Pass lesson data to the view
+        const lessonRooms = await LessonRoom.find({ roomId }); // Fetch lesson rooms associated with the room
+
+        res.render('admin/lesson', { room, lesson, lessonRooms }); // Pass lessonRooms to the view
     } catch (err) {
         console.error(err);
         req.flash('error', 'Error accessing the room.');
@@ -158,6 +162,49 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
 });
 //end of managing room--------------------------------------------------------------------------------
 
+// Route to create a lessonRoom for a specific room
+router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { subject, topic } = req.body;
+    const { roomId } = req.params;
+
+    try {
+        const newLessonRoom = new LessonRoom({
+            subject,
+            topic,
+            roomId // Associate the lessonRoom with the room
+        });
+
+        await newLessonRoom.save();
+        req.flash('success', 'Lesson room created successfully!');
+        res.redirect(`/admin/lesson/${roomId}`);
+    } catch (err) {
+        console.error('Error creating lesson room:', err);
+        req.flash('error', 'Error creating lesson room.');
+        res.redirect(`/admin/lesson/${roomId}`);
+    }
+});
+router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+
+    try {
+        const lesson = await Lesson.findOne({ roomId });
+
+        if (!lesson) {
+            return res.status(404).json({ message: 'No lessons found for this room.' });
+        }
+
+        // Send the lesson's PDF and video data as JSON
+        res.json({
+            pdfFiles: lesson.pdfFiles,
+            videoFiles: lesson.videoFiles
+        });
+    } catch (err) {
+        console.error('Error fetching lessons:', err);
+        res.status(500).json({ message: 'Error fetching lessons.' });
+    }
+});
+
+
 let pdfBucket;
 let videoBucket;
 
@@ -187,15 +234,19 @@ const upload = multer({ storage });
 // Route to upload PDF to MongoDB GridFS
 router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) => {
     const { roomId } = req.params;
+    console.log('Room ID:', roomId);
     console.log('Uploaded File:', req.file);
 
     if (!req.file) {
         console.error('No file uploaded.');
-        return res.status(400).send('No file uploaded.');
+        req.flash('error', 'No file uploaded. Please select a file to upload.');
+        console.log('Redirecting to lesson page due to no file.');
+        return res.redirect(`/admin/lesson/${roomId}`);
     }
 
     // Create an upload stream to the PDFs GridFS bucket
-    const uploadStream = pdfBucket.openUploadStream(req.file.originalname);
+    const filename = `${roomId}-${req.file.originalname}`;
+    const uploadStream = pdfBucket.openUploadStream(filename);
 
     // Write the buffer to GridFS
     uploadStream.end(req.file.buffer);
@@ -204,25 +255,25 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
     uploadStream.on('error', (error) => {
         console.error('Error uploading file to GridFS:', error);
         req.flash('error', 'Error uploading PDF. Please try again.');
+        console.log('Redirecting to lesson page due to upload error.');
         return res.redirect(`/admin/lesson/${roomId}`);
     });
 
     // Handle the finish event
     uploadStream.on('finish', async () => {
         try {
-            // Retrieve the file after upload by its filename
-            const uploadedFile = await pdfBucket.find({ filename: req.file.originalname }).toArray();
+            const uploadedFile = await pdfBucket.find({ filename }).toArray();
 
             if (!uploadedFile || uploadedFile.length === 0) {
                 console.error('File not found in GridFS after upload.');
                 req.flash('error', 'Error saving file reference. Please try again.');
+                console.log('Redirecting to lesson page due to file not found.');
                 return res.redirect(`/admin/lesson/${roomId}`);
             }
 
             const file = uploadedFile[0];
             console.log('File uploaded:', file);
 
-            // Add the new file to the lesson's pdfFiles array
             await Lesson.findOneAndUpdate(
                 { roomId },
                 { 
@@ -237,17 +288,19 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
             );
 
             req.flash('success', 'PDF uploaded and saved to the lesson.');
+            console.log('Redirecting to lesson page after successful upload.');
             res.redirect(`/admin/lesson/${roomId}`);
         } catch (error) {
             console.error('Error updating lesson with file ID:', error);
             req.flash('error', 'Error saving file reference. Please try again.');
-            res.redirect(`/admin/lesson/${roomId}`);
+            console.log('Redirecting to lesson page due to update error.');
+            return res.redirect(`/admin/lesson/${roomId}`);
         }
     });
 });
 
 
-// Route to serve PDF by file ID from GridFS
+
 // Route to serve PDF by file ID from GridFS
 router.get('/pdf/:id', async (req, res) => {
     try {
@@ -272,46 +325,34 @@ router.get('/pdf/:id', async (req, res) => {
 });
 
 router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res) => {
-    console.log('Video upload route hit');
-    console.log('Room ID:', req.params.roomId);
-    console.log('Uploaded File:', req.file);
     const { roomId } = req.params;
-    console.log('Uploaded Video:', req.file);
 
     if (!req.file) {
-        console.error('No video uploaded.');
-        return res.status(400).send('No video uploaded.');
+        req.flash('error', 'No video uploaded.');
+        return res.status(400).json({ error: 'No video uploaded.' }); // Change to JSON response
     }
 
-    // Create an upload stream to the Videos GridFS bucket
     const videoUploadStream = videoBucket.openUploadStream(req.file.originalname);
 
-    // Write the buffer to GridFS
     videoUploadStream.end(req.file.buffer);
 
-    // Handle errors during the upload process
     videoUploadStream.on('error', (error) => {
         console.error('Error uploading video to GridFS:', error);
         req.flash('error', 'Error uploading video. Please try again.');
-        return res.redirect(`/admin/lesson/${roomId}`);
+        return res.status(500).json({ error: 'Error uploading video.' }); // Change to JSON response
     });
 
-    // Handle the finish event
     videoUploadStream.on('finish', async () => {
         try {
-            // Retrieve the video file after upload by its filename
             const uploadedVideo = await videoBucket.find({ filename: req.file.originalname }).toArray();
 
             if (!uploadedVideo || uploadedVideo.length === 0) {
-                console.error('Video not found in GridFS after upload.');
                 req.flash('error', 'Error saving video reference. Please try again.');
-                return res.redirect(`/admin/lesson/${roomId}`);
+                return res.status(500).json({ error: 'Error saving video reference.' }); // Change to JSON response
             }
 
             const video = uploadedVideo[0];
-            console.log('Video uploaded:', video);
 
-            // Add the new video to the lesson's videoFiles array
             await Lesson.findOneAndUpdate(
                 { roomId },
                 {
@@ -326,11 +367,11 @@ router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res
             );
 
             req.flash('success', 'Video uploaded and saved to the lesson.');
-            res.redirect(`/admin/lesson/${roomId}`);
+            return res.status(200).json({ message: 'Video uploaded successfully.', videoFiles: [{ videoFileId: video._id, videoFileName: req.file.originalname }] }); // Return JSON
         } catch (error) {
             console.error('Error updating lesson with video ID:', error);
             req.flash('error', 'Error saving video reference. Please try again.');
-            res.redirect(`/admin/lesson/${roomId}`);
+            return res.status(500).json({ error: 'Error saving video reference.' }); // Change to JSON response
         }
     });
 });

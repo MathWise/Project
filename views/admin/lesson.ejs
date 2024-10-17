@@ -75,40 +75,42 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
+               <!-- Lesson Room Creation Form -->
+               <div class="mb-4">
+                <h5>Create a New Lesson Room</h5>
+                <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
+                    <div class="form-group">
+                        <label for="subject">Subject</label>
+                        <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="topic">Topic</label>
+                        <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create Room</button>
+                </form>
+            </div>
 
-                <!-- Addition, Subtraction, Multiplication, Division buttons -->
-                <div class="d-flex flex-wrap mb-4">
-                    <a href="addition.html" class="btn button-card" style="background-color: #F9B4AB;">
-                        Addition
-                        <img src="/assets/english-4.svg" alt="English Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
-
-                    <a href="subtraction.html" class="btn button-card" style="background-color: #CECBEC;">
-                        Subtraction
-                        <img src="/assets/layer-1.svg" alt="Layer Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
-
-                    <a href="multiplication.html" class="btn button-card" style="background-color: #FFDF9F;">
-                        Multiplication
-                        <img src="/assets/geography-1.svg" alt="Geography Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
-
-                    <a href="division.html" class="btn button-card" style="background-color: #C1EAF4;">
-                        Division
-                        <img src="/assets/socio-1.svg" alt="Socio Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
+                <!-- Display existing lesson rooms dynamically -->
+                <div id="lessonRoomList" class="mb-4">
+                    <h5>Existing Lesson Rooms</h5>
+                    <ul class="list-group d-flex flex-row flex-wrap">
+                        <% lessonRooms.forEach(function(lessonRoom, index) { %>
+                            <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>">
+                                <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
+                                <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
+                            </li>
+                        <% }); %>
+                    </ul>
                 </div>
-
-                <div class="big-box">
+                        
+               <!-- Hidden content section that will be shown upon clicking a lesson room -->
+                <div id="lessonRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
                         <div class="left-content"> 
                             <h5 class="text-dark">Upload PDF</h5>
-                            <form action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
-                                <input type="hidden" name="roomId" value="<%= room._id %>">
+                            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" id="pdfRoomId" value="">
                                 <div class="form-group">
                                     <label for="pdfFile">Choose PDF file:</label>
                                     <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
@@ -116,97 +118,173 @@
                                 <button type="submit" class="btn btn-primary">Upload PDF</button>
                             </form>
                             
-                        
                             <div class="lesson-content">
-                              
-                            
-                                <% if (lesson && lesson.pdfFiles && lesson.pdfFiles.length > 0) { %>
-                                    <h3>Uploaded PDFs</h3>
-                                    <ul>
-                                        <% lesson.pdfFiles.forEach(function(pdf) { %>
-                                            <li>
-                                                <a href="/admin/pdf/<%= pdf.pdfFileId %>" target="_blank">
-                                                    <%= pdf.pdfFileName %>
-                                                </a>
-                                            </li>
-                                        <% }); %>
-                                    </ul>
-                                <% } else { %>
-                                    <p>No PDFs uploaded for this lesson.</p>
-                                <% } %>
+                                <!-- Placeholder for dynamically loaded PDFs -->
+                                <h3>Uploaded PDFs</h3>
+                                <ul id="uploadedPdfs"></ul>
                             </div>
-                            
-                            
-                            
-                            
                         </div>
-                        
                         
                         <div class="right-content">
                             <h5 class="text-dark">Upload Video</h5>
-                            <form action="/admin/upload-video/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" id="videoRoomId" value="">
                                 <div class="form-group">
                                     <label for="videoFile">Choose MP4 video:</label>
                                     <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
                                 </div>
                                 <button type="submit" class="btn btn-primary">Upload Video</button>
                             </form>
-                        
-                            <!-- Display uploaded videos if available -->
+                            
                             <div class="lesson-content">
-                                <% if (lesson && lesson.videoFiles && lesson.videoFiles.length > 0) { %>
-                                    <h3>Uploaded Videos</h3>
-                                    <ul>
-                                        <% lesson.videoFiles.forEach(function(video) { %>
-                                            <li>
-                                                <a href="/admin/video/<%= video.videoFileId %>" target="_blank">
-                                                    <%= video.videoFileName %>
-                                                </a>
-                                            </li>
-                                        <% }); %>
-                                    </ul>
-                                <% } else { %>
-                                    <p>No videos uploaded for this lesson.</p>
-                                <% } %>
+                                <!-- Placeholder for dynamically loaded videos -->
+                                <h3>Uploaded Videos</h3>
+                                <ul id="uploadedVideos"></ul>
                             </div>
                         </div>
                     </div>
                 </div>
+                                            
 
-                <!-- PDF Modal -->
-                <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="pdfModalLabel">PDF Viewer</h5>
-                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-                            <div class="modal-body">
-                                <embed id="pdfViewer" src="" type="application/pdf" width="100%" height="600px" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
-                <script>
-                    function openPdfModal(pdfSrc) {
-                        // Set the src of the modal's PDF viewer
-                        document.getElementById('pdfViewer').src = pdfSrc;
                 
-                        // Show the modal
-                        $('#pdfModal').modal('show');
-                    }
-                
-                    // Clear the PDF source when the modal is hidden
-                    $('#pdfModal').on('hidden.bs.modal', function () {
-                        document.getElementById('pdfViewer').src = '';
-                    });
-                </script>
+               
                 
             </main>
         </div>
+        <script>
+            $('#uploadPdfForm').submit(function(event) {
+                event.preventDefault(); // Prevent the default form submission
+        
+                // Create a FormData object to handle file uploads
+                var formData = new FormData(this);
+        
+                $.ajax({
+                    url: $(this).attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    contentType: false, // Prevent jQuery from setting the content type
+                    processData: false, // Prevent jQuery from processing the data
+                    success: function(response) {
+                        alert('PDF uploaded successfully!');
+        
+                        // Optionally, you can reload the list of uploaded PDFs without reloading the page
+                        const pdfList = document.getElementById('uploadedPdfs');
+                        pdfList.innerHTML = ''; // Clear the current list
+        
+                        response.pdfFiles.forEach(function(pdf) {
+                            const listItem = document.createElement('li');
+                            listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
+                            pdfList.appendChild(listItem);
+                        });
+                    },
+                    error: function(error) {
+                        alert('Error uploading PDF.');
+                    }
+                });
+            });
+        </script>
+        
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.clickable').forEach(function (roomElement) {
+                roomElement.addEventListener('click', async function () {
+                    // Get the room ID from the clicked room
+                    const roomId = this.getAttribute('data-room-id');
+    
+                    // Show the hidden lesson content section
+                    const lessonRoomContent = document.getElementById('lessonRoomContent');
+                    lessonRoomContent.style.display = 'block';
+    
+                    // Update form actions and hidden input values with the room ID
+                    document.getElementById('uploadPdfForm').action = `/admin/upload-pdf/${roomId}`;
+                    document.getElementById('uploadVideoForm').action = `/admin/upload-video/${roomId}`;
+                    document.getElementById('pdfRoomId').value = roomId;
+                    document.getElementById('videoRoomId').value = roomId;
+    
+                    // Fetch and display the uploaded PDFs and videos for this room
+                    const pdfList = document.getElementById('uploadedPdfs');
+                    const videoList = document.getElementById('uploadedVideos');
+    
+                    // Clear the existing lists
+                    pdfList.innerHTML = '';
+                    videoList.innerHTML = '';
+    
+                    try {
+                        // Fetch the lessons for the selected room
+                        const response = await fetch(`/admin/get-lessons/${roomId}`);
+                        const lessonData = await response.json();
+    
+                        // Populate the PDFs
+                        if (lessonData.pdfFiles && lessonData.pdfFiles.length > 0) {
+                            lessonData.pdfFiles.forEach(function (pdf) {
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
+                                pdfList.appendChild(listItem);
+                            });
+                        } else {
+                            pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+                        }
+    
+                        // Populate the Videos
+                        if (lessonData.videoFiles && lessonData.videoFiles.length > 0) {
+                            lessonData.videoFiles.forEach(function (video) {
+                                const listItem = document.createElement('li');
+                                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
+                                videoList.appendChild(listItem);
+                            });
+                        } else {
+                            videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error fetching lesson data:', error);
+                    }
+                });
+            });
+        });
+    </script>
+   <script>
+    document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(this);
+
+        // Make sure to get the roomId from the input
+        const roomId = document.getElementById('videoRoomId').value;
+
+        fetch(`/admin/upload-video/${roomId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Assuming you return JSON from the server
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(data => {
+            // Handle the successful upload here
+            alert('Video uploaded successfully!');
+            
+            // Optionally, refresh the uploaded videos list
+            const videoList = document.getElementById('uploadedVideos');
+            videoList.innerHTML = ''; // Clear existing list
+
+            data.videoFiles.forEach(function(video) {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
+                videoList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error uploading video:', error);
+            alert('Error uploading video.');
+        });
+    });
+</script>
+
+        
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
