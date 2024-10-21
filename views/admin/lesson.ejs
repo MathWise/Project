@@ -55,7 +55,7 @@
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>"  class="text-dark">
+                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
                             </a>
@@ -75,21 +75,24 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
-               <!-- Lesson Room Creation Form -->
-               <div class="mb-4">
-                <h5>Create a New Lesson Room</h5>
-                <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
-                    <div class="form-group">
-                        <label for="subject">Subject</label>
-                        <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                <!-- Lesson Room Creation Form -->
+                <div class="layered-container">
+                    <div class="background-image"></div>
+                    <div class="form-overlay">
+                        <h5>Create a New Lesson Room</h5>
+                        <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="topic">Topic</label>
+                                <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Room</button>
+                        </form>
                     </div>
-                    <div class="form-group">
-                        <label for="topic">Topic</label>
-                        <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Create Room</button>
-                </form>
-            </div>
+                </div>
 
                 <!-- Display existing lesson rooms dynamically -->
                 <div id="lessonRoomList" class="mb-4">
@@ -103,8 +106,8 @@
                         <% }); %>
                     </ul>
                 </div>
-                        
-               <!-- Hidden content section that will be shown upon clicking a lesson room -->
+
+                <!-- Hidden content section that will be shown upon clicking a lesson room -->
                 <div id="lessonRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
                         <div class="left-content"> 
@@ -144,14 +147,9 @@
                         </div>
                     </div>
                 </div>
-                                            
-
-                
-                
-               
-                
             </main>
         </div>
+
         <script>
             $('#uploadPdfForm').submit(function(event) {
                 event.preventDefault(); // Prevent the default form submission
@@ -185,106 +183,105 @@
             });
         </script>
         
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.clickable').forEach(function (roomElement) {
-                roomElement.addEventListener('click', async function () {
-                    // Get the room ID from the clicked room
-                    const roomId = this.getAttribute('data-room-id');
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.clickable').forEach(function (roomElement) {
+                    roomElement.addEventListener('click', async function () {
+                        // Get the room ID from the clicked room
+                        const roomId = this.getAttribute('data-room-id');
     
-                    // Show the hidden lesson content section
-                    const lessonRoomContent = document.getElementById('lessonRoomContent');
-                    lessonRoomContent.style.display = 'block';
+                        // Show the hidden lesson content section
+                        const lessonRoomContent = document.getElementById('lessonRoomContent');
+                        lessonRoomContent.style.display = 'block';
     
-                    // Update form actions and hidden input values with the room ID
-                    document.getElementById('uploadPdfForm').action = `/admin/upload-pdf/${roomId}`;
-                    document.getElementById('uploadVideoForm').action = `/admin/upload-video/${roomId}`;
-                    document.getElementById('pdfRoomId').value = roomId;
-                    document.getElementById('videoRoomId').value = roomId;
+                        // Update form actions and hidden input values with the room ID
+                        document.getElementById('uploadPdfForm').action = `/admin/upload-pdf/${roomId}`;
+                        document.getElementById('uploadVideoForm').action = `/admin/upload-video/${roomId}`;
+                        document.getElementById('pdfRoomId').value = roomId;
+                        document.getElementById('videoRoomId').value = roomId;
     
-                    // Fetch and display the uploaded PDFs and videos for this room
-                    const pdfList = document.getElementById('uploadedPdfs');
-                    const videoList = document.getElementById('uploadedVideos');
+                        // Fetch and display the uploaded PDFs and videos for this room
+                        const pdfList = document.getElementById('uploadedPdfs');
+                        const videoList = document.getElementById('uploadedVideos');
     
-                    // Clear the existing lists
-                    pdfList.innerHTML = '';
-                    videoList.innerHTML = '';
+                        // Clear the existing lists
+                        pdfList.innerHTML = '';
+                        videoList.innerHTML = '';
     
-                    try {
-                        // Fetch the lessons for the selected room
-                        const response = await fetch(`/admin/get-lessons/${roomId}`);
-                        const lessonData = await response.json();
+                        try {
+                            // Fetch the lessons for the selected room
+                            const response = await fetch(`/admin/get-lessons/${roomId}`);
+                            const lessonData = await response.json();
     
-                        // Populate the PDFs
-                        if (lessonData.pdfFiles && lessonData.pdfFiles.length > 0) {
-                            lessonData.pdfFiles.forEach(function (pdf) {
-                                const listItem = document.createElement('li');
-                                listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
-                                pdfList.appendChild(listItem);
-                            });
-                        } else {
-                            pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+                            // Populate the PDFs
+                            if (lessonData.pdfFiles && lessonData.pdfFiles.length > 0) {
+                                lessonData.pdfFiles.forEach(function (pdf) {
+                                    const listItem = document.createElement('li');
+                                    listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
+                                    pdfList.appendChild(listItem);
+                                });
+                            } else {
+                                pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+                            }
+    
+                            // Populate the Videos
+                            if (lessonData.videoFiles && lessonData.videoFiles.length > 0) {
+                                lessonData.videoFiles.forEach(function (video) {
+                                    const listItem = document.createElement('li');
+                                    listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
+                                    videoList.appendChild(listItem);
+                                });
+                            } else {
+                                videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+                            }
+                        } catch (error) {
+                            console.error('Error fetching lesson data:', error);
                         }
-    
-                        // Populate the Videos
-                        if (lessonData.videoFiles && lessonData.videoFiles.length > 0) {
-                            lessonData.videoFiles.forEach(function (video) {
-                                const listItem = document.createElement('li');
-                                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
-                                videoList.appendChild(listItem);
-                            });
-                        } else {
-                            videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
-                        }
-                    } catch (error) {
-                        console.error('Error fetching lesson data:', error);
-                    }
+                    });
                 });
             });
-        });
-    </script>
-   <script>
-    document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        const formData = new FormData(this);
-
-        // Make sure to get the roomId from the input
-        const roomId = document.getElementById('videoRoomId').value;
-
-        fetch(`/admin/upload-video/${roomId}`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json(); // Assuming you return JSON from the server
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        })
-        .then(data => {
-            // Handle the successful upload here
-            alert('Video uploaded successfully!');
-            
-            // Optionally, refresh the uploaded videos list
-            const videoList = document.getElementById('uploadedVideos');
-            videoList.innerHTML = ''; // Clear existing list
-
-            data.videoFiles.forEach(function(video) {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
-                videoList.appendChild(listItem);
-            });
-        })
-        .catch(error => {
-            console.error('Error uploading video:', error);
-            alert('Error uploading video.');
-        });
-    });
-</script>
-
+        </script>
         
+        <script>
+            document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+
+                const formData = new FormData(this);
+
+                // Make sure to get the roomId from the input
+                const roomId = document.getElementById('videoRoomId').value;
+
+                fetch(`/admin/upload-video/${roomId}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Assuming you return JSON from the server
+                    } else {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    // Handle the successful upload here
+                    alert('Video uploaded successfully!');
+                    
+                    // Optionally, refresh the uploaded videos list
+                    const videoList = document.getElementById('uploadedVideos');
+                    videoList.innerHTML = ''; // Clear existing list
+
+                    data.videoFiles.forEach(function(video) {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
+                        videoList.appendChild(listItem);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error uploading video:', error);
+                    alert('Error uploading video.');
+                });
+            });
+        </script>
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
