@@ -111,3 +111,59 @@ body {
     width: 180px; /* Adjust the size as needed */
     height: auto; 
 }
+
+.layered-container {
+    position: relative;
+    max-width: 550px; /* Adjust the width as needed * /* Height can adjust based on content */
+    height: 450px;
+    margin: 50px auto; /* Center the container horizontally */
+    overflow: hidden; /* Ensures any overflow is hidden */
+    border-radius: 8px; /* Optional: add rounded corners */
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('assets/mathh.jpg'); /* Path to your image */
+    opacity: 80%;
+    background-repeat: no-repeat;
+    background-size: 100% 100%; /* Cover the entire area */
+    background-position: center; /* Center the image */
+    z-index: 0; /* Ensure it is below the text */
+}
+
+.form-overlay input {
+    background-color: #89D6F8; /* Set the background color for input boxes */
+    color: #000; /* Set the text color for better contrast */
+    border: 1px solid #ccc; /* Optional: set a border */
+    border-radius: 4px; /* Optional: add rounded corners */
+}
+
+/* Existing CSS */
+.form-overlay {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure form is above the background */
+    color: black; /* Change text color for visibility */
+}
+
+
+.form-overlay h5, .form-overlay label {
+    font-weight: bold;
+}
+
+.list-group-item {
+    padding: 15px;
+    border: 1px solid #ccc;
+    transition: background-color 0.3s, color 0.3s, transform 0.3s;
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+.list-group-item:hover {
+    background-color: #f0f8ff; /* Light blue on hover */
+    color: #007bff; /* Change text color */
+    transform: scale(1.05); /* Slightly enlarge the item */
+}
