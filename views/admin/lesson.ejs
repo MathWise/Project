@@ -98,14 +98,20 @@
                 <div id="lessonRoomList" class="mb-4">
                     <h5>Existing Lesson Rooms</h5>
                     <ul class="list-group d-flex flex-row flex-wrap">
-                        <% lessonRooms.forEach(function(lessonRoom, index) { %>
-                            <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>">
+                        <% 
+                        const buttonColors = ["#F9B4AB", "#CECBEC", "#FFDF9F", "#C1EAF4"];
+                
+                        lessonRooms.forEach(function(lessonRoom, index) { 
+                            const buttonColor = buttonColors[index % buttonColors.length];
+                        %>
+                            <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>" style="background-color: <%= buttonColor %>;">
                                 <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
                                 <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
                             </li>
                         <% }); %>
                     </ul>
                 </div>
+                
 
                 <!-- Hidden content section that will be shown upon clicking a lesson room -->
                 <div id="lessonRoomContent" class="big-box" style="display: none;">
