@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="lesson.css">
+</head>
+
+<body class="bg-light">
+    <div class="container-fluid">
+        <div class="upper-side row no-gutters p-3">
+           
+            <aside class="col-md-2 bg-sidebar section  greeting-text  p-2 font-weight-bold text-muted">
+                Hello  <img src="assets/settings-1.svg" alt="Settings" class="img-fluid">
+            </aside>
+
+            
+            <main class="col-md-8 bg-main section">
+                <select class="form-control mr-2">
+                    <option value="">Select Level</option>
+                    <script>
+                        for (let i = 1; i <= 30; i++) {
+                            document.write(`<option value="level${i}.html">Level ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </main>
+
+            
+            <div class="col-md-2 bg-right-side section">
+                <select class="form-control">
+                    <option value="">Select Week</option>
+                    <script>
+                        for (let i = 1; i <= 6; i++) {
+                            document.write(`<option value="week${i}.html">Week ${i}</option>`);
+                        }
+                    </script>
+                </select>
+            </div>
+        </div>
+
+        <div class="containers row">
+          
+            <aside class="bg-info col-md-1 bg-info text-center p-3">
+                <nav>
+                    <ul class="list-unstyled">
+                        <li style="margin-bottom: 35px;"><a href="homepage.html" class="text-dark">Home</a></li>
+                        <li style="margin-bottom: 35px;"><a href="lesson.html" class="text-dark">Lesson</a></li>
+                        <li style="margin-bottom: 35px;"><a href="activities.html" class="text-dark text-dark font-weight-bold">Activities</a></li>
+                        <li style="margin-bottom: 35px;"><a href="educational-games.html" class="text-dark">Educational Games</a></li>
+                    </ul>
+                </nav>
+            </aside>
+
+           
+            <main class="col-md-11">
+              
+                <div class="d-flex align-items-center mb-4">
+                    <img src="assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
+                    <h4 class="font-weight-bold mb-0 text-dark">Activities</h4>
+                </div>
+
+                <div class="d-flex flex-wrap">
+                    <a href="#activity1" class="first-section btn btn-block btn-lg text-dark mr-4 mb-4" style="background-color: #F9B4AB; width: 250px; height: 150px; position: relative;">
+                        Activity 1
+                        <img src="assets/english-4.svg" alt="English Icon" class="position-absolute" style="top: 10px; right: 10px; width: 75px; height: 75px;">
+                        <br><br> <br>upcoming
+                    </a>
+                    <a href="#activity2" class="btn btn-block btn-lg text-dark mr-4 mb-4" style="background-color: #CECBEC; width: 250px; height: 150px; position: relative;">
+                        Activity 2
+                        <img src="assets/layer-1.svg" alt="Layer Icon" class="position-absolute" style="top: 10px; right: 10px; width: 75px; height: 75px;">
+                        <br><br> <br>upcoming
+                    </a>
+                    <a href="quiz_manager.html" class="btn btn-block btn-lg text-dark mr-4 mb-4" style="background-color: #FFDF9F; width: 250px; height: 150px; position: relative;">
+                        Quiz 1
+                        <img src="assets/geography-1.svg" alt="Geography Icon" class="position-absolute" style="top: 10px; right: 10px; width: 75px; height: 75px;">
+                        <br><br> <br>Add Quiz
+                    </a>
+                    <a href="#quiz2" class="btn btn-block btn-lg text-dark mb-4" style="background-color: #C1EAF4; width: 250px; height: 150px; position: relative;">
+                        Quiz 2
+                        <img src="assets/socio-1.svg" alt="Socio Icon" class="position-absolute" style="top: 10px; right: 10px; width: 75px; height: 75px;">
+                        <br><br> <br>upcoming
+                    </a>
+                  
+                  
+                </div>
+
+            
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>

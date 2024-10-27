@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    font-family: 'Baloo 2', cursive; /* Baloo 2 font applied */
+    
+    
+}
+
+.card {
+    border-radius: 15px; /* Rounded corners for the card */
+    width: 100%;
+    height: 500px; /* Fixed height; consider changing for smaller screens */
+}
+
+.card-body {
+    border-radius: 15px; /* Ensure inner content also has rounded corners */
+}
+
+.container-fluid {
+    height: 100vh; /* Full viewport height */
+}
+
+/* Icon size for toggle password */
+.toggle-password i {
+    font-size: 1.2rem;
+}
+
+.card-body.p-5 {
+    background-image: url('shape.png');
+    background-repeat: no-repeat;
+    background-position: center;  
+    background-size: inherit;
+}
+
+.card-body.p-4 {
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Center horizontally */
+    transform: translateX(-50%); /* Adjust position to center */
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: center; /* Center the items */
+    width: 100%; /* Take full width */
+}
+
+/* Ensure card is responsive */
+@media (min-width: 768px) {
+    #registerCard {
+        width: 80%; /* Adjust width for wider screens */
+    }
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 767px) {
+    
+    .card {
+        height: auto; /* Auto height for smaller screens */
+        margin: 20px; /* Add margin for spacing on smaller screens */
+    }
+
+    .card-body {
+        padding: 20px; /* Add padding to card body */
+    }
+
+    .card-body.p-4 {
+        position: static; /* Adjust positioning for smaller screens */
+        transform: none; /* Remove transform for better stacking */
+    }
+
+    input.form-control {
+        height: 35px; /* Set height for inputs */
+    }
+}
+
+.card-body img {
+    width: 150px; /* Bigger logo */
+    height: auto;
+}
+
+input::placeholder {
+    font-style: italic;
+}
+
+input.form-control {
+    background-color: #EFF9FC; /* Set background color for input fields */
+    border: 1px solid #b3e5fc; /* Optional: adjust border color */
+    border-radius: 25px; /* Higher value for more rounded edges */
+    padding: 0.5rem 1rem; /* Add padding for a better appearance */
+    height: 35px; /* Set height to 10 pixels */
+    line-height: 1; /* Adjust line-height for better text alignment */
+}
+
+.small-input {
+    font-size: 15px;
+    padding: 6px; /* Adjust padding to make the input smaller */
+}
+
+.form-group {
+    margin-bottom: 10px; /* Reduce space between form elements */
+}
+
+.small-text {
+    font-size: 15px;
+}
