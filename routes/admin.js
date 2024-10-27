@@ -1,3 +1,4 @@
+//   /routes/admin.js
 const multer = require('multer');
 const { MongoClient, GridFSBucket } = require('mongodb');
 const express = require('express');
@@ -72,28 +73,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, async (req, res) => {
 });
 //end of dashboard----------------------------------------------------------------------------------------------------------------------------
 
-// Route to handle lessons for a specific room
-router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const roomId = req.params.roomId;
-    console.log('Rendering lesson page for Room ID:', roomId);
 
-    try {
-        const room = await Room.findById(roomId);
-        if (!room) {
-            req.flash('error', 'Room not found.');
-            return res.redirect('/admin/homeAdmin');
-        }
-
-        const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
-        const lessonRooms = await LessonRoom.find({ roomId }); // Fetch lesson rooms associated with the room
-
-        res.render('admin/lesson', { room, lesson, lessonRooms }); // Pass lessonRooms to the view
-    } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error accessing the room.');
-        res.redirect('/admin/homeAdmin');
-    }
-});
 
 // Route to manage user access
 router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
@@ -161,6 +141,32 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 //end of managing room--------------------------------------------------------------------------------
+
+// Route to handle lessons for a specific room
+router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const roomId = req.params.roomId;
+    console.log('Rendering lesson page for Room ID:', roomId);
+    const currentUser = req.user; 
+    console.log("Current User:",  currentUser);
+ 
+    try {
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
+        const lessonRooms = await LessonRoom.find({ roomId }); // Fetch lesson rooms associated with the room
+        const currentLessonRoom = lessonRooms[0];
+
+        res.render('admin/lesson', { room, lesson, lessonRooms, currentUser }); // Pass lessonRooms to the view
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Error accessing the room.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
 
 // Route to create a lessonRoom for a specific room
 router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
@@ -398,10 +404,94 @@ router.get('/video/:id', async (req, res) => {
         res.status(500).send('Error retrieving video.');
     }
 });
+
+const PdfProgress = require('../models/PdfProgress');
+const { ObjectId } = require('mongodb'); 
+
+// Route to save PDF reading progress
+router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {
+    const userId = req.user?._id || req.body.userId;
+    const { pdfFileId, progress } = req.body;
+
+    try {
+        const userObjectId = new ObjectId(userId);
+        const pdfObjectId = new ObjectId(pdfFileId);
+
+        // Find or create a PdfProgress document
+        let pdfProgress = await PdfProgress.findOne({ userId: userObjectId, pdfFileId: pdfObjectId });
+
+        if (!pdfProgress) {
+            // Create new document if none exists
+            pdfProgress = new PdfProgress({ userId: userObjectId, pdfFileId: pdfObjectId, progress });
+        } else if (pdfProgress.progress < 100) {
+            // Update if progress is less than 100%
+            pdfProgress.progress = progress;
+        }
+
+        await pdfProgress.save();
+        res.json({ success: true, message: 'Progress saved successfully' });
+    } catch (error) {
+        console.error('Error saving PDF progress:', error);
+        res.status(500).json({ success: false, message: 'Failed to save progress' });
+    }
+});
+
+
+
+
+
+
+// Route to get the saved PDF progress for a user
+router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async (req, res) => {
+    const { userId, pdfFileId } = req.params;
+
+    try {
+        const pdfProgress = await PdfProgress.findOne({ userId, pdfFileId });
+
+        if (pdfProgress) {
+            res.json({ success: true, progress: pdfProgress.progress });
+        } else {
+            res.json({ success: true, progress: 0 });
+        }
+    } catch (error) {
+        console.error('Error fetching PDF progress:', error);
+        res.status(500).json({ success: false, message: 'Failed to save progress', error: error.message });
+    }
+});
+
+
 //end of lesson ------------------------------------------------------------------------------------------
-// Get activitites for a specific room
+
+const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
+const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
+const QuizResult = require('../models/QuizResult');
+
+// Route to create an activity or quiz room
+router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { subject, activityType } = req.body; 
+    const { roomId } = req.params; 
+
+    try {
+        const newActivityRoom = new ActivityRoom({
+            subject,
+            activityType,
+            roomId
+        });
+
+        await newActivityRoom.save();
+        req.flash('success', 'Activity/Quiz room created successfully!');
+        res.redirect(`/admin/activities/${roomId}`);
+    } catch (err) {
+        console.error('Error creating activity room:', err);
+        req.flash('error', 'Error creating activity room. Please try again.');
+        res.redirect(`/admin/activities/${roomId}`);
+    }
+});
+
+
+// Route to handle activities for a specific room
 router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const roomId = req.params.roomId;
+    const { roomId } = req.params;
 
     try {
         const room = await Room.findById(roomId);
@@ -410,14 +500,208 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
-        const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
-        res.render('admin/activities', { room, lesson }); // Pass lesson data to the view
+        // Fetch activity rooms associated with the room
+        const activityRooms = await ActivityRoom.find({ roomId });
+        const quizzes = await QuizActivity.find({ roomId });
+        const quizResults = await QuizResult.find({ roomId }).populate('userId');
+        res.render('admin/activities', {
+            room,
+            activityRooms,
+            quizzes: quizzes || [], // Ensure quizzes is defined
+            quizResults
+        });
+        // Pass roomId to the view
+    
     } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error accessing the room.');
+        console.error('Error accessing activities:', err);
+        req.flash('error', 'Error accessing activities.');
         res.redirect('/admin/homeAdmin');
     }
 });
+
+// Route to submit a new quiz
+router.post('/quiz/create/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    const { title, questions } = req.body; // Ensure this is an array with questionText and choices or correctAnswer
+
+    try {
+        // Process each question based on its type
+        questions.forEach((question, qIndex) => {
+            if (question.type === 'multiple-choice') {
+                // For multiple-choice, process choices
+                question.choices.forEach((choice, cIndex) => {
+                    // Convert "on" to true, and any missing value (unchecked) to false
+                    choice.isCorrect = !!choice.isCorrect;
+                });
+            } else if (question.type === 'fill-in-the-blank') {
+                // For fill-in-the-blank, make sure there's a correctAnswer
+                if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+                    throw new Error(`Fill-in-the-blank question ${qIndex + 1} must have a correct answer.`);
+                }
+            }
+        });
+
+        // Create a new quiz
+        const newQuiz = new QuizActivity({
+            title,
+            roomId,
+            questions // Store the questions (both types)
+        });
+
+        // Save the quiz to MongoDB
+        await newQuiz.save();
+
+        req.flash('success', 'Quiz created successfully!');
+        res.redirect(`/admin/activities/${roomId}`);
+    } catch (err) {
+        console.error('Error creating quiz:', err);
+        req.flash('error', `Error creating quiz: ${err.message}`);
+        res.redirect(`/admin/activities/${roomId}`);
+    }
+});
+
+
+
+
+
+
+router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const quiz = await QuizActivity.findById(id);
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin'); // Redirect if not found
+        }
+
+        // Render the quiz start page or whatever view you need
+        res.render('quizzes/start', { quiz, currentUserId: req.user._id }); // Pass the quiz variable and user ID
+    } catch (err) {
+        console.error('Error starting quiz:', err);
+        req.flash('error', 'Error starting quiz.');
+        res.redirect('/admin/homeAdmin'); // Redirect on error
+    }
+});
+
+
+
+// Route to submit quiz answers
+router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+    const { userId, answers } = req.body;
+
+    try {
+        const quiz = await QuizActivity.findById(quizId);
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin');
+        }
+
+        let correctCount = 0;
+        const resultAnswers = quiz.questions.map((question, qIndex) => {
+            const userAnswer = answers[qIndex];
+            let isCorrect = false;
+
+            if (question.type === 'multiple-choice') {
+                // For multiple-choice, check if the user's selected answer is correct
+                isCorrect = question.choices.some(choice => choice.isCorrect && choice.text === userAnswer);
+            } else if (question.type === 'fill-in-the-blank') {
+                // For fill-in-the-blank, compare userAnswer with correctAnswer
+                isCorrect = question.correctAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
+            }
+
+            if (isCorrect) correctCount++;
+
+            // Return the answer object including questionId and questionText
+            return {
+                questionId: question._id,
+                questionText: question.questionText, // Include the question text
+                userAnswer,
+                isCorrect
+            };
+        });
+
+        if (!userId) {
+            throw new Error('User ID is required');
+        }
+
+        const quizResult = new QuizResult({
+            userId, // Store the user ID who took the quiz
+            quizId,
+            answers: resultAnswers, // Include the answers with questionText
+            score: correctCount
+        });
+
+        await quizResult.save(); // Save the result in MongoDB
+
+        req.flash('success', `You got ${correctCount} out of ${quiz.questions.length} correct!`);
+        res.redirect(`/admin/quizzes/room/${quizId}`);
+    } catch (err) {
+        console.error('Error submitting quiz:', err);
+        req.flash('error', 'Error submitting quiz. ' + err.message);
+        res.redirect('/admin');
+    }
+});
+
+
+router.get('/quizzes/room/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+    const currentUserId = req.user._id;  // Get the current user ID
+    
+    try {
+        // Fetch the quiz
+        const quiz = await QuizActivity.findById(quizId);
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch the quiz result for the current user only
+        const quizResult = await QuizResult.findOne({ quizId, userId: currentUserId });
+
+        if (!quizResult) {
+            req.flash('error', 'You have not taken this quiz.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Render the results page, passing only the result for the current user
+        res.render('quizzes/results', { quiz, quizResult });
+    } catch (err) {
+        console.error('Error fetching quiz result:', err);
+        req.flash('error', 'Error fetching quiz result.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
+
+// Route to get quiz participants
+router.get('/quiz/participants/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    try {
+        const { quizId } = req.params;
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({ error: 'Invalid Quiz ID.' });
+        }
+        
+        const quizResults = await QuizResult.find({ quizId }).populate('userId');
+        
+        const participants = quizResults.map(result => ({
+            firstName: result.userId.first_name,
+            lastName: result.userId.last_name,
+            score: result.score,
+            submittedAt: result.createdAt
+        }));
+
+        res.json(participants);
+    } catch (err) {
+        console.error('Error fetching quiz participants:', err);
+        res.status(500).json({ error: 'Error fetching quiz participants.' });
+    }
+});
+
+
+
 
 //end of  activities -------------------------------------------------------------------------------------------
 router.get('/educGames/:roomId', ensureAdminLoggedIn, async (req, res) => {

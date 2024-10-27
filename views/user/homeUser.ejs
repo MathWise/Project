@@ -1,100 +1,186 @@
-
-
+<!-- views/admin/homeAdmin.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin - Home</title>
     <link rel="stylesheet" href="/homepage.css">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            color: #333;
+        }
+
+        /* Hide form by default */
+        .create-room-form {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .room-button {
+            width: 100%;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .room-button:hover {
+            background-color: #0056b3;
+        }
+
+        .room-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 20px;
+        }
+
+        .room {
+            padding: 20px;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .room:hover {
+            background-color: #0056b3;
+        }
+
+        /* Dropdown Button */
+        .dropdown {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+        }
+
+        .dropbtn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container-fluid">
-       
-        <div class="upper-side row no-gutters p-3">
-            <!-- Sidebar (20% width) -->
-            <aside class="col-md-2 bg-sidebar section greeting-text p-2 font-weight-bold text-muted">
-                user
-                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid">
-            </aside>
+<body>
 
-            <!-- Main Content (60% width) -->
-            <main class="col-md-8 bg-main section">
-                <select class="form-control mr-2">
-                    <option value="">Select Level</option>
-                    <script>
-                        for (let i = 1; i <= 30; i++) {
-                            document.write(`<option value="level${i}.html">Level ${i}</option>`);
-                        }
-                    </script>
-                </select>
-            </main>
-
-            <!-- Right Side Container (30% width) -->
-            <div class="col-md-2 bg-right-side section">
-                <select class="form-control">
-                    <option value="">Select Week</option>
-                    <script>
-                        for (let i = 1; i <= 6; i++) {
-                            document.write(`<option value="week${i}.html">Week ${i}</option>`);
-                        }
-                    </script>
-                </select>
-            </div>
-        </div>
-
-        <div class="containers row">
-            <!-- Sidebar -->
-            <aside class="bg-info col-md-1 text-center p-3">
-                <nav>
-                    <ul class="list-unstyled">
-                        <li style="margin-bottom: 35px;"><a href="homepage.html" class="text-dark font-weight-bold">Home</a></li>
-                        <li style="margin-bottom: 35px;"><a href="lesson.html" class="text-dark">Lesson</a></li>
-                        <li style="margin-bottom: 35px;"><a href="activities.html" class="text-dark">Activities</a></li>
-                        <li style="margin-bottom: 35px;"><a href="educational-games.html" class="text-dark">Educational Games</a></li>
-                    </ul>
-                </nav>
-            </aside>
-
-            <!-- Main Content -->
-            <main class="col-md-9 bg-main section">
-                <div class="big-box1 p-3 bg-main section">
-                    <div class="big-box"></div>
-                </div>
-            </main>
-
-            <!-- Right Sidebar -->
-            <aside class="col-md-2 bg-right-side section p-0">
-                <div class="d-flex flex-column h-100">
-                    <div class="updates updates-container flex-fill bg-light p-3">
-                        <div class="updates-header d-flex align-items-center mb-2">
-                            <img src="/assets/codesandbox.svg" alt="CodeSandbox Icon" class="icon">
-                            <h3 class="h6 mb-0 ml-2">Updates</h3>
-                            <a href="#" class="ml-auto text-primary">View All</a>
-                        </div>
-                    </div>
-
-                    <div class="updates videos-container flex-fill bg-light p-3 mt-3">
-                        <div class="videos-header d-flex align-items-center mb-2">
-                            <img src="/assets/youtube.svg" alt="YouTube Icon" class="icon">
-                            
-                            <h3 class="h6 mb-0 ml-2">Videos</h3>
-                            <a href="lesson.html" class="ml-auto text-primary">View All</a>
-                            
-                        </div>
-                       
-                        
-                    </div>
-
-                    <div class="updates contact-container flex-fill bg-light p-3 mt-3">
-                        <div class="contact-header d-flex align-items-center mb-2">
-                            <img src="/assets/headphones.svg" alt="Headphones Icon" class="icon">
-                            <h3 class="h6 mb-0 ml-2">Contact</h3>
-                        </div>
-                    </div>
-                </div>
-            </aside>
+    <!-- Dropdown Button for navigation -->
+    <div class="dropdown">
+        <button class="dropbtn">Menu</button>
+        <div class="dropdown-content">
+           
+           
+            <a href="/login">Logout</a>
         </div>
     </div>
+    <form action="/user/homeUser" method="POST">
+    <div class="container">
+        <h1>Rooms</h1>
+
+        <!-- Rooms grid display -->
+        <div class="room-grid">
+            <% rooms.forEach(function(room) { %>
+                <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
+                    <h2><%= room.roomName %></h2>
+                    <p>Grade: <%= room.gradeLevel %></p>
+                    <p>Teacher: <%= room.teacherName %></p>
+                </div>
+            <% }) %>
+        </div>
+
+        <!-- Button to show Create Room form -->
+        <br>
+       
+
+        
+
+    </div>
+</form>
+    <script>
+        // JavaScript to toggle the display of the Create Room form
+        document.getElementById("showCreateRoomBtn").addEventListener("click", function() {
+            var form = document.getElementById("createRoomForm");
+            if (form.style.display === "none" || form.style.display === "") {
+                form.style.display = "block";
+            } else {
+                form.style.display = "none";
+            }
+        });
+
+        function promptPassword(correctPassword, roomId) {
+            const userPassword = prompt('Enter the room password:');
+            if (userPassword === correctPassword) {
+                // Redirect to the dashboard with the room ID
+                window.location.href = `/admin/dashboard/${roomId}`; // Adjust the route as needed
+            } else {
+                alert('Incorrect password. Please try again.');
+            }
+        }
+    </script>
+
 </body>
 </html>

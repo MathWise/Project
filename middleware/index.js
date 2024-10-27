@@ -31,7 +31,7 @@ const middleware = {
         }
         if (req.user.role !== "student") {
             req.flash("warning", "This route is allowed for students only!");
-            return res.redirect("/admin/homeAdmin"); // Redirect to the admin home page
+            return res.redirect("/user/homeUser"); // Redirect to the admin home page
         }
         next();
     },

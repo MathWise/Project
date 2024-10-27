@@ -23,6 +23,7 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views')); // Set the views directory explicitly
 
+app.use(express.json()); 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -32,6 +33,7 @@ app.use(session({
   resave: false,
   saveUninitialized: true
 }));
+
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -56,6 +58,12 @@ app.use(forgetPassRoutes);
 app.use('/admin',adRoutes);
 app.use('/user',appRoutes);
 
+
+// Temporary logging middleware to confirm admin routes are accessed
+app.use('/admin', (req, res, next) => {
+  console.log('Admin route accessed:', req.path);
+  next();
+});
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);
