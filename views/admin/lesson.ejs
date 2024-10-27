@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,7 +11,7 @@
 <body>
     <div class="container-fluid p-0">
         <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
-            <aside class="col-md-2 sidebars section greeting-text p-2 font-weight-bold text-muted">
+            <aside class="col-md-2 sidebar section greeting-text p-2 font-weight-bold text-muted" style="background-color: #E0F4F9;">
                 Hello <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid">
             </aside>
             <main class="col-md-8 bg-main section">
@@ -132,8 +130,7 @@
                     </div>
                 </div>
 
-                <!-- Create Lesson Room Section -->
-                <div class="layered-container" style="display: block;"> <!-- Initially visible -->
+                <div class="layered-container">
                     <div class="background-image"></div>
                     <div class="form-overlay">
                         <h5>Create a New Lesson Room</h5>
@@ -159,9 +156,10 @@
                 const moduleContent = document.getElementById('moduleContent');
                 const fileContent = document.getElementById('fileContent');
 
+                // Calculate new height based on content
                 const newHeight = Math.max(
-                    moduleContent.offsetHeight + fileContent.offsetHeight + 40,
-                    150
+                    moduleContent.offsetHeight + fileContent.offsetHeight + 40, // 40 for padding
+                    150 // minimum height
                 );
 
                 uploadBox.style.height = `${newHeight}px`;
@@ -172,7 +170,7 @@
             }
 
             $('#uploadPdfForm').submit(function(event) {
-                event.preventDefault();
+                event.preventDefault(); // Prevent the default form submission
 
                 var formData = new FormData(this);
 
@@ -191,7 +189,7 @@
                             listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
                             pdfList.appendChild(listItem);
                         });
-                        updateUploadedFiles();
+                        updateUploadedFiles(); // Adjust height after upload
                     },
                     error: function(error) {
                         alert('Error uploading PDF.');
@@ -206,6 +204,7 @@
                         const lessonRoomContent = document.getElementById('lessonRoomContent');
                         lessonRoomContent.style.display = 'block';
 
+                        // Hide the create lesson room container
                         const createLessonRoomContainer = document.querySelector('.layered-container');
                         createLessonRoomContainer.style.display = 'none'; // Hide the container
 
@@ -247,17 +246,19 @@
                             console.error('Error fetching lesson data:', error);
                         }
 
+                        // Hide upload content initially
                         document.getElementById('moduleContent').style.display = 'none';
                         document.getElementById('fileContent').style.display = 'none';
                     });
                 });
 
+                // Show upload forms based on button clicks
                 document.getElementById('moduleButton').addEventListener('click', function() {
                     document.getElementById('uploadBox').style.display = 'block';
                     document.getElementById('moduleContent').style.display = 'block';
                     document.getElementById('fileContent').style.display = 'none';
                     document.getElementById('lessonRoomContent').style.display = 'none'; // Hide button box
-                    adjustUploadBoxHeight(); 
+                    adjustUploadBoxHeight(); // Adjust height when opening
                 });
 
                 document.getElementById('fileButton').addEventListener('click', function() {
@@ -265,12 +266,12 @@
                     document.getElementById('fileContent').style.display = 'block';
                     document.getElementById('moduleContent').style.display = 'none';
                     document.getElementById('lessonRoomContent').style.display = 'none'; // Hide button box
-                    adjustUploadBoxHeight(); 
+                    adjustUploadBoxHeight(); // Adjust height when opening
                 });
             });
 
             document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
-                event.preventDefault();
+                event.preventDefault(); // Prevent default form submission
 
                 const formData = new FormData(this);
                 const roomId = document.getElementById('videoRoomId').value;
@@ -295,7 +296,7 @@
                         listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
                         videoList.appendChild(listItem);
                     });
-                    updateUploadedFiles(); 
+                    updateUploadedFiles(); // Adjust height after upload
                 })
                 .catch(error => {
                     console.error('Error uploading video:', error);
@@ -310,4 +311,3 @@
         </div>
     </div>
 </body>
-</html>

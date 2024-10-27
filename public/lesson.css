@@ -176,6 +176,7 @@ body {
     color: #007bff; /* Change text color */
     transform: scale(1.05); /* Slightly enlarge the item */
 }
+
 /* Upload Box Styles */
 #uploadBox {
     background-image: url('assets/bg.png'); /* Path to your background image */
