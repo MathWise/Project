@@ -180,11 +180,9 @@ body {
 /* Upload Box Styles */
 #uploadBox {
     background-image: url('assets/bg.png'); /* Path to your background image */
-    background-size: inherit; 
-    background-position: center; /* Center the image */
+    background-size: cover;
     padding: 20px; /* Add padding for content */
     border-radius: 8px; /* Optional: round the corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Optional: add shadow for depth */
     color: black; /* Change text color for better contrast */
     display: none; /* Keep this initially hidden as per your existing logic */
 }

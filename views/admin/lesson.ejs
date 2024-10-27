@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -208,6 +210,10 @@
                         const createLessonRoomContainer = document.querySelector('.layered-container');
                         createLessonRoomContainer.style.display = 'none'; // Hide the container
 
+                        // Reset and hide the upload box
+                        const uploadBox = document.getElementById('uploadBox');
+                        uploadBox.style.display = 'none'; // Hide the upload box
+
                         document.getElementById('uploadPdfForm').action = `/admin/upload-pdf/${roomId}`;
                         document.getElementById('uploadVideoForm').action = `/admin/upload-video/${roomId}`;
                         document.getElementById('pdfRoomId').value = roomId;
@@ -311,3 +317,4 @@
         </div>
     </div>
 </body>
+</html>
