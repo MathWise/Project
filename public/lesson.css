@@ -176,7 +176,6 @@ body {
     color: #007bff; /* Change text color */
     transform: scale(1.05); /* Slightly enlarge the item */
 }
-
 /* Upload Box Styles */
 #uploadBox {
     background-image: url('assets/bg.png'); /* Path to your background image */
@@ -188,99 +187,3 @@ body {
     color: black; /* Change text color for better contrast */
     display: none; /* Keep this initially hidden as per your existing logic */
 }
-
-     /* Modal styling */
-     .modal {
-        display: none; 
-        position: fixed;
-        z-index: 1;
-        padding-top: 10px;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-    }
-    .modal-content {
-        position: relative;
-        margin: auto;
-        padding: 0;
-        width: 90%;
-        height: 90%;
-        background-color: #fff;
-    }
-    .close {
-        position: absolute;
-        right: 20px;
-        top: 10px;
-        font-size: 28px;
-        font-weight: bold;
-        color: #aaa;
-        cursor: pointer;
-    }
-    .close:hover,
-    .close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
-    }
-
-        /* Full-screen modal styling */
-        #pdfModal {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            
-        }
-        
-        
-    
-        #pdfModal .modal-content {
-            position: relative;
-            width: 90%;
-            height: 90%;
-            margin: auto;
-            padding: 20px;
-            background-color: white;
-            
-        }
-    
-        #pdfModal .close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 30px;
-            color: black;
-            cursor: pointer;
-        }
-        .arrow-box-container {
-            text-align: right; /* Align the arrow box to the right */
-            padding: 20px;
-        }
-        
-        .arrow-text {
-            display: inline-block;
-            position: relative;
-            padding: 10px 20px;
-            background-color: #1e90ff; /* Arrow body color */
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-right: 20px; /* Add some margin from the right edge */
-        }
-        
-        .arrow-text::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-          
-            transform: translateY(-50%); /* Center the arrow vertically */
-            border-width: 10px;
-            border-style: solid;
-            border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
-        }
