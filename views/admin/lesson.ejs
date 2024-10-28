@@ -95,19 +95,33 @@
                 </div>
 
                 <!-- Display existing lesson rooms dynamically -->
-                <div id="lessonRoomList" class="mb-4">
-                    <h5>Existing Lesson Rooms</h5>
-                    <ul class="list-group d-flex flex-row flex-wrap">
-                        <% lessonRooms.forEach(function(lessonRoom, index) { %>
-                            
-                            <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>">
-                              
-                                 <strong class="mr-2"><%= lessonRoom.subject %> <%= lessonRoom.topic %></strong>  
+                <h5>Existing Lesson Rooms</h5>
+<ul class="list-group d-flex flex-row flex-wrap">
+    <% 
+    // Define the colors array
+    const buttonColors = ["#F9B4AB", "#CECBEC", "#FFDF9F", "#C1EAF4"];
+    
+    // Define the image sources array
+    const imgSources = [
+        "/assets/english-4.svg",
+        "/assets/layer-1.svg",
+        "/assets/geography-1.svg",
+        "/assets/socio-1.svg"
+    ];
 
-                                <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
-                            </li>
-                        <% }); %>
-                    </ul>
+    // Iterate over the lessonRooms
+    lessonRooms.forEach(function(lessonRoom, index) { 
+        // Get the color based on the index (cycling through the array)
+        const buttonColor = buttonColors[index % buttonColors.length];
+        // Get the image source based on the index (cycling through the image sources array)
+        const imgSrc = imgSources[index % imgSources.length];
+    %>
+    <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>" style="background-color: <%= buttonColor || '#FFFFFF' %>;">
+        <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
+        <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
+    </li>
+    <% }); %>
+</ul>
                 </div>
 
                 <!-- Hidden content section that will be shown upon clicking a lesson room -->
