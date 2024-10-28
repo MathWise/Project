@@ -94,7 +94,7 @@
                         <div class="form-group">
                             <label for="subject">Subject</label>
                             <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
-                        </div>
+                        </di v>
                         <div class="form-group">
                             <label for="activityType">Activity Type</label>
                             <select class="form-control" id="activityType" name="activityType" required>
@@ -110,7 +110,7 @@
                 <div id="activityRoomList" class="mb-4">
                     <h5>Existing Activity/Quiz Rooms</h5>
                     <ul class="list-group d-flex flex-row flex-wrap">
-                        <% activityRooms.forEach(function(activityRoom) { %>
+                        <% activityRooms.slice(0, 10).forEach(function(activityRoom) { %> <!-- Limiting the display to 10 rooms -->
                             <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= activityRoom._id %>">
                                 <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
                                 <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
@@ -126,6 +126,8 @@
                         
                               <h1>Create a Quiz</h1>
                               <form id="quizForm" action="/admin/quiz/create/<%= room._id %>" method="POST">
+                                <input type="hidden" name="roomId" id="quizRoomId" value="<%= room._id %>"> <!-- Add the roomId as a hidden field -->
+                              
                                   <label for="title">Quiz Title:</label>
                                   <input type="text" name="title" id="title" required><br><br>
                               
@@ -138,7 +140,7 @@
                                           <!-- Dropdown to select question type -->
                                           <label>Question Type:</label>
                                           <select name="questions[0][type]" class="questionType" required>
-                                            <option value="multiple-choice">Choose a Question Type</option>
+                                              <option value="multiple-choice">Choose a Question Type</option>
                                               <option value="multiple-choice">Multiple Choice</option>
                                               <option value="fill-in-the-blank">Fill in the Blank</option>
                                           </select><br>
@@ -151,7 +153,6 @@
                                                   <label>Correct?</label>
                                                   <input type="checkbox" name="questions[0][choices][0][isCorrect]"><br>
                                               </div>
-                                              <!-- Button to add a new choice for the current question -->
                                               <button type="button" class="addChoice">Add Choice</button><br>
                                           </div>
                               
@@ -170,6 +171,7 @@
                                   <button type="button" id="addQuestion">Add Question</button><br><br>
                                   <button type="submit">Submit Quiz</button>
                               </form>
+                              
 
                         </div>
                         <div class="right-content">
@@ -210,25 +212,7 @@
         </div>
 
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                // Handle room click to show quiz/activity form
-                document.querySelectorAll('.clickable').forEach(function (roomElement) {
-                    roomElement.addEventListener('click', function () {
-                        const roomId = this.getAttribute('data-room-id');
-                        
-                        // Show the hidden form section
-                        const roomContent = document.getElementById('quizActivityRoomContent');
-                        roomContent.style.display = 'block';
-
-                        // Set the hidden input value for roomId
-                        document.getElementById('roomId').value = roomId; // Set the value here
-                    });
-                }); 
-            });
-
-           
-        </script>
+    
         <script src="/js/quiz.js"></script> 
         
         <!-- Logo added outside the sidebar and positioned in the left corner -->

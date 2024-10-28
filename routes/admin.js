@@ -158,7 +158,7 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
 
         const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
         const lessonRooms = await LessonRoom.find({ roomId }); // Fetch lesson rooms associated with the room
-        const currentLessonRoom = lessonRooms[0];
+        
 
         res.render('admin/lesson', { room, lesson, lessonRooms, currentUser }); // Pass lessonRooms to the view
     } catch (err) {
@@ -468,8 +468,9 @@ const QuizResult = require('../models/QuizResult');
 
 // Route to create an activity or quiz room
 router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { subject, activityType } = req.body; 
+    const { subject, activityType} = req.body; 
     const { roomId } = req.params; 
+    console.log('Received roomId:', roomId);
 
     try {
         const newActivityRoom = new ActivityRoom({
@@ -504,6 +505,10 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
         const activityRooms = await ActivityRoom.find({ roomId });
         const quizzes = await QuizActivity.find({ roomId });
         const quizResults = await QuizResult.find({ roomId }).populate('userId');
+
+        console.log('Activity Rooms:', activityRooms); // Debugging line
+        console.log('Quizzes:', quizzes); // Debugging line
+
         res.render('admin/activities', {
             room,
             activityRooms,
