@@ -145,11 +145,30 @@
                                 <label for="topic">Topic</label>
                                 <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
                             </div>
-                            <button type="submit" class="btns btn-primary" style="border-radius: 25px;">Create Room</button>
+                            <button type="submit" class="btn btn-primary" style="border-radius: 25px;">Create Room</button>
                         </form>
                     </div>
                 </div>
             </main>
+        </div>
+
+        <!-- Modal for PDF content -->
+        <div class="modal fade" id="pdfModal" tabindex="-1" role="dialog" aria-labelledby="pdfModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-header" style="background-color: transparent;">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-content">
+                    <div class="modal-body" style="height: 100vh; overflow-y: auto; background-color: white;">
+                        <iframe id="pdfViewer" src="" style="width: 100%; height: 100%;" frameborder="0"></iframe>
+                    </div>
+                </div>
+                <div class="modal-footer" style="background-color: transparent;">
+                    <a href="/admin/activities/<%= room._id %>" id="readLessonButton" class="btnn btn-primary" style="border-radius: 5px; width: 225px; background-color: #007bff;">Would you like to take a Quiz?</a>
+                </div>
+            </div>
         </div>
 
         <script>
@@ -158,10 +177,9 @@
                 const moduleContent = document.getElementById('moduleContent');
                 const fileContent = document.getElementById('fileContent');
 
-                // Calculate new height based on content
                 const newHeight = Math.max(
-                    moduleContent.offsetHeight + fileContent.offsetHeight + 40, // 40 for padding
-                    150 // minimum height
+                    moduleContent.offsetHeight + fileContent.offsetHeight + 40,
+                    150 
                 );
 
                 uploadBox.style.height = `${newHeight}px`;
@@ -172,7 +190,7 @@
             }
 
             $('#uploadPdfForm').submit(function(event) {
-                event.preventDefault(); // Prevent the default form submission
+                event.preventDefault();
 
                 var formData = new FormData(this);
 
@@ -188,10 +206,10 @@
                         pdfList.innerHTML = '';
                         response.pdfFiles.forEach(function(pdf) {
                             const listItem = document.createElement('li');
-                            listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
+                            listItem.innerHTML = `<a href="#" class="pdf-link" data-pdf-url="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
                             pdfList.appendChild(listItem);
                         });
-                        updateUploadedFiles(); // Adjust height after upload
+                        updateUploadedFiles();
                     },
                     error: function(error) {
                         alert('Error uploading PDF.');
@@ -206,13 +224,11 @@
                         const lessonRoomContent = document.getElementById('lessonRoomContent');
                         lessonRoomContent.style.display = 'block';
 
-                        // Hide the create lesson room container
                         const createLessonRoomContainer = document.querySelector('.layered-container');
-                        createLessonRoomContainer.style.display = 'none'; // Hide the container
+                        createLessonRoomContainer.style.display = 'none';
 
-                        // Reset and hide the upload box
                         const uploadBox = document.getElementById('uploadBox');
-                        uploadBox.style.display = 'none'; // Hide the upload box
+                        uploadBox.style.display = 'none';
 
                         document.getElementById('uploadPdfForm').action = `/admin/upload-pdf/${roomId}`;
                         document.getElementById('uploadVideoForm').action = `/admin/upload-video/${roomId}`;
@@ -232,7 +248,7 @@
                             if (lessonData.pdfFiles && lessonData.pdfFiles.length > 0) {
                                 lessonData.pdfFiles.forEach(function (pdf) {
                                     const listItem = document.createElement('li');
-                                    listItem.innerHTML = `<a href="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
+                                    listItem.innerHTML = `<a href="#" class="pdf-link" data-pdf-url="/admin/pdf/${pdf.pdfFileId}" target="_blank">${pdf.pdfFileName}</a>`;
                                     pdfList.appendChild(listItem);
                                 });
                             } else {
@@ -252,33 +268,39 @@
                             console.error('Error fetching lesson data:', error);
                         }
 
-                        // Hide upload content initially
                         document.getElementById('moduleContent').style.display = 'none';
                         document.getElementById('fileContent').style.display = 'none';
                     });
                 });
 
-                // Show upload forms based on button clicks
                 document.getElementById('moduleButton').addEventListener('click', function() {
                     document.getElementById('uploadBox').style.display = 'block';
                     document.getElementById('moduleContent').style.display = 'block';
                     document.getElementById('fileContent').style.display = 'none';
-                    document.getElementById('lessonRoomContent').style.display = 'none'; // Hide button box
-                    adjustUploadBoxHeight(); // Adjust height when opening
+                    document.getElementById('lessonRoomContent').style.display = 'none';
+                    adjustUploadBoxHeight();
                 });
 
                 document.getElementById('fileButton').addEventListener('click', function() {
                     document.getElementById('uploadBox').style.display = 'block';
                     document.getElementById('fileContent').style.display = 'block';
                     document.getElementById('moduleContent').style.display = 'none';
-                    document.getElementById('lessonRoomContent').style.display = 'none'; // Hide button box
-                    adjustUploadBoxHeight(); // Adjust height when opening
+                    document.getElementById('lessonRoomContent').style.display = 'none';
+                    adjustUploadBoxHeight();
+                });
+
+                document.addEventListener('click', function(event) {
+                    if (event.target.matches('.pdf-link')) {
+                        event.preventDefault();
+                        const pdfUrl = event.target.getAttribute('data-pdf-url');
+                        document.getElementById('pdfViewer').src = pdfUrl;
+                        $('#pdfModal').modal('show');
+                    }
                 });
             });
 
             document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent default form submission
-
+                event.preventDefault();
                 const formData = new FormData(this);
                 const roomId = document.getElementById('videoRoomId').value;
 
@@ -302,7 +324,7 @@
                         listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
                         videoList.appendChild(listItem);
                     });
-                    updateUploadedFiles(); // Adjust height after upload
+                    updateUploadedFiles();
                 })
                 .catch(error => {
                     console.error('Error uploading video:', error);
