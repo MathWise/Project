@@ -92,11 +92,86 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
+            
+                <h5>Existing Lesson Rooms</h5>
+                <ul class="list-group d-flex flex-row flex-wrap">
+                    <% 
+                    // Define the colors array
+                    const buttonColors = ["#F9B4AB", "#CECBEC", "#FFDF9F", "#C1EAF4"];
+                    
+                    const imgSources = [
+                        "/assets/english-4.svg",
+                        "/assets/layer-1.svg",
+                        "/assets/geography-1.svg",
+                        "/assets/socio-1.svg"
+                    ];
+            
+                    lessonRooms.forEach(function(lessonRoom, index) { 
+                        const buttonColor = buttonColors[index % buttonColors.length];
+                        const imgSrc = imgSources[index % imgSources.length];
+                    %>
+                    <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>" style="background-color: <%= buttonColor || '#FFFFFF' %>;">
+                        <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
+                        <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
+                    </li>
+                    <% }); %>
+                </ul>
+            
+              <!-- New big box section -->
+<div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
+    <div class="d-flex justify-content-center mt-3">
+        <button id="moduleButton" class="btn custom-btn">Module</button>
+        <button id="videoButton" class="btn custom-btn">Video</button>
+    </div>
+</div>
+
+<!-- Separate PDF Upload Box -->
+<div id="uploadPdfSection" class="upload-box" style="display: none;"> <!-- Initially hidden -->
+    <div class="left-content"> 
+        <h5 class="text-dark">Upload PDF</h5>
+        <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="roomId" id="pdfRoomId" value="">
+            <div class="form-group">
+                <label for="pdfFile">Choose PDF file:</label>
+                <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload PDF</button>
+        </form>
+        
+        <div class="lesson-content">
+            <!-- Placeholder for dynamically loaded PDFs -->
+            <h3>Uploaded PDFs</h3>
+            <ul id="uploadedPdfs"></ul>
+        </div>
+    </div>
+</div>
+
+<!-- Separate Video Upload Box -->
+<div id="uploadVideoSection" class="upload-box" style="display: none;"> <!-- Initially hidden -->
+    <div class="right-content">
+        <h5 class="text-dark">Upload Video</h5>
+        <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="roomId" id="videoRoomId" value="">
+            <div class="form-group">
+                <label for="videoFile">Choose MP4 video:</label>
+                <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Upload Video</button>
+        </form>
+        
+        <div class="lesson-content">
+            <!-- Placeholder for dynamically loaded videos -->
+            <h3>Uploaded Videos</h3>
+            <ul id="uploadedVideos"></ul>
+        </div>
+    </div>
+</div>
+
+            
                 <!-- Lesson Room Creation Form -->
-                <div class="layer ed-container">
-                    <div class="background-image"></div>
+                <div class="layered-container">
                     <div class="form-overlay">
-                        <h5>Create a New Lesson Room</h5>
+                        <h5 class="card-title">Create a New Lesson Room</h5>
                         <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
                             <div class="form-group">
                                 <label for="subject">Subject</label>
@@ -109,90 +184,11 @@
                             <button type="submit" class="btn btn-primary">Create Room</button>
                         </form>
                     </div>
-                </div>
+                </div>  
+            </main>                                   
+        </div>            
 
-                <!-- Display existing lesson rooms dynamically -->
-                <h5>Existing Lesson Rooms</h5>
-                <ul class="list-group d-flex flex-row flex-wrap">
-                    <% 
-                    // Define the colors array
-                    const buttonColors = ["#F9B4AB", "#CECBEC", "#FFDF9F", "#C1EAF4"];
-                    
-                    // Define the image sources array
-                    const imgSources = [
-                        "/assets/english-4.svg",
-                        "/assets/layer-1.svg",
-                        "/assets/geography-1.svg",
-                        "/assets/socio-1.svg"
-                    ];
 
-                    // Iterate over the lessonRooms
-                    lessonRooms.forEach(function(lessonRoom, index) { 
-                        // Get the color based on the index (cycling through the array)
-                        const buttonColor = buttonColors[index % buttonColors.length];
-                        // Get the image source based on the index (cycling through the image sources array)
-                        const imgSrc = imgSources[index % imgSources.length];
-                    %>
-                    <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>" style="background-color: <%= buttonColor || '#FFFFFF' %>;">
-                        <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
-                        <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
-                    </li>
-                    <% }); %>
-                </ul>
-            </main>
-        </div>
-
-        <!-- Hidden content section that will be shown upon clicking a lesson room -->
-        <div id="lessonRoomContent" class="big-box" style="display: none;">
-            <div class="content-wrapper">
-                <div class="left-content"> 
-                    <h5 class="text-dark">Upload PDF</h5>
-                    <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="roomId" id="pdfRoomId" value="">
-                        <div class="form-group">
-                            <label for="pdfFile">Choose PDF file:</label>
-                            <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Upload PDF</button>
-                    </form>
-                    
-                    <div class="lesson-content">
-                        <!-- Placeholder for dynamically loaded PDFs -->
-                        <h3>Uploaded PDFs</h3>
-                        <ul id="uploadedPdfs"></ul>
-                    </div>
-                </div>
-
-                <!-- PDF Preview Modal -->
-                <div id="pdfModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closePdfModal()">&times;</span>
-                        <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
-                    </div>
-                    <div class="arrow-box-container">
-                        <a href="/admin/activities/<%= room._id %>" class="arrow-text">would you like to take a Quiz </a>
-                    </div>
-                </div>
-                
-                <div class="right-content">
-                    <h5 class="text-dark">Upload Video</h5>
-                    <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
-                        <input type="hidden" name="roomId" id="videoRoomId" value="">
-                        <div class="form-group">
-                            <label for="videoFile">Choose MP4 video:</label>
-                            <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Upload Video</button>
-                    </form>
-                    
-                    <div class="lesson-content">
-                        <!-- Placeholder for dynamically loaded videos -->
-                        <h3>Uploaded Videos</h3>
-                        <ul id="uploadedVideos"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <script>
             // Function to send PDF progress to the server and update display in real-time
@@ -412,6 +408,95 @@
             });
 
         </script>
+
+        <script>
+        // Wait for the DOM to be fully loaded
+document.addEventListener("DOMContentLoaded", function () {
+    // Select all lesson room items
+    const lessonRoomItems = document.querySelectorAll('.list-group-item');
+    const layeredContainer = document.querySelector('.layered-container'); // Get the create lesson room section
+    const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
+    const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload box
+    const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload box
+
+    // Attach click event to each lesson room item
+    lessonRoomItems.forEach(item => {
+        item.addEventListener('click', function () {
+            layeredContainer.style.display = 'none'; // Hide the create lesson room section
+            newBigBox.style.display = 'block'; // Show main container
+            uploadPdfSection.style.display = 'none'; // Hide PDF upload section initially
+            uploadVideoSection.style.display = 'none'; // Hide video upload section initially
+
+            // Optionally load data for the selected room
+            const roomId = this.getAttribute('data-room-id');
+            loadLessonFiles(roomId, '<%= currentUser._id %>');
+
+            // Set the roomId for hidden inputs
+            document.getElementById('pdfRoomId').value = roomId;
+            document.getElementById('videoRoomId').value = roomId;
+        });
+    });
+
+    // Module button click listener to show the PDF upload box and hide newbigbox
+    const moduleButton = document.getElementById('moduleButton');
+    moduleButton.addEventListener('click', function () {
+        newBigBox.style.display = 'none'; // Hide the new big box
+        uploadPdfSection.style.display = 'block'; // Show the PDF upload box
+        uploadVideoSection.style.display = 'none'; // Hide the video upload section
+    });
+
+    // Video button click listener to show the video upload box and hide newbigbox
+    const videoButton = document.getElementById('videoButton');
+    videoButton.addEventListener('click', function () {
+        newBigBox.style.display = 'none'; // Hide the new big box
+        uploadPdfSection.style.display = 'none'; // Hide the PDF upload box
+        uploadVideoSection.style.display = 'block'; // Show the video upload section
+    });
+});
+
+        </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const lessonRoomItems = document.querySelectorAll('.list-group-item');
+        const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
+        const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload box
+        const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload box
+
+        // Attach click event to each lesson room item
+        lessonRoomItems.forEach(item => {
+            item.addEventListener('click', function () {
+                newBigBox.style.display = 'block'; // Show main container
+                uploadPdfSection.style.display = 'none'; // Hide PDF upload section initially
+                uploadVideoSection.style.display = 'none'; // Hide video upload section initially
+
+                // Optionally load data for the selected room
+                const roomId = this.getAttribute('data-room-id');
+                loadLessonFiles(roomId, '<%= currentUser._id %>');
+
+                // Set the roomId for hidden inputs
+                document.getElementById('pdfRoomId').value = roomId;
+                document.getElementById('videoRoomId').value = roomId;
+            });
+        });
+
+        // Module button click listener to show the PDF upload box and hide newbigbox
+        const moduleButton = document.getElementById('moduleButton');
+        moduleButton.addEventListener('click', function () {
+            newBigBox.style.display = 'none'; // Hide the new big box
+            uploadPdfSection.style.display = 'block'; // Show the PDF upload box
+            uploadVideoSection.style.display = 'none'; // Hide the video upload section
+        });
+
+        // Video button click listener to show the video upload box and hide newbigbox
+        const videoButton = document.getElementById('videoButton');
+        videoButton.addEventListener('click', function () {
+            newBigBox.style.display = 'none'; // Hide the new big box
+            uploadPdfSection.style.display = 'none'; // Hide the PDF upload box
+            uploadVideoSection.style.display = 'block'; // Show the video upload section
+        });
+    });
+</script>
 
  <script>
             document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
