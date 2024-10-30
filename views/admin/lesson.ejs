@@ -96,26 +96,26 @@
                 <h5>Existing Lesson Rooms</h5>
                 <ul class="list-group d-flex flex-row flex-wrap">
                     <% 
-                    // Define the colors array
-                    const buttonColors = ["#F9B4AB", "#CECBEC", "#FFDF9F", "#C1EAF4"];
-                    
+                    const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
                     const imgSources = [
                         "/assets/english-4.svg",
                         "/assets/layer-1.svg",
                         "/assets/geography-1.svg",
                         "/assets/socio-1.svg"
                     ];
-            
+                
                     lessonRooms.forEach(function(lessonRoom, index) { 
-                        const buttonColor = buttonColors[index % buttonColors.length];
+                        const colorClass = buttonColors[index % buttonColors.length];
                         const imgSrc = imgSources[index % imgSources.length];
                     %>
-                    <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= lessonRoom._id %>" style="background-color: <%= buttonColor || '#FFFFFF' %>;">
+                    <li class="list-group-item lesson-room d-flex align-items-center mr-2 clickable <%= colorClass %>" 
+                        data-room-id="<%= lessonRoom._id %>">
                         <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
                         <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
                     </li>
                     <% }); %>
                 </ul>
+                
             
               <!-- New big box section -->
 <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->

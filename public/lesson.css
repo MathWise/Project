@@ -176,6 +176,21 @@ body {
     height: auto;
 }
 
+.color-1 {
+    background-color: #F9B4AB;
+}
+
+.color-2 {
+    background-color: #CECBEC;
+}
+
+.color-3 {
+    background-color: #FFDF9F;
+}
+
+.color-4 {
+    background-color: #C1EAF4;
+}
 
 
 /* Custom button styles */
