@@ -319,6 +319,39 @@ body {
             border-style: solid;
             border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
         }
+        .rounded-sidebar {
+            border-radius: 15px; /* Adjust the radius as needed */
+        }
+        
+        .lesson-button {
+            background-color: #FFDF9F; /* Set background color for the Lesson button */
+            padding: 10px; /* Add padding for better appearance */
+            border-radius: 5px; /* Round the corners of the Lesson button */
+            display: block;
+        }
+        #videoModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Modal background */
+            z-index: 9999; /* Ensure modal is above other content */
+        }
+        
+        #closeVideoModal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: white;
+            z-index: 10000; /* Ensure the close button is above everything */
+            cursor: pointer;
+        }
+        #videoViewer {
+            max-width: 90%;
+            max-height: 90%;
+        }                
         
         
         
