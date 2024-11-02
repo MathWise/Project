@@ -110,7 +110,7 @@
                 <div id="activityRoomList" class="mb-4">
                     <h5>Existing Activity/Quiz Rooms</h5>
                     <ul class="list-group d-flex flex-row flex-wrap">
-                        <% activityRooms.slice(0, 10).forEach(function(activityRoom) { %> <!-- Limiting the display to 10 rooms -->
+                         <% activityRooms.forEach(activityRoom => { %><!-- Limiting the display to 10 rooms -->
                             <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= activityRoom._id %>">
                                 <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
                                 <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
@@ -118,95 +118,96 @@
                         <% }); %>
                     </ul>
                 </div>
+
+               
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
-                        <div class="left-content"> 
-                              <!-- Hidden content section that will be shown upon clicking a room -->
-                    
-                        
-                              <h1>Create a Quiz</h1>
-                              <form id="quizForm" action="/admin/quiz/create/<%= room._id %>" method="POST">
-                                <input type="hidden" name="roomId" id="quizRoomId" value="<%= room._id %>"> <!-- Add the roomId as a hidden field -->
-                              
-                                  <label for="title">Quiz Title:</label>
-                                  <input type="text" name="title" id="title" required><br><br>
-                              
-                                  <div id="questions">
-                                      <!-- The first question structure, more questions will be added dynamically -->
-                                      <div class="question" data-question-index="0">
-                                          <label>Question 1:</label>
-                                          <input type="text" name="questions[0][questionText]" required><br>
-                              
-                                          <!-- Dropdown to select question type -->
-                                          <label>Question Type:</label>
-                                          <select name="questions[0][type]" class="questionType" required>
-                                              <option value="multiple-choice">Choose a Question Type</option>
-                                              <option value="multiple-choice">Multiple Choice</option>
-                                              <option value="fill-in-the-blank">Fill in the Blank</option>
-                                          </select><br>
-                              
-                                          <!-- For multiple-choice, choices will be added here -->
-                                          <div class="choices" style="display: none;">
-                                              <label>Choices:</label>
-                                              <div class="choice" data-choice-index="0">
-                                                  <input type="text" name="questions[0][choices][0][text]" required>
-                                                  <label>Correct?</label>
-                                                  <input type="checkbox" name="questions[0][choices][0][isCorrect]"><br>
-                                              </div>
-                                              <button type="button" class="addChoice">Add Choice</button><br>
-                                          </div>
-                              
-                                          <!-- For fill-in-the-blank, correct answer input -->
-                                          <div class="fill-in-the-blank" style="display: none;">
-                                              <label>Correct Answer:</label>
-                                              <input type="text" name="questions[0][correctAnswer]" required><br>
-                                          </div>
-                              
-                                          <!-- Button to remove the current question -->
-                                          <button type="button" class="removeQuestion">Remove Question</button><br><br>
-                                      </div>
-                                  </div>
-                              
-                                  <!-- Button to add a new question -->
-                                  <button type="button" id="addQuestion">Add Question</button><br><br>
-                                  <button type="submit">Submit Quiz</button>
-                              </form>
-                              
+                        <div class="left-content">
+                            <!-- Hidden content section that will be shown upon clicking a room -->
+                            <h1>Create a Quiz</h1>
+                            <form id="quizForm" action="/admin/quiz/create" method="POST">
+                                <input type="hidden" name="activityRoomId" id="activityRoomId" value=""> <!-- Add the activityRoomId -->
 
+                                <label for="title">Quiz Title:</label>
+                                <input type="text" name="title" id="title" required><br><br>
+
+                                <div id="questions">
+                                    <!-- The first question structure, more questions will be added dynamically -->
+                                    <div class="question" data-question-index="0">
+                                        <label>Question 1:</label>
+                                        <input type="text" name="questions[0][questionText]" required><br>
+
+                                        <!-- Dropdown to select question type -->
+                                        <label>Question Type:</label>
+                                        <select name="questions[0][type]" class="questionType" required>
+                                            <option value="multiple-choice">Choose a Question Type</option>
+                                            <option value="multiple-choice">Multiple Choice</option>
+                                            <option value="fill-in-the-blank">Fill in the Blank</option>
+                                        </select><br>
+
+                                        <!-- Add timer selection options -->
+                                        <div class="form-group">
+                                            <label for="timer">Set Timer (Optional)</label>
+                                            <select class="form-control" id="timer" name="timer"> <!-- Added name="timer" -->
+                                                <option value="">No Timer</option>
+                                                <option value="5">5 Minutes</option>
+                                                <option value="10">10 Minutes</option>
+                                                <option value="30">30 Minutes</option>
+                                                <option value="60">1 Hour</option>
+                                            </select>
+                                        </div>
+                                        <label for="maxAttempts">Maximum Attempts:</label>
+                                        <select name="maxAttempts" id="maxAttempts" required>
+                                            <option value="1">1</option>
+                                            <option value="2">2</option>
+                                            <option value="3">3</option>
+                                            <option value="4">4</option>
+                                            <option value="5">5</option>
+                                        </select><br><br>
+
+                                         <!-- Deadline -->
+                                        <label for="deadline">Set Deadline</label>
+                                        <input type="datetime-local" id="deadline" name="deadline"><br><br>   
+                                        
+                                        <!-- For multiple-choice, choices will be added here -->
+                                        <div class="choices" style="display: none;">
+                                            <label>Choices:</label>
+                                            <div class="choice" data-choice-index="0">
+                                                <input type="text" name="questions[0][choices][0][text]" required>
+                                                <label>Correct?</label>
+                                                <input type="checkbox" name="questions[0][choices][0][isCorrect]"><br>
+                                            </div>
+                                            <button type="button" class="addChoice">Add Choice</button><br>
+                                        </div>
+
+                                        <!-- For fill-in-the-blank, correct answer input -->
+                                        <div class="fill-in-the-blank" style="display: none;">
+                                            <label>Correct Answer:</label>
+                                            <input type="text" name="questions[0][correctAnswer]" required><br>
+                                        </div>
+
+                                        <!-- Button to remove the current question -->
+                                        <button type="button" class="removeQuestion">Remove Question</button><br><br>
+                                    </div>
+                                </div>
+
+                                <!-- Button to add a new question -->
+                                <button type="button" id="addQuestion">Add Question</button><br><br>
+
+                                <button type="submit">Submit Quiz</button>
+                            </form>
                         </div>
+
                         <div class="right-content">
-                            <h4>Users Who Took the Quiz</h4>
-                            <ul id="quizParticipants"></ul> <!-- This is where the participant data will be displayed -->
-                            <a href="#" id="showParticipantsLink">Show Participants </a>
-                            
-                          
-                                
-                            <!-- Display available quizzes -->
+                            <!-- Display available quizzes dynamically -->
                             <h2>Available Quizzes</h2>
-                        
-                            <% if (quizzes && quizzes.length > 0) { %>
-                                <ul>
-                                <% quizzes.forEach((quiz) => { %>
-                                    <li>
-                                        <a href="/admin/quizzes/start/<%= quiz._id %>"><%= quiz.title %></a>
-                                    </li>
-                                <% }) %>
-                                </ul>
-                            <% } else { %>
-                                <p>No quizzes available.</p>
-                            <% } %>
-                        
-                            <!-- Modal for quiz confirmation -->
-                            <div id="quizModal" class="modal" style="display: none;">
-                            <div class="modal-content">
-                                <h2>Are you sure you want to begin the quiz? </h2>
-                                <button id="confirmBegin">Begin</button>
-                                <button id="cancelQuiz">Cancel</button>
-                            </div>
-                            </div>
-                         </div>
-                                              
-                  
+                            <ul id="loadedQuizzes" class="list-group">
+                                <li class="list-group-item">No quizzes available.</li>
+                            </ul>
+
+                           
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>

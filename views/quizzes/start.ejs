@@ -1,31 +1,40 @@
 <div class="big-box">
-  <h1><%= quiz.title %></h1>
-  
-  <!-- Form for submitting quiz answers -->
-  <form action="/admin/quiz/submit/<%= quiz._id %>" method="POST">  
-    <% quiz.questions.forEach((question, qIndex) => { %>
-        <div class="question">
-            <p>Question <%= qIndex + 1 %>: <%= question.questionText %></p>
-
-            <!-- Render different inputs based on the question type -->
-            <% if (question.type === 'multiple-choice') { %>
-                <!-- Render radio buttons for multiple-choice questions -->
-                <% question.choices.forEach((choice) => { %>
-                    <label>
-                        <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>" required>
-                        <%= choice.text %>
-                    </label><br>
-                <% }); %>
-            <% } else if (question.type === 'fill-in-the-blank') { %>
-                <!-- Render a text input for fill-in-the-blank questions -->
-                <label>
-                    <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer" required>
-                </label><br>
-            <% } %>
-        </div>
-    <% }); %>
-
-    <input type="hidden" name="userId" value="<%= currentUserId %>"> <!-- Include userId -->
-    <button type="submit">Submit Quiz</button>
-  </form>
+    <h2><%= quiz.title %></h2>
+<p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>
+    <!-- Timer display -->
+<!-- Timer display -->
+<div id="timer-display" data-timer="<%= quiz.timer %>" data-start-time="<%= quizStartTime %>">
+    Time Remaining: <span id="timer">Loading...</span>
 </div>
+    
+    <!-- Form for submitting quiz answers -->
+    <form id="quizForm" action="/admin/quiz/submit/<%= quiz._id %>" method="POST">
+        <input type="hidden" name="roomId" value="<%= quiz.roomId %>">
+        
+        <% quiz.questions.forEach((question, qIndex) => { %>
+            <div class="question">
+                <p>Question <%= qIndex + 1 %>: <%= question.questionText %></p>
+        
+                <% if (question.type === 'multiple-choice') { %>
+                    <% question.choices.forEach((choice) => { %>
+                        <label>
+                            <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>">
+                            <%= choice.text %>
+                        </label><br>
+                    <% }); %>
+                <% } else if (question.type === 'fill-in-the-blank') { %>
+                    <label>
+                        <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer">
+                    </label><br>
+                <% } %>
+            </div>
+        <% }); %>
+        
+        <input type="hidden" name="userId" value="<%= currentUserId %>">
+        <button type="submit">Submit Quiz</button>
+    </form>
+    
+    
+      
+  </div>
+  <script src="/js/start.js"></script> 

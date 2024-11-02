@@ -438,9 +438,6 @@ router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {
 
 
 
-
-
-
 // Route to get the saved PDF progress for a user
 router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async (req, res) => {
     const { userId, pdfFileId } = req.params;
@@ -462,26 +459,31 @@ router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async 
 
 //end of lesson ------------------------------------------------------------------------------------------
 
+
+
+
+
+
+const { DateTime } = require('luxon');
 const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
 const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
 const QuizResult = require('../models/QuizResult');
 
-// Route to create an activity or quiz room
 router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { subject, activityType} = req.body; 
-    const { roomId } = req.params; 
-    console.log('Received roomId:', roomId);
+    const { subject, activityType} = req.body;
+    const { roomId } = req.params; // This is the main room ID
+    console.log('Received roomId in create-activity:', roomId);
 
     try {
         const newActivityRoom = new ActivityRoom({
             subject,
             activityType,
-            roomId
+            roomId  // Store this as the reference to the main Room
         });
 
         await newActivityRoom.save();
         req.flash('success', 'Activity/Quiz room created successfully!');
-        res.redirect(`/admin/activities/${roomId}`);
+        res.redirect(`/admin/activities/${roomId}`);  // Redirect to activities for the main room
     } catch (err) {
         console.error('Error creating activity room:', err);
         req.flash('error', 'Error creating activity room. Please try again.');
@@ -490,33 +492,41 @@ router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, re
 });
 
 
-// Route to handle activities for a specific room
+
 router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
+    console.log('Received roomId in activities:', roomId);
+
+        // Clear submitted quizzes in session when accessing activities
+        req.session.submittedQuizzes = [];
+    
 
     try {
+        // Fetch all ActivityRooms that belong to the specified main roomId
+        const activityRooms = await ActivityRoom.find({ roomId: roomId });  // Find all activity rooms for the roomId
+
+        if (!activityRooms || activityRooms.length === 0) {
+            req.flash('error', 'No activity rooms found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        console.log(`Fetched ${activityRooms.length} activity rooms for Room ID:`, roomId);
+
+        // Fetch the main room data
         const room = await Room.findById(roomId);
         if (!room) {
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch activity rooms associated with the room
-        const activityRooms = await ActivityRoom.find({ roomId });
-        const quizzes = await QuizActivity.find({ roomId });
-        const quizResults = await QuizResult.find({ roomId }).populate('userId');
-
-        console.log('Activity Rooms:', activityRooms); // Debugging line
-        console.log('Quizzes:', quizzes); // Debugging line
+        // Fetch quizzes related to these activity rooms (optional if needed)
+        const quizzes = await QuizActivity.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
 
         res.render('admin/activities', {
             room,
-            activityRooms,
-            quizzes: quizzes || [], // Ensure quizzes is defined
-            quizResults
+            activityRooms,  // Pass all fetched activity rooms
+            quizzes: quizzes || []
         });
-        // Pass roomId to the view
-    
     } catch (err) {
         console.error('Error accessing activities:', err);
         req.flash('error', 'Error accessing activities.');
@@ -524,191 +534,270 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
-// Route to submit a new quiz
-router.post('/quiz/create/:roomId', ensureAdminLoggedIn, async (req, res) => {
+
+// API route to fetch quizzes for a specific activity room
+router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    const { title, questions } = req.body; // Ensure this is an array with questionText and choices or correctAnswer
+    console.log('Fetching quizzes for room:', roomId); // Add logging
 
     try {
-        // Process each question based on its type
+        // Fetch quizzes associated with the roomId
+        const quizzes = await QuizActivity.find({ roomId });
+
+        if (!quizzes || quizzes.length === 0) {
+            console.log('No quizzes found for room:', roomId);
+        }
+
+        res.json({ quizzes });
+    } catch (err) {
+        console.error('Error fetching quizzes:', err);
+        res.status(500).json({ message: 'Error fetching quizzes.' });
+    }
+});
+
+
+// Route to submit a new quiz
+router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
+
+    const { activityRoomId, title, questions, timer, deadline, maxAttempts = 5 } = req.body;
+    console.log('Creating quiz with received deadline:', deadline);  // Log the received deadline
+
+    try {
+        const activityRoom = await ActivityRoom.findById(activityRoomId);
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/admin/activities');
+        }
+
+        // Process each question based on its type (multiple-choice or fill-in-the-blank)
         questions.forEach((question, qIndex) => {
             if (question.type === 'multiple-choice') {
-                // For multiple-choice, process choices
-                question.choices.forEach((choice, cIndex) => {
-                    // Convert "on" to true, and any missing value (unchecked) to false
+                question.choices.forEach((choice) => {
                     choice.isCorrect = !!choice.isCorrect;
                 });
             } else if (question.type === 'fill-in-the-blank') {
-                // For fill-in-the-blank, make sure there's a correctAnswer
                 if (!question.correctAnswer || question.correctAnswer.trim() === '') {
                     throw new Error(`Fill-in-the-blank question ${qIndex + 1} must have a correct answer.`);
                 }
             }
         });
 
-        // Create a new quiz
+        // Parse deadline in 'Asia/Manila' timezone and convert to UTC if provided
+        const deadlineUTC = deadline
+            ? DateTime.fromISO(deadline, { zone: 'Asia/Manila' }).toUTC().toJSDate()
+            : null;
+
+        if (deadline && isNaN(deadlineUTC)) {
+            throw new Error('Invalid deadline format. Please enter a valid date.');
+        }
+
         const newQuiz = new QuizActivity({
             title,
-            roomId,
-            questions // Store the questions (both types)
+            roomId: activityRoomId,
+            questions,
+            timer: timer ? parseInt(timer, 10) : null,
+            deadline: deadlineUTC,
+            maxAttempts: parseInt(maxAttempts, 10)
         });
 
-        // Save the quiz to MongoDB
         await newQuiz.save();
-
         req.flash('success', 'Quiz created successfully!');
-        res.redirect(`/admin/activities/${roomId}`);
+        res.redirect('/admin/activities/' + activityRoom.roomId);
+
     } catch (err) {
         console.error('Error creating quiz:', err);
         req.flash('error', `Error creating quiz: ${err.message}`);
-        res.redirect(`/admin/activities/${roomId}`);
+        res.redirect(`/admin/activities/${activityRoomId || ''}`);
     }
 });
 
 
-
-
-
-
+// Start quiz route with consistent ObjectId usage
 router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
     const { id } = req.params;
+    const userId = new mongoose.Types.ObjectId(req.user._id);
 
     try {
         const quiz = await QuizActivity.findById(id);
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin/homeAdmin'); // Redirect if not found
+            return res.redirect('/admin/homeAdmin');
         }
 
-        // Render the quiz start page or whatever view you need
-        res.render('quizzes/start', { quiz, currentUserId: req.user._id }); // Pass the quiz variable and user ID
+        const attemptCount = await QuizResult.countDocuments({
+            quizId: new mongoose.Types.ObjectId(id),
+            userId,
+            isSubmitted: true
+        });
+
+        const attemptsLeft = quiz.maxAttempts - attemptCount;
+        console.log(`Attempt count for user ${userId} on quiz ${id}: ${attemptCount}, attempts left: ${attemptsLeft}`);
+
+        if (attemptCount >= quiz.maxAttempts) {
+            req.flash('error', `You have reached the maximum of ${quiz.maxAttempts} attempts for this quiz.`);
+            return res.redirect('/admin/quizzes/result/' + id);
+        }
+
+        req.session.quizStartTime = Date.now();
+
+        res.render('quizzes/start', {
+            quiz,
+            currentUserId: userId,
+            quizStartTime: req.session.quizStartTime,
+            maxAttempts: quiz.maxAttempts,
+            attemptsLeft: attemptsLeft
+        });
     } catch (err) {
         console.error('Error starting quiz:', err);
         req.flash('error', 'Error starting quiz.');
-        res.redirect('/admin/homeAdmin'); // Redirect on error
+        res.redirect('/admin/homeAdmin');
     }
 });
 
-
-
-// Route to submit quiz answers
+// Submit quiz route with enhanced debug logging
 router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
-    const { userId, answers } = req.body;
+    const { answers = [] } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.user._id);
 
     try {
         const quiz = await QuizActivity.findById(quizId);
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const attemptCount = await QuizResult.countDocuments({
+            quizId: new mongoose.Types.ObjectId(quizId),
+            userId,
+            isSubmitted: true
+        });
+        console.log(`Attempt count before submission for user ${userId} on quiz ${quizId}: ${attemptCount}`);
+
+        if (attemptCount >= quiz.maxAttempts) {
+            req.flash('error', 'You have reached the maximum allowed attempts.');
+            return res.redirect(`/admin/quizzes/result/${quizId}`);
         }
 
         let correctCount = 0;
         const resultAnswers = quiz.questions.map((question, qIndex) => {
-            const userAnswer = answers[qIndex];
+            const userAnswer = answers[qIndex] || 'No answer provided';
             let isCorrect = false;
 
-            if (question.type === 'multiple-choice') {
-                // For multiple-choice, check if the user's selected answer is correct
-                isCorrect = question.choices.some(choice => choice.isCorrect && choice.text === userAnswer);
-            } else if (question.type === 'fill-in-the-blank') {
-                // For fill-in-the-blank, compare userAnswer with correctAnswer
-                isCorrect = question.correctAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
+            if (userAnswer !== 'No answer provided') {
+                if (question.type === 'multiple-choice') {
+                    isCorrect = question.choices.some(choice => choice.isCorrect && choice.text === userAnswer);
+                } else if (question.type === 'fill-in-the-blank') {
+                    isCorrect = question.correctAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
+                }
             }
 
             if (isCorrect) correctCount++;
 
-            // Return the answer object including questionId and questionText
             return {
                 questionId: question._id,
-                questionText: question.questionText, // Include the question text
+                questionText: question.questionText,
                 userAnswer,
                 isCorrect
             };
         });
 
-        if (!userId) {
-            throw new Error('User ID is required');
-        }
+        const isLate = quiz.deadline && DateTime.now().toUTC() > DateTime.fromJSDate(quiz.deadline).toUTC();
 
         const quizResult = new QuizResult({
-            userId, // Store the user ID who took the quiz
-            quizId,
-            answers: resultAnswers, // Include the answers with questionText
-            score: correctCount
+            userId,
+            quizId: new mongoose.Types.ObjectId(quizId),
+            answers: resultAnswers,
+            score: correctCount,
+            isSubmitted: true,
+            isLate,
+            submittedAt: DateTime.now().toUTC().toJSDate()
         });
 
-        await quizResult.save(); // Save the result in MongoDB
+        await quizResult.save();
+        console.log(`New QuizResult saved for user ${userId} on quiz ${quizId}.`);
+
+        const savedQuizResult = await QuizResult.findById(quizResult._id);
+        console.log(`Verified QuizResult for user ${userId} on quiz ${quizId}:`, {
+            isSubmitted: savedQuizResult.isSubmitted,
+            score: savedQuizResult.score,
+            submittedAt: savedQuizResult.submittedAt
+        });
 
         req.flash('success', `You got ${correctCount} out of ${quiz.questions.length} correct!`);
-        res.redirect(`/admin/quizzes/room/${quizId}`);
+        return res.redirect(`/admin/quizzes/result/${quizId}`);
     } catch (err) {
         console.error('Error submitting quiz:', err);
         req.flash('error', 'Error submitting quiz. ' + err.message);
-        res.redirect('/admin');
+        return res.redirect('/admin/homeAdmin');
     }
 });
 
 
-router.get('/quizzes/room/:quizId', ensureAdminLoggedIn, async (req, res) => {
+
+
+
+// Result route with attempt tracking
+router.get('/quizzes/result/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
-    const currentUserId = req.user._id;  // Get the current user ID
-    
+    const userId = new mongoose.Types.ObjectId(req.user._id);
+
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
     try {
-        // Fetch the quiz
-        const quiz = await QuizActivity.findById(quizId);
+        const quiz = await QuizActivity.findById(quizId).lean();
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch the quiz result for the current user only
-        const quizResult = await QuizResult.findOne({ quizId, userId: currentUserId });
-
-        if (!quizResult) {
-            req.flash('error', 'You have not taken this quiz.');
+        const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Render the results page, passing only the result for the current user
-        res.render('quizzes/results', { quiz, quizResult });
+        const attemptCount = await QuizResult.countDocuments({ 
+            quizId: new mongoose.Types.ObjectId(quizId), 
+            userId, 
+            isSubmitted: true 
+        });
+        const quizResult = await QuizResult.findOne({ 
+            quizId: new mongoose.Types.ObjectId(quizId), 
+            userId 
+        }).sort({ submittedAt: -1 });
+
+        if (!quizResult) {
+            req.flash('error', 'Quiz result not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const attemptsLeft = quiz.maxAttempts - attemptCount;
+
+        res.render('quizzes/results', { quiz, quizResult, attemptsLeft, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error fetching quiz result:', err);
         req.flash('error', 'Error fetching quiz result.');
-        res.redirect('/admin/homeAdmin');
+        return res.redirect('/admin/homeAdmin');
     }
 });
 
-
-
-// Route to get quiz participants
-router.get('/quiz/participants/:quizId', ensureAdminLoggedIn, async (req, res) => {
-    try {
-        const { quizId } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(quizId)) {
-            return res.status(400).json({ error: 'Invalid Quiz ID.' });
-        }
-        
-        const quizResults = await QuizResult.find({ quizId }).populate('userId');
-        
-        const participants = quizResults.map(result => ({
-            firstName: result.userId.first_name,
-            lastName: result.userId.last_name,
-            score: result.score,
-            submittedAt: result.createdAt
-        }));
-
-        res.json(participants);
-    } catch (err) {
-        console.error('Error fetching quiz participants:', err);
-        res.status(500).json({ error: 'Error fetching quiz participants.' });
-    }
-});
 
 
 
 
 //end of  activities -------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
 router.get('/educGames/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const roomId = req.params.roomId;
 

@@ -10,15 +10,19 @@ const middleware = {
 
     // Ensures the user is an admin
     ensureAdminLoggedIn: (req, res, next) => {
+        
         if (!req.isAuthenticated()) {
+            console.log("User is not authenticated, redirecting to login");
             req.session.returnTo = req.originalUrl;
             req.flash("warning", "Please log in first to continue");
             return res.redirect("/login"); // Redirect to the login page
         }
         if (req.user.role !== "admin") {
+            console.log("User is not an admin, redirecting to homeUser");
             req.flash("warning", "This route is allowed for admin only!");
             return res.redirect("/user/homeUser"); // Redirect to the student home page
         }
+        console.log("User is authenticated and is an admin");
         next();
     },
 

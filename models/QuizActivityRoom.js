@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { DateTime } = require('luxon'); // Import Luxon for date handling
 
 // Choice schema for multiple-choice questions
 const choiceSchema = new mongoose.Schema({
@@ -42,8 +43,30 @@ questionSchema.pre('save', function (next) {
 const quizSchema = new mongoose.Schema({
     title: { type: String, required: true },
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true, index: true },
-    questions: [questionSchema]
+    questions: [questionSchema],
+    timer: { type: Number, default: null }, // Timer in minutes, optional field
+    createdAt: { 
+        type: Date, 
+        default: () => DateTime.now().toUTC().toJSDate() // Automatically store in UTC
+    },
+    deadline: {
+        type: Date,
+        // Remove the custom setter to avoid further processing errors
+        validate: {
+            validator: function(value) {
+                return !value || value > Date.now(); // Ensure deadline is in the future if set
+            },
+            message: 'Deadline must be in the future'
+        }
+    },
+    maxAttempts: { type: Number, default: 5, min: 1, max: 5 } // Add maxAttempts
+
 }, { timestamps: true });
+
+// Add deadline validation to ensure it's a future date if set
+quizSchema.path('deadline').validate(function (value) {
+    return !value || value > Date.now(); // Ensure deadline is in the future if set
+}, 'Deadline must be in the future');
 
 const Quiz = mongoose.model('Quiz', quizSchema);
 module.exports = Quiz;

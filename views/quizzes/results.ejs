@@ -6,24 +6,48 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <title>Quiz Results</title>
 </head>
+<style>
+    .status-on-time { color: green; }
+    .status-late { color: red; }
+</style>
 <body>
     <div class="container">
         <h1>Quiz Results</h1>
         <h2><%= quiz.title %></h2>
+        <p><strong>Attempts Left:</strong> <%= attemptsLeft %> out of <%= quiz.maxAttempts %> attempts</p>
 
         <% if (!quizResult) { %>
             <p>No result found for this quiz.</p>
         <% } else { %>
-            <!-- Display the result for the current user -->
             <ul class="list-group">
                 <li class="list-group-item">
+                    <strong>Created on:</strong> <%= new Date(quiz.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %><br>
+                    <strong>Deadline:</strong> <%= quiz.deadline ? new Date(quiz.deadline).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : "No deadline" %><br>
+                    <strong>Submitted on:</strong> <%= new Date(quizResult.submittedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %><br>
+                    
+                    <strong>Status:</strong> 
+                    <span class="<%= quizResult.isLate ? 'status-late' : 'status-on-time' %>">
+                        <%= quizResult.isLate ? "Turned in late" : "On time" %>
+                    </span><br>
+                    
                     <strong>Score:</strong> <%= quizResult.score %> <br>
+                    <% const scorePercentage = (quizResult.score / quiz.questions.length) * 100; %>
+                    <p class="<%= scorePercentage >= 80 ? 'text-success' : scorePercentage >= 50 ? 'text-warning' : 'text-danger' %>">
+                        <% if (scorePercentage >= 80) { %>
+                            Great job! You scored above 80%.
+                        <% } else if (scorePercentage >= 50) { %>
+                            Good effort! Consider reviewing some of the material.
+                        <% } else { %>
+                            Keep practicing! Better luck next time.
+                        <% } %>
+                    </p>
+
                     <strong>Answers:</strong>
                     <ul>
                         <% quizResult.answers.forEach(answer => { %>
                             <li>
-                                <strong>Question:</strong> <%= answer.questionText %> <br> <!-- Display question text -->
-                                <strong>Your Answer:</strong> <%= answer.userAnswer %> <br>
+                                <strong>Question:</strong> <%= answer.questionText %><br>
+                                <strong>Your Answer:</strong> <%= answer.userAnswer %><br>
                                 <strong>Correct:</strong> <%= answer.isCorrect ? "Yes" : "No" %>
                             </li>
                         <% }); %>
@@ -32,7 +56,18 @@
             </ul>
         <% } %>
 
-        <a href="/admin/activities/<%= quiz.roomId %>" class="btn btn-primary">Back to activities</a>
+        <div class="mt-4">
+            <p>Main Room ID: <%= roomId %></p>
+            <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>
+            <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
     </div>
+    
+    <script>
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () {
+            window.location.href = '/admin/quizzes/result/<%= quiz._id || quizId %>';
+        });
+    </script>
 </body>
 </html>

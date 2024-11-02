@@ -1,8 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
     background-image: url('assets/bigbg.png');
-    background-repeat: no-repeat;
-    background-size: cover;
     margin: 0;
     padding: 0;
     display: flex;
@@ -13,7 +11,12 @@ body {
 }
 
 .container {
-    margin-top: 15%;
+    background-image: url('shape.png');
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    width: 100%;
 }
 
 h1 {
@@ -32,7 +35,7 @@ h1 {
 .room-button {
     width: 100%;
     padding: 10px 20px;
-    background-color: #C1EAF4;
+    background-color: #89D6F8;
     color: black;
     border: none;
     border-radius: 5px;
@@ -55,7 +58,7 @@ h1 {
 
 .room {
     padding: 20px;
-    background-color: #C1EAF4;
+    background-color: #89D6F8;
     color: black;
     text-align: center;
     border-radius: 8px;
