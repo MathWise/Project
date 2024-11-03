@@ -38,6 +38,21 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         // Validate input data if necessary
         const newRoom = new Room({ name, gradeLevel, teacherName, roomPassword });
         await newRoom.save();
+
+
+        console.log('New room created successfully:', newRoom); // Debugging confirmation
+
+        // Automatically create a default ActivityRoom for the new Room
+        const defaultActivityRoom = new ActivityRoom({
+            roomId: newRoom._id,  // Link to the newly created Room
+            subject: "Default Subject",  // Use a default subject or customize based on your needs
+            activityType: "Quiz",        // Default activity type, e.g., "Quiz"
+            createdAt: new Date()
+        });
+        
+        await defaultActivityRoom.save();
+        console.log('Default ActivityRoom created successfully:', defaultActivityRoom);
+
         req.flash('success', 'Room created successfully!');
         res.redirect('/admin/homeAdmin');
     } catch (err) {
@@ -54,12 +69,15 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, async (req, res) => {
     try {
         // Check if roomId is a valid ObjectId
         if (!mongoose.Types.ObjectId.isValid(roomId)) {
+            console.error('Invalid roomId format:', roomId);
             req.flash('error', 'Invalid room ID.');
             return res.redirect('/admin/homeAdmin');
         }
 
         const room = await Room.findById(roomId);
+        console.error('Room not found with ID:', roomId);
         if (!room) {
+            console.error('Room not found with ID:', roomId);
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
@@ -470,26 +488,28 @@ const ActivityRoom = require('../models/activityRoom'); // Correct model for act
 const QuizResult = require('../models/QuizResult');
 
 router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { subject, activityType} = req.body;
-    const { roomId } = req.params; // This is the main room ID
-    console.log('Received roomId in create-activity:', roomId);
+    const { subject, activityType } = req.body;
+    const { roomId } = req.params;
+    console.log('Received roomId for creating activity:', roomId);
 
     try {
+      
         const newActivityRoom = new ActivityRoom({
             subject,
             activityType,
-            roomId  // Store this as the reference to the main Room
+            roomId: new mongoose.Types.ObjectId(roomId)
         });
 
         await newActivityRoom.save();
-        req.flash('success', 'Activity/Quiz room created successfully!');
-        res.redirect(`/admin/activities/${roomId}`);  // Redirect to activities for the main room
-    } catch (err) {
-        console.error('Error creating activity room:', err);
-        req.flash('error', 'Error creating activity room. Please try again.');
+        console.log('Activity created:', newActivityRoom);
+
         res.redirect(`/admin/activities/${roomId}`);
+    } catch (err) {
+        console.error('Error creating activity:', err);
+        res.redirect('/admin/homeAdmin');
     }
 });
+
 
 
 
@@ -497,34 +517,38 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     console.log('Received roomId in activities:', roomId);
 
-        // Clear submitted quizzes in session when accessing activities
-        req.session.submittedQuizzes = [];
-    
+    if (!mongoose.Types.ObjectId.isValid(roomId)) {
+        console.error('Invalid roomId format:', roomId);
+        req.flash('error', 'Invalid room ID.');
+        return res.redirect('/admin/homeAdmin');
+    }
+
+    req.session.submittedQuizzes = [];
 
     try {
-        // Fetch all ActivityRooms that belong to the specified main roomId
-        const activityRooms = await ActivityRoom.find({ roomId: roomId });  // Find all activity rooms for the roomId
+        const room = await Room.findById(roomId);
+        if (!room) {
+            console.error('Room not found with ID:', roomId);
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+        console.log('Room found:', room);
 
-        if (!activityRooms || activityRooms.length === 0) {
+        // Fetch all activity rooms with a matching ObjectId for roomId
+        const activityRooms = await ActivityRoom.find({ roomId: new mongoose.Types.ObjectId(roomId) });
+        console.log(`Found ${activityRooms.length} activity rooms for Room ID:`, roomId);
+
+        if (activityRooms.length === 0) {
             req.flash('error', 'No activity rooms found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        console.log(`Fetched ${activityRooms.length} activity rooms for Room ID:`, roomId);
-
-        // Fetch the main room data
-        const room = await Room.findById(roomId);
-        if (!room) {
-            req.flash('error', 'Room not found.');
-            return res.redirect('/admin/homeAdmin');
-        }
-
-        // Fetch quizzes related to these activity rooms (optional if needed)
+        // Fetch quizzes related to these activity rooms if needed
         const quizzes = await QuizActivity.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
 
         res.render('admin/activities', {
             room,
-            activityRooms,  // Pass all fetched activity rooms
+            activityRooms,
             quizzes: quizzes || []
         });
     } catch (err) {
@@ -535,6 +559,7 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
 });
 
 
+
 // API route to fetch quizzes for a specific activity room
 router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
@@ -542,7 +567,8 @@ router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => 
 
     try {
         // Fetch quizzes associated with the roomId
-        const quizzes = await QuizActivity.find({ roomId });
+        const quizzes = await QuizActivity.find({ roomId: new mongoose.Types.ObjectId(roomId) });
+
 
         if (!quizzes || quizzes.length === 0) {
             console.log('No quizzes found for room:', roomId);
@@ -593,7 +619,7 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
 
         const newQuiz = new QuizActivity({
             title,
-            roomId: activityRoomId,
+            roomId: new mongoose.Types.ObjectId(activityRoomId),  // Ensures ObjectId format
             questions,
             timer: timer ? parseInt(timer, 10) : null,
             deadline: deadlineUTC,

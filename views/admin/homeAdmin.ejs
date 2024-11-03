@@ -20,13 +20,19 @@
     </div>
 
     <div class="container">
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
         <h1>Rooms</h1>
 
         <!-- Rooms grid display -->
         <div class="room-grid">
             <% rooms.forEach(function(room) { %>
                 <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
-                    <h2><%= room.roomName %></h2>
+                   
+                    <p><%= room.name %></p>
                     <p>Grade: <%= room.gradeLevel %></p>
                     <p>Teacher: <%= room.teacherName %></p>
                 </div>
