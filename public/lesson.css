@@ -13,7 +13,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 450px; /* Adjusted height */
+    height: auto; /* Adjusted height */
     margin: 20px 0;
     background-image: url('assets/bg.png'); /* Set background image */
     background-size: cover; /* Cover the entire box */
@@ -114,32 +114,34 @@ body {
 
 .layered-container {
     position: relative;
-    max-width: 550px; /* Adjust the width as needed * /* Height can adjust based on content */
-    height: 450px;
+    max-width: 550px; /* Adjust the width as needed */
+    height: auto; /* Set the height as needed */
     margin: 50px auto; /* Center the container horizontally */
     overflow: hidden; /* Ensures any overflow is hidden */
     border-radius: 8px; /* Optional: add rounded corners */
 }
 
-.background-image {
+/* Pseudo-element for background image */
+.layered-container::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('assets/mathh.jpg'); /* Path to your image */
-    opacity: 80%;
-    background-repeat: no-repeat;
-    background-size: 100% 100%; /* Cover the entire area */
+    background-image: url('assets/math.jpg'); /* Set the background image */
+    background-repeat: no-repeat; /* Prevent image repetition */
+    background-size: cover; /* Cover the entire area */
     background-position: center; /* Center the image */
+    opacity: 0.55; /* Set the opacity of the background image to 5% */
     z-index: 0; /* Ensure it is below the text */
 }
 
-.form-overlay input {
-    background-color: #89D6F8; /* Set the background color for input boxes */
-    color: #000; /* Set the text color for better contrast */
-    border: 1px solid #ccc; /* Optional: set a border */
-    border-radius: 4px; /* Optional: add rounded corners */
+.form-overlay {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure form is above the background */
+    color: black; /* Change text color for visibility */
 }
 
 /* Existing CSS */
@@ -154,6 +156,60 @@ body {
 .form-overlay h5, .form-overlay label {
     font-weight: bold;
 }
+
+.newbigbox {
+    margin-top: 20px; 
+    padding: 20px; 
+    background-image: url('assets/bg.png'); 
+    display: flex; /* Use flexbox for centering */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    height: auto;
+}
+
+.upload-box {
+    padding: 20px;
+    margin-top: 20px;
+    background-image: url('assets/bg.png'); /* Optional background color */
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: auto;
+}
+
+.color-1 {
+    background-color: #F9B4AB;
+}
+
+.color-2 {
+    background-color: #CECBEC;
+}
+
+.color-3 {
+    background-color: #FFDF9F;
+}
+
+.color-4 {
+    background-color: #C1EAF4;
+}
+
+
+/* Custom button styles */
+.custom-btn {
+    background-color: #007bff; /* Button background color */
+    color: white; /* Button text color */
+    border: none; /* Remove border */
+    padding: 10px 20px; /* Padding for better spacing */
+    margin: 10px; /* Add margin around the buttons */
+    cursor: pointer; /* Change cursor to pointer */
+    transition: background-color 0.3s; /* Transition effect for hover */
+    height: 150px;
+    width: 150px;
+}
+
+.custom-btn:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}
+
 
 .list-group-item {
     padding: 15px;
@@ -263,6 +319,39 @@ body {
             border-style: solid;
             border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
         }
+        .rounded-sidebar {
+            border-radius: 15px; /* Adjust the radius as needed */
+        }
+        
+        .lesson-button {
+            background-color: #FFDF9F; /* Set background color for the Lesson button */
+            padding: 10px; /* Add padding for better appearance */
+            border-radius: 5px; /* Round the corners of the Lesson button */
+            display: block;
+        }
+        #videoModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8); /* Modal background */
+            z-index: 9999; /* Ensure modal is above other content */
+        }
+        
+        #closeVideoModal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 20px;
+            color: white;
+            z-index: 10000; /* Ensure the close button is above everything */
+            cursor: pointer;
+        }
+        #videoViewer {
+            max-width: 90%;
+            max-height: 90%;
+        }                
         
         
         
