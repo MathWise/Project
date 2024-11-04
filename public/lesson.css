@@ -337,6 +337,9 @@ body {
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8); /* Modal background */
             z-index: 9999; /* Ensure modal is above other content */
+            display: flex; /* Use flexbox to center the video */
+            align-items: center; /* Center vertically */
+            justify-content: center; /* Center horizontally */
         }
         
         #closeVideoModal {
@@ -348,11 +351,13 @@ body {
             z-index: 10000; /* Ensure the close button is above everything */
             cursor: pointer;
         }
-        #videoViewer {
-            max-width: 90%;
-            max-height: 90%;
-        }                
         
+        #videoViewer {
+            max-width: 90%; /* Allow the video to take up 90% of the modal width */
+            max-height: 90%; /* Allow the video to take up 90% of the modal height */
+            width: auto; /* Set width to auto */
+            height: auto; /* Set height to auto */
+        }
         
         
 /* Adjust dropdown menu styling to align with existing layout */
@@ -408,4 +413,21 @@ body {
 
 .dropdown-menu a:hover {
     background-color: #f0f0f0;
+}
+#uploadedPdfs li, #uploadedVideos li {
+    display: inline-block; /* Allow list items to be inline */
+    margin: 10px; /* Add some spacing between thumbnails */
+    text-align: center; /* Center the text and canvas */
+}
+
+canvas {
+    display: block;
+    max-width: 100%; /* Ensure the canvas scales correctly */
+    height: auto;    /* Maintain aspect ratio */
+    cursor: pointer; /* Add a pointer cursor for interaction */
+    border: 5px solid #444; /* Darker and thicker gray border */
+    background-color: #f9f9f9; /* Background color for contrast */
+    border-radius: 5px; /* Optional: rounded corners for aesthetics */
+    padding: 5px; /* Optional: add some padding for spacing */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: slight shadow for depth */
 }
