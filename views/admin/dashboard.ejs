@@ -13,9 +13,19 @@
     <div class="container-fluid" style="min-height: 100vh;">
         <!-- Upper Section -->
         <div class="upper-side row no-gutters p-3">
-            <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center">
-                <span>Hello <br> student</span>
-                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2" style="width: 30px;"> <!-- Adjusted margin -->
+            <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center position-relative">
+                <span>Hello <br> <%= room.name %></span>
+            
+                <!-- Dropdown Menu Trigger (Settings Icon) -->
+                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2 dropdown-toggle" style="width: 30px; cursor: pointer;" onclick="toggleDropdownMenu()">
+            
+                <!-- Dropdown Menu Content -->
+                <div class="dropdown-content position-absolute" id="dropdownMenu" style="display: none; top: 50px; right: 10px;">
+                    <a href="/admin/homeAdmin">Go back</a>
+                    <a href="/admin/lessonArchive/<%= room._id %>">Lesson Archive</a>
+                    <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
+                    <a href="/login">Logout</a>
+                </div>
             </aside>
                       
             <!-- Main Content -->
@@ -154,7 +164,20 @@
             }
         }
 
+        function toggleDropdownMenu() {
+        const menu = document.getElementById("dropdownMenu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
 
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(event) {
+        const menu = document.getElementById("dropdownMenu");
+        const trigger = document.querySelector(".settings-icon");
+
+        if (!menu.contains(event.target) && event.target !== trigger) {
+            menu.style.display = "none";
+        }
+    });
     </script>
 </body>
 </html>

@@ -34,18 +34,18 @@ app.use(session({
   saveUninitialized: true
 }));
 
+app.use(flash());
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use(flash());
 
 app.use((req, res, next) => {
   res.locals.successMessage = req.flash('success');
-  res.locals.error = req.flash('error');
+  res.locals.errorMessage = req.flash('error');
+  res.locals.warningMessage = req.flash('warning');
   next();
 });
-
 
 app.get("/", (req, res) => {
   res.render("login");
@@ -59,11 +59,7 @@ app.use('/admin',adRoutes);
 app.use('/user',appRoutes);
 
 
-// Temporary logging middleware to confirm admin routes are accessed
-app.use('/admin', (req, res, next) => {
-  console.log('Admin route accessed:', req.path);
-  next();
-});
+
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
   console.log(`App listening on port ${port}`);

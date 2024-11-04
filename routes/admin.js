@@ -17,7 +17,7 @@ const mongoURI = process.env.MONGODB_URI;
 // Render the homeAdmin page with room creation and existing rooms
 router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
     try {
-        const rooms = await Room.find(); // Fetch rooms from MongoDB
+        const rooms = await Room.find({ isArchived: false }); // Only fetch non-archived rooms
         res.render('admin/homeAdmin', {
             rooms,
             successMessage: req.flash('success'),
@@ -35,6 +35,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
     const { name, gradeLevel, teacherName, roomPassword } = req.body;
 
     try {
+        
         // Validate input data if necessary
         const newRoom = new Room({ name, gradeLevel, teacherName, roomPassword });
         await newRoom.save();
@@ -158,6 +159,70 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
         res.redirect('/admin/manage-access');
     }
 });
+
+// Archive a room
+// Archive a room with password verification
+router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    const { roomPassword } = req.body; // Password entered by the user
+
+    try {
+        // Find the room by ID
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Check if the entered password matches the room's password
+        if (room.roomPassword !== roomPassword) {
+            req.flash('error', 'Incorrect password. Cannot archive the room.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Update the room to mark it as archived
+        await Room.findByIdAndUpdate(roomId, { isArchived: true });
+        req.flash('success', 'Room archived successfully!');
+        res.redirect('/admin/homeAdmin');
+    } catch (err) {
+        console.error('Error archiving room:', err);
+        req.flash('error', 'Error archiving room.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
+// Unarchive a room
+router.post('/unarchive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+
+    try {
+        await Room.findByIdAndUpdate(roomId, { isArchived: false });
+        req.flash('success', 'Room restored successfully!');
+    } catch (err) {
+        console.error('Error restoring room:', err);
+        req.flash('error', 'Error restoring room.');
+    }
+    res.redirect('/admin/Archive');
+});
+
+// Render the archive page with archived rooms
+router.get('/Archive', ensureLoggedIn, async (req, res) => {
+    try {
+        const rooms = await Room.find({ isArchived: true }); // Fetch only archived rooms
+        res.render('admin/archive', {
+            rooms,
+            successMessage: req.flash('success'),
+            errorMessage: req.flash('error')
+        });
+    } catch (err) {
+        console.error('Error fetching archived rooms:', err);
+        req.flash('error', 'Error fetching archived rooms.');
+        res.redirect('/error');
+    }
+});
+
+
 //end of managing room--------------------------------------------------------------------------------
 
 // Route to handle lessons for a specific room
@@ -175,7 +240,7 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
         }
 
         const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
-        const lessonRooms = await LessonRoom.find({ roomId }); // Fetch lesson rooms associated with the room
+        const lessonRooms = await LessonRoom.find({ roomId, archived: false }); // Fetch lesson rooms associated with the room
         
 
         res.render('admin/lesson', { room, lesson, lessonRooms, currentUser }); // Pass lessonRooms to the view
@@ -475,6 +540,46 @@ router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async 
 });
 
 
+// Route to archive a specific lesson room
+router.post('/archive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (req, res) => {
+    const { lessonRoomId } = req.params;
+
+    try {
+        await LessonRoom.findByIdAndUpdate(lessonRoomId, { archived: true }); // Update this if you want to remove instead
+        res.status(200).json({ message: 'Lesson room archived successfully.' });
+    } catch (error) {
+        console.error('Error archiving lesson room:', error);
+        res.status(500).json({ error: 'Failed to archive lesson room.' });
+    }
+});
+
+// Route to unarchive a specific lesson room
+router.post('/unarchive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (req, res) => {
+    const { lessonRoomId } = req.params;
+
+    try {
+        await LessonRoom.findByIdAndUpdate(lessonRoomId, { archived: false });
+        res.status(200).json({ message: 'Lesson room unarchived successfully.' });
+    } catch (error) {
+        console.error('Error unarchiving lesson room:', error);
+        res.status(500).json({ error: 'Failed to unarchive lesson room.' });
+    }
+});
+
+// Route to display archived lesson rooms, passing roomId for "Go Back" link
+router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    try {
+        const archivedLessonRooms = await LessonRoom.find({ archived: true });
+        res.render('admin/lessonArchive', { archivedLessonRooms, roomId });
+    } catch (error) {
+        console.error('Error fetching archived lesson rooms:', error);
+        req.flash('error', 'Failed to load archived lessons.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
 //end of lesson ------------------------------------------------------------------------------------------
 
 
@@ -534,16 +639,18 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
         }
         console.log('Room found:', room);
 
-        // Fetch all activity rooms with a matching ObjectId for roomId
-        const activityRooms = await ActivityRoom.find({ roomId: new mongoose.Types.ObjectId(roomId) });
-        console.log(`Found ${activityRooms.length} activity rooms for Room ID:`, roomId);
-
-        if (activityRooms.length === 0) {
+        // Fetch all activity rooms (including archived) for the room
+        const allActivityRooms = await ActivityRoom.find({ roomId: new mongoose.Types.ObjectId(roomId) });
+        
+        if (allActivityRooms.length === 0) {
             req.flash('error', 'No activity rooms found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch quizzes related to these activity rooms if needed
+        // Filter non-archived activity rooms to display
+        const activityRooms = allActivityRooms.filter(room => !room.archived);
+
+        // Fetch quizzes related to non-archived activity rooms if needed
         const quizzes = await QuizActivity.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
 
         res.render('admin/activities', {
@@ -557,6 +664,7 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
         res.redirect('/admin/homeAdmin');
     }
 });
+
 
 
 
@@ -809,6 +917,47 @@ router.get('/quizzes/result/:quizId', ensureAdminLoggedIn, async (req, res) => {
         return res.redirect('/admin/homeAdmin');
     }
 });
+
+// Route to archive a specific activity room
+router.post('/archive-activity-room/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityRoomId } = req.params;
+
+    try {
+        await ActivityRoom.findByIdAndUpdate(activityRoomId, { archived: true });
+        res.status(200).json({ message: 'Activity room archived successfully.' });
+    } catch (error) {
+        console.error('Error archiving activity room:', error);
+        res.status(500).json({ error: 'Failed to archive activity room.' });
+    }
+});
+
+// Route to unarchive a specific activity room
+router.post('/unarchive-activity-room/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityRoomId } = req.params;
+
+    try {
+        await ActivityRoom.findByIdAndUpdate(activityRoomId, { archived: false });
+        res.status(200).json({ message: 'Activity room unarchived successfully.' });
+    } catch (error) {
+        console.error('Error unarchiving activity room:', error);
+        res.status(500).json({ error: 'Failed to unarchive activity room.' });
+    }
+});
+
+
+// Route to display archived activity rooms
+router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    try {
+        const archivedActivityRooms = await ActivityRoom.find({ roomId, archived: true });
+        res.render('admin/activitiesArchive', { archivedActivityRooms, roomId });
+    } catch (error) {
+        console.error('Error fetching archived activity rooms:', error);
+        req.flash('error', 'Failed to load archived activities.');
+        res.redirect(`/admin/activities/${roomId}`);
+    }
+});
+
 
 
 

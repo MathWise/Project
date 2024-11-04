@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archived Activities</title>
+    <link rel="stylesheet" href="/activities.css"> <!-- Ensure correct path to your CSS -->
+</head>
+<body>
+    <h1>Archived Activity Rooms</h1>
+
+    <div class="dropdown">
+    
+        <div class="dropdown-content">
+            <a href="/admin/activities/<%= roomId %>">Go Back</a>
+            <a href="/login">Logout</a>
+        </div>
+    </div>
+
+    <div>
+        <% if (archivedActivityRooms && archivedActivityRooms.length > 0) { %>
+            <ul>
+                <% archivedActivityRooms.forEach(activityRoom => { %>
+                    <li>
+                        <strong><%= activityRoom.subject %></strong> - <%= activityRoom.activityType %>
+                        <button onclick="unarchiveActivityRoom('<%= activityRoom._id %>')">Unarchive</button>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p>No archived activities available.</p>
+        <% } %>
+    </div>
+
+    <script>
+        // Function to unarchive an activity room
+        function unarchiveActivityRoom(activityRoomId) {
+            fetch(`/admin/unarchive-activity-room/${activityRoomId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
+                })
+                .catch(error => console.error('Error unarchiving activity room:', error));
+        }
+    </script>
+</body>
+</html>

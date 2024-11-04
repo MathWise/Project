@@ -52,8 +52,19 @@
 <body>
     <div class="container-fluid p-0">
         <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
-            <aside class="col-md-2 sidebar section greeting-text p-2 font-weight-bold text-muted" style="background-color: #E0F4F9;">
-                Hello <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid">
+            <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center position-relative">
+                <span>Hello <br> <%= room.name %></span>
+            
+                <!-- Dropdown Menu Trigger (Settings Icon) -->
+                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2 dropdown-toggle" style="width: 30px; cursor: pointer;" onclick="toggleDropdownMenu()">
+            
+                <!-- Dropdown Menu Content -->
+                <div class="dropdown-content position-absolute" id="dropdownMenu" style="display: none; top: 50px; right: 10px;">
+                    <a href="/admin/homeAdmin">Go back</a>
+                    <a href="/admin/lessonArchive/<%= room._id %>">Lesson Archive</a>
+                    <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
+                    <a href="/login">Logout</a>
+                </div>
             </aside>
             <main class="col-md-8 bg-main section">
                 <select class="form-control mr-2">
@@ -84,7 +95,7 @@
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
                                 <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
- Dashboard
+                            Dashboard
                             </span>
                         </li>
                         <li style="margin-bottom: 35px;">
@@ -132,10 +143,26 @@
                         const colorClass = buttonColors[index % buttonColors.length];
                         const imgSrc = imgSources[index % imgSources.length];
                     %>
+                    
                     <li class="list-group-item lesson-room d-flex align-items-center mr-2 clickable <%= colorClass %>" 
                         data-room-id="<%= lessonRoom._id %>">
-                        <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
-                        <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
+                        
+                        <div class="d-flex align-items-center justify-content-between w-100">
+                            <div class="lesson-details">
+                                <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
+                                <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
+                            </div>
+                
+                            <!-- Kebab Menu Icon and Dropdown for Archiving -->
+                            <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= lessonRoom._id %>');">
+                                &#x22EE;
+                            </div>
+                
+                            <!-- Dropdown Menu for each room -->
+                            <div class="dropdown-menu" id="menu-<%= lessonRoom._id %>" style="display: none;">
+                                <a href="#" onclick="archiveLessonRoom('<%= lessonRoom._id %>'); event.stopPropagation();">Archive</a>
+                            </div>
+                        </div>
                     </li>
                     <% }); %>
                 </ul>
@@ -317,8 +344,13 @@
                             listItem.innerHTML = `
                                 <div>
                                     <strong>${pdfFileName}</strong>
-                                    <canvas id="thumbnail_${pdfFileId}" style="width: 50px; height: auto; cursor: pointer;"></canvas>
+                                    <canvas id="thumbnail_${pdfFileId}" style="width: 50px; height: auto; cursor: pointer;">
+                                    
+                                    </canvas>
                                     <span id="progress_${pdfFileId}">Loading progress...</span>
+
+                                    
+
                                 </div>
                             `;
                             pdfList.appendChild(listItem);
@@ -616,6 +648,58 @@
         });
     });
     
+    function toggleDropdownMenu() {
+        const menu = document.getElementById("dropdownMenu");
+        menu.style.display = menu.style.display === "block" ? "none" : "block";
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener("click", function(event) {
+        const menu = document.getElementById("dropdownMenu");
+        const trigger = document.querySelector(".settings-icon");
+
+        if (!menu.contains(event.target) && event.target !== trigger) {
+            menu.style.display = "none";
+        }
+    });
+
+     // Function to toggle the kebab menu dropdown display
+     function toggleMenu(roomId) {
+        const menu = document.getElementById(`menu-${roomId}`);
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
+
+    
+     // Archive function to send an AJAX request for archiving a lesson room
+    function archiveLessonRoom(lessonRoomId) {
+        fetch(`/admin/archive-lesson-room/${lessonRoomId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Lesson room archived successfully.');
+                location.reload(); // Reload to refresh the lesson room list
+            } else {
+                alert('Failed to archive lesson room.');
+            }
+        })
+        .catch(error => {
+            console.error('Error archiving lesson room:', error);
+        });
+    }
+
+    // Close dropdowns if clicked outside
+    document.addEventListener('click', function(event) {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(menu => {
+            if (!menu.contains(event.target) && menu.style.display === 'block') {
+                menu.style.display = 'none';
+            }
+        });
+    });
     </script>
     
 

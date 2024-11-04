@@ -13,31 +13,48 @@
     <div class="dropdown">
         <button class="dropbtn">Menu</button>
         <div class="dropdown-content">
-            <a href="/admin/homeAdmin">Create Room</a>
             <a href="/admin/manage-access">Manage Access</a>
+            <a href="/admin/Archive">Archive</a>
             <a href="/login">Logout</a>
         </div>
     </div>
+ 
 
     <div class="container">
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
+      
         <h1>Rooms</h1>
+            <!-- Success and Error Messages -->
+            <% if (successMessage && successMessage.length > 0) { %>
+                <div id="success-alert" class="alert alert-success"><%= successMessage[0] %></div>
+            <% } %>
+            <% if (errorMessage && errorMessage.length > 0) { %>
+                <div id="error-alert" class="alert alert-danger"><%= errorMessage[0] %></div>
+            <% } %>
+            <% if (warningMessage && warningMessage.length > 0) { %>
+                <div id="warning-alert" class="alert alert-warning"><%= warningMessage[0] %></div>
+            <% } %>
+            
 
         <!-- Rooms grid display -->
-        <div class="room-grid">
-            <% rooms.forEach(function(room) { %>
-                <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
-                   
-                    <p><%= room.name %></p>
-                    <p>Grade: <%= room.gradeLevel %></p>
-                    <p>Teacher: <%= room.teacherName %></p>
-                </div>
-            <% }) %>
+<div class="room-grid">
+    <% rooms.forEach(function(room) { %>
+        <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
+            <p><%= room.name %></p>
+            <p>Grade: <%= room.gradeLevel %></p>
+            <p>Teacher: <%= room.teacherName %></p>
+
+            <!-- Kebab Menu Icon -->
+            <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= room._id %>');">
+                &#x22EE; <!-- Vertical ellipsis symbol for kebab menu -->
+            </div>
+
+            <!-- Dropdown Menu for each room -->
+            <div class="dropdown-menu" id="menu-<%= room._id %>" style="display: none;">
+                <a href="#" onclick="archiveRoom('<%= room._id %>'); event.stopPropagation();">Archive</a>
+            </div>
         </div>
+    <% }) %>
+</div>
 
         <!-- Button to show Create Room form -->
         <br>
@@ -57,26 +74,145 @@
     </div>
 
     <script>
-        // JavaScript to toggle the display of the Create Room form
-        document.getElementById("showCreateRoomBtn").addEventListener("click", function() {
-            var form = document.getElementById("createRoomForm");
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block";
-            } else {
-                form.style.display = "none";
-            }
-        });
-
-        function promptPassword(correctPassword, roomId) {
-            const userPassword = prompt('Enter the room password:');
-            if (userPassword === correctPassword) {
-                // Redirect to the dashboard with the room ID
-                window.location.href = `/admin/dashboard/${roomId}`; // Adjust the route as needed
-            } else {
-                alert('Incorrect password. Please try again.');
+        // Archive room function with password verification
+        function archiveRoom(roomId) {
+            const userPassword = prompt('Enter the room password to archive:');
+            
+            if (userPassword) {
+                // Create a form to submit the room ID and password to the server
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/archive-room/${roomId}`;
+    
+                // Create hidden input for the password
+                const passwordInput = document.createElement('input');
+                passwordInput.type = 'hidden';
+                passwordInput.name = 'roomPassword';
+                passwordInput.value = userPassword;
+                form.appendChild(passwordInput);
+    
+                document.body.appendChild(form);
+                form.submit();
             }
         }
+        
+           // Function to check room password and access dashboard
+    function promptPassword(correctPassword, roomId) {
+        const userPassword = prompt('Enter the room password:');
+        if (userPassword === correctPassword) {
+            // Redirect to the dashboard with the room ID if password matches
+            window.location.href = `/admin/dashboard/${roomId}`;
+        } else {
+            alert('Incorrect password. Please try again.');
+        }
+    }
+        // Function to toggle the kebab menu dropdown display
+        function toggleMenu(roomId) {
+            const menu = document.getElementById(`menu-${roomId}`);
+            menu.style.display = menu.style.display === 'none' || menu.style.display === '' ? 'block' : 'none';
+        }
+        
+        // Function to toggle the display of the Create Room form
+        document.getElementById("showCreateRoomBtn").addEventListener("click", function() {
+            const form = document.getElementById("createRoomForm");
+            // Toggle display of form between 'block' and 'none'
+            form.style.display = (form.style.display === "block") ? "none" : "block";
+        });
+
+        // Close dropdown menus when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdowns = document.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(menu => {
+                menu.style.display = 'none';
+            });
+        });
+          // Auto-Dismiss Notifications after 3 seconds
+          setTimeout(() => {
+            const successAlert = document.getElementById("success-alert");
+            const errorAlert = document.getElementById("error-alert");
+
+            if (successAlert) {
+                successAlert.style.transition = "opacity 0.5s ease";
+                successAlert.style.opacity = "0";
+                setTimeout(() => successAlert.remove(), 500);
+            }
+
+            if (errorAlert) {
+                errorAlert.style.transition = "opacity 0.5s ease";
+                errorAlert.style.opacity = "0";
+                setTimeout(() => errorAlert.remove(), 500);
+            }
+        }, 3000);
+        console.log("Success Message:", "<%= successMessage %>");
+        console.log("Error Message:", "<%= errorMessage %>");
     </script>
+    
+
+    
+    <style>
+        .room {
+            position: relative;
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 5px;
+            border-radius: 5px;
+        }
+    
+        .kebab-menu {
+            font-size: 24px;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+    
+        .dropdown-menu {
+            position: absolute;
+            top: 30px;
+            right: 10px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px 0;
+            width: 100px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+        }
+    
+        .dropdown-menu a {
+            display: block;
+            padding: 8px 10px;
+            text-decoration: none;
+            color: #333;
+            font-size: 14px;
+        }
+    
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            opacity: 1; /* Ensure it's fully visible initially */
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            opacity: 1; /* Ensure it's fully visible initially */
+        }
+
+    </style>
+
 
 </body>
 </html>

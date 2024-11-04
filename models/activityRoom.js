@@ -17,6 +17,10 @@ const activityRoomSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    archived: { 
+        type: Boolean,
+        default: false
     }
 });
 

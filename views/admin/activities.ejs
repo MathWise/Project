@@ -22,8 +22,19 @@
 <body>
     <div class="container-fluid p-0">
         <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
-            <aside class="col-md-2 sidebar section greeting-text p-2 font-weight-bold text-muted" style="background-color: #E0F4F9;">
-                Hello <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid">
+            <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center position-relative">
+                <span>Hello <br> <%= room.name %></span>
+            
+                <!-- Dropdown Menu Trigger (Settings Icon) -->
+                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2 dropdown-toggle" style="width: 30px; cursor: pointer;" onclick="toggleDropdownMenu()">
+            
+                <!-- Dropdown Menu Content -->
+                <div class="dropdown-content position-absolute" id="dropdownMenu" style="display: none; top: 50px; right: 10px;">
+                    <a href="/admin/homeAdmin">Go back</a>
+                    <a href="/admin/lessonArchive/<%= room._id %>">Lesson Archive</a>
+                    <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
+                    <a href="/login">Logout</a>
+                </div>
             </aside>
             <main class="col-md-8 bg-main section">
                 <select class="form-control mr-2">
@@ -110,10 +121,20 @@
                 <div id="activityRoomList" class="mb-4">
                     <h5>Existing Activity/Quiz Rooms</h5>
                     <ul class="list-group d-flex flex-row flex-wrap">
-                         <% activityRooms.forEach(activityRoom => { %><!-- Limiting the display to 10 rooms -->
+                        <% activityRooms.forEach(activityRoom => { %>
                             <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= activityRoom._id %>">
                                 <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
                                 <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
+                
+                                <!-- Kebab Menu Icon -->
+                                <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
+                                    &#x22EE;
+                                </div>
+                
+                                <!-- Dropdown Menu for each room -->
+                                <div class="dropdown-menu" id="menu-<%= activityRoom._id %>" style="display: none;">
+                                    <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
+                                </div>
                             </li>
                         <% }); %>
                     </ul>

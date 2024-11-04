@@ -1,0 +1,48 @@
+<!-- views/admin/archive.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archived Rooms</title>
+    <link rel="stylesheet" href="/homeAdmin.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Archived Rooms</h1>
+        <div class="dropdown">
+            <button class="dropbtn">Menu</button>
+            <div class="dropdown-content">
+                <a href="/admin/manage-access">Manage Access</a>
+                <a href="/admin/homeAdmin">Go Back</a>
+                <a href="/login">Logout</a>
+            </div>
+        </div>
+        
+        <!-- Archived Rooms List -->
+        <div class="room-grid">
+            <% 
+            rooms.forEach(function(room) { %>
+                <div class="room">
+                    <p><%= room.name %></p>
+                    <p>Grade: <%= room.gradeLevel %></p>
+                    <p>Teacher: <%= room.teacherName %></p>
+                    <button onclick="unarchiveRoom('<%= room._id %>')">Restore</button>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+
+    <script>
+        function unarchiveRoom(roomId) {
+            if (confirm('Are you sure you want to restore this room?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/admin/unarchive-room/${roomId}`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

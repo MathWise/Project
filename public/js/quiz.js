@@ -180,3 +180,54 @@ function updateQuestionIndices() {
         }
     });
 }
+// Toggle the main dropdown menu
+function toggleDropdownMenu() {
+    const menu = document.getElementById("dropdownMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// Close the dropdown when clicking outside of it
+document.addEventListener("click", function(event) {
+    const menu = document.getElementById("dropdownMenu");
+    const trigger = document.querySelector(".settings-icon");
+
+    // Only close if clicking outside of both the menu and the trigger element
+    if (!menu.contains(event.target) && event.target !== trigger) {
+        menu.style.display = "none";
+    }
+});
+
+// Function to archive an activity room
+function archiveActivityRoom(activityRoomId) {
+    fetch(`/admin/archive-activity-room/${activityRoomId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            window.location.reload();
+        })
+        .catch(error => console.error('Error archiving activity room:', error));
+}
+
+// Toggle the individual kebab menu for each room
+function toggleMenu(roomId) {
+    const menu = document.getElementById(`menu-${roomId}`);
+    // Toggle visibility while keeping other menus hidden
+    const isVisible = menu.style.display === 'block';
+    closeAllMenus(); // Close any open menus first
+    menu.style.display = isVisible ? 'none' : 'block';
+}
+
+// Close all kebab dropdown menus
+function closeAllMenus() {
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    dropdowns.forEach(menu => {
+        menu.style.display = 'none';
+    });
+}
+
+// Close dropdown menus when clicking outside any dropdown
+document.addEventListener('click', function(event) {
+    if (!event.target.classList.contains('kebab-menu') && !event.target.classList.contains('dropdown-menu')) {
+        closeAllMenus(); // Close all menus if clicking outside them
+    }
+});

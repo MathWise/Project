@@ -14,6 +14,10 @@ const lessonRoomSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Room', // This references the original 'Room' model
         required: true
+    },
+    archived: { // New field to mark the lesson room as archived
+        type: Boolean,
+        default: false
     }
 });
 

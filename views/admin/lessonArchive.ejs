@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archived Lessons</title>
+    <link rel="stylesheet" href="/lesson.css"> <!-- Replace with your actual stylesheet -->
+</head>
+<body>
+    <h1>Archived Lessons</h1>
+    
+    <div class="dropdown">
+    
+        <div class="dropdown-content">
+            <a href="/admin/lesson/<%= roomId %>">Go Back</a> <!-- Using roomId instead of room._id -->
+            <a href="/login">Logout</a>
+        </div>
+    </div>
+    <h5>Archived Lesson Rooms</h5>
+    <main class="col-md-11">
+      
+        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+            <% if (archivedLessonRooms.length > 0) { %>
+                <% archivedLessonRooms.forEach(function(lessonRoom) { %>
+                    <li class="list-group-item lesson-room d-flex align-items-center mr-2">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
+                                <p>Room ID: <%= lessonRoom.roomId %></p>
+                            </div>
+                            <button onclick="unarchiveLessonRoom('<%= lessonRoom._id %>')">Unarchive</button>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived lessons available.</p>
+            <% } %>
+        </ul>
+    </main>
+
+    <script>
+        function unarchiveLessonRoom(lessonRoomId) {
+            fetch(`/admin/unarchive-lesson-room/${lessonRoomId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message); // Display success or error message
+                window.location.reload(); // Refresh the page to update the list
+            })
+            .catch(error => console.error('Error unarchiving lesson room:', error));
+        }
+    </script>
+</body>
+</html>

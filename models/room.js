@@ -17,6 +17,10 @@ const roomSchema = new mongoose.Schema({
     roomPassword: {
         type: String,
         required: true
+    },
+    isArchived: {
+        type: Boolean,
+        default: false  // By default, rooms are not archived
     }
 });
 
