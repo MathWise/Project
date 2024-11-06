@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+    <title>All Test Results</title>
+    <script>
+        const quizAnalytics = <%- JSON.stringify(quizAnalytics) %>;
+        console.log('Loaded quizAnalytics:', quizAnalytics); // Debugging
+    </script>
+    
+</head>
+<body>
+    <div class="container">
+        
+        <h1>All Test Results for <%= room.name %></h1>
+        <a href="/admin/dashboard/<%= room._id %>" class="btn btn-secondary mb-3">Back to Dashboard</a>
+
+        
+        <% quizAnalytics.forEach(quiz => { %>
+            <% if (quiz.dataAvailable) { %>
+                <div class="quiz-analytics my-4">
+                    <p>Quiz ID: <%= quiz._id %>
+                    <h3><%= quiz.quizTitle %></h3>
+                    <div class="d-flex">
+                        <div class="stat-box mr-3">
+                            <strong>Average</strong>
+                            <p><%= quiz.averageScore %> / <%= quiz.totalScore %> points</p>
+                        </div>
+                        <div class="stat-box mr-3">
+                            <strong>Median</strong>
+                            <p><%= quiz.medianScore %> / <%= quiz.totalScore %> points</p>
+                        </div>
+                        <div class="stat-box">
+                            <strong>Range</strong>
+                            <p><%= quiz.range %></p>
+                        </div>
+                    </div>
+                    <canvas id="chart-<%= quiz.quizTitle.replace(/\s+/g, '-') %>" width="400" height="200"></canvas>
+        
+                    <!-- "Overall Summary" button -->
+                    <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-info mt-3">Overall Summary</a>
+
+
+
+                </div>
+            <% } else { %>
+                <p>No data available for <%= quiz.quizTitle %></p>
+            <% } %>
+        <% }); %>
+        
+    </div>
+
+    <!-- Chart.js for rendering charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

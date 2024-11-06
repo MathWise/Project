@@ -8,6 +8,9 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet"> <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/homepage.css">
     <title>Admin Dashboard</title>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    </head>
 </head>
 <body >
     <div class="container-fluid" style="min-height: 100vh;">
@@ -91,10 +94,48 @@
         
                     <!-- Main Content Area -->
                     <main class="col-md-9 col-12 bg-main section">
-                        <div class="big-box1 p-3 bg-main section d-flex justify-content-center align-items-center">
+                        <!-- <div class="big-box1 p-3 bg-main section d-flex justify-content-center align-items-center">
                             <img src="/assets/girl.png" alt="Girl" class="girl-image img-fluid">
-                        </div>
+                            
+                        </div> -->
+
+                        <% if (quizAnalytics && quizAnalytics.length > 0) { %>
+                            <!-- Display the latest quiz, which is now the first item in sorted quizAnalytics -->
+                            <% const latestQuiz = quizAnalytics[0]; %>
+                            <div class="quiz-analytics my-4">
+                                <h3><%= latestQuiz.quizTitle %></h3>
+                               
+                                <div class="d-flex">
+                                    <div class="stat-box mr-2">
+                                        <strong>Average</strong>
+                                        <p><%= latestQuiz.averageScore %> / <%= latestQuiz.totalScore %> points</p>
+                                    </div>
+                                    <div class="stat-box mr-2">
+                                        <strong>Median</strong>
+                                        <p><%= latestQuiz.medianScore %> / <%= latestQuiz.totalScore %> points</p>
+                                    </div>
+                                    <div class="stat-box">
+                                        <strong>Range</strong>
+                                        <p><%= latestQuiz.range %></p>
+                                    </div>
+                                   
+                                </div>
+                               
+                                <canvas id="chart-<%= latestQuiz.quizTitle.replace(/\s+/g, '-') %>" width="400" height="200"></canvas>
+
+                            </div>
+                            <!-- Button to view all test results -->
+                            <div class="text-center mt-4">
+                                <a href="/admin/dashboard/allTests/<%= room._id %>" class="btn btn-primary">Show All Test Results</a>
+                            </div>
+                        <% } else { %>
+                            <p>No quiz analytics available.</p>
+                        <% } %>
+                        
+                        
+                        
                     </main>
+                    
         
                     <!-- Right Sidebar -->
                     <aside class="col-md-2 col-12 section p-0">
@@ -133,6 +174,7 @@
                                     <h3 class="h6 mb-0 ml-2">Videos</h3>
                                     <a href="/lesson.html" class="ml-auto text-primary">View All</a>
                                 </div>
+                                
                             </div>
         
                             <div class="updates contact-container flex-fill p-3 mt-3" style="background-color: #E0F4F9;">
@@ -148,6 +190,10 @@
             </form>
         </div>
         
+   
+        
+
+
 
     <script>
         function loadLevelContent(level) {
@@ -179,5 +225,12 @@
         }
     });
     </script>
+    
+    <script>
+        const quizAnalytics = <%- JSON.stringify(quizAnalytics) %>;
+        console.log('Loaded quizAnalytics:', quizAnalytics); // Verify data in console
+    </script>
+    
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>

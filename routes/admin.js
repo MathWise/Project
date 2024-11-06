@@ -12,6 +12,10 @@ const { ensureLoggedIn, ensureAdminLoggedIn } = middleware;
 const User = require('../models/user'); // Use your existing User model
 const connectDB = require('../config/dbConnection');
 const mongoURI = process.env.MONGODB_URI;
+const { DateTime } = require('luxon');
+const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
+const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
+const QuizResult = require('../models/QuizResult');
 
 
 // Render the homeAdmin page with room creation and existing rooms
@@ -63,34 +67,199 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
-// Get dashboard for a specific room
+// end of home Admin-----------------------------------------------------------------------------------------------------------------
+
+
+
+
 router.get('/dashboard/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
 
     try {
-        // Check if roomId is a valid ObjectId
-        if (!mongoose.Types.ObjectId.isValid(roomId)) {
-            console.error('Invalid roomId format:', roomId);
-            req.flash('error', 'Invalid room ID.');
-            return res.redirect('/admin/homeAdmin');
-        }
-
         const room = await Room.findById(roomId);
-        console.error('Room not found with ID:', roomId);
         if (!room) {
-            console.error('Room not found with ID:', roomId);
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
-        // Pass the room to the dashboard template
-        res.render('admin/dashboard', { room });
+
+        const activityRooms = await ActivityRoom.find({ roomId });
+        const activityRoomIds = activityRooms.map(ar => ar._id);
+        
+        const quizzes = await QuizActivity.find({ roomId: { $in: activityRoomIds } });
+
+        const quizAnalytics = await Promise.all(
+            quizzes.map(async (quiz) => {
+                const results = await QuizResult.find({ quizId: quiz._id });
+                if (results.length === 0) {
+                    return { quizTitle: quiz.title, dataAvailable: false, createdAt: quiz.createdAt };
+                }
+
+                const scores = results.map(result => result.score);
+                const totalScore = quiz.questions.length;
+
+                const averageScore = (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2);
+                scores.sort((a, b) => a - b);
+                const medianScore = scores.length % 2 === 0
+                    ? ((scores[scores.length / 2 - 1] + scores[scores.length / 2]) / 2).toFixed(2)
+                    : scores[Math.floor(scores.length / 2)];
+                const range = `${Math.min(...scores)} - ${Math.max(...scores)}`;
+                
+                const scoreDistribution = Array(totalScore + 1).fill(0);
+                scores.forEach(score => scoreDistribution[score]++);
+
+                return {
+                    quizTitle: quiz.title,
+                    averageScore,
+                    medianScore,
+                    range,
+                    scoreDistribution,
+                    totalScore,
+                    dataAvailable: true,
+                    createdAt: quiz.createdAt  // Assuming `createdAt` is stored in the QuizActivity model
+                };
+            })
+        );
+
+        // Sort by creation date to have the latest quiz first
+        quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        // Render the dashboard with only the sorted analytics
+        res.render('admin/dashboard', { room, quizAnalytics });
     } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error accessing the room.');
+        console.error('Error accessing dashboard:', err);
+        req.flash('error', 'Error accessing the dashboard.');
         res.redirect('/admin/homeAdmin');
     }
 });
+
+
+// Route to display all test results for a room
+router.get('/dashboard/allTests/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+
+    try {
+        // Validate roomId to ensure it’s a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(roomId)) {
+            req.flash('error', 'Invalid Room ID.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch the room details
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch all quizzes related to the room's activity rooms
+        const activityRooms = await ActivityRoom.find({ roomId });
+        const activityRoomIds = activityRooms.map(ar => ar._id);
+
+        const quizzes = await QuizActivity.find({ roomId: { $in: activityRoomIds } });
+        
+        // Prepare analytics for each quiz as done in the dashboard route
+        const quizAnalytics = await Promise.all(
+            quizzes.map(async (quiz) => {
+                const results = await QuizResult.find({ quizId: quiz._id });
+
+                if (results.length === 0) {
+                    return { quizTitle: quiz.title, dataAvailable: false, _id: quiz._id };
+                }
+
+                const scores = results.map(result => result.score);
+                const totalScore = quiz.questions.length;
+
+                const averageScore = (scores.reduce((sum, score) => sum + score, 0) / scores.length).toFixed(2);
+                scores.sort((a, b) => a - b);
+                const medianScore = scores.length % 2 === 0
+                    ? ((scores[scores.length / 2 - 1] + scores[scores.length / 2]) / 2).toFixed(2)
+                    : scores[Math.floor(scores.length / 2)];
+                const range = `${Math.min(...scores)} - ${Math.max(...scores)}`;
+                
+                const scoreDistribution = Array(totalScore + 1).fill(0);
+                scores.forEach(score => scoreDistribution[score]++);
+
+                return {
+                    quizTitle: quiz.title,
+                    averageScore,
+                    medianScore,
+                    range,
+                    scoreDistribution,
+                    totalScore,
+                    dataAvailable: true,
+                    _id: quiz._id
+                };
+            })
+        );
+
+        // Render all test results
+        res.render('admin/allTests', { room, quizAnalytics });
+    } catch (err) {
+        console.error('Error accessing all tests:', err);
+        req.flash('error', 'Error accessing all tests.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
+// Route to display overall summary for a specific quiz
+router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz and populate roomId for navigation
+        const quiz = await QuizActivity.findById(quizId).lean();
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        
+        // Fetch quiz results, populating user details
+        const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name');
+
+        // Format result data for rendering
+        const resultData = results.map(result => ({
+            first_name: result.userId ? result.userId.first_name : 'Unknown',
+            last_name: result.userId ? result.userId.last_name : 'User',
+            score: result.score,
+            submittedAt: result.submittedAt,
+            isLate: result.isLate
+        }));
+
+        // Pass roomId explicitly to render the link
+        res.render('admin/overallSummary', {  quiz, resultData, roomId: activityRoom.roomId  });
+    } catch (err) {
+        console.error('Error accessing overall summary:', err);
+        req.flash('error', 'Error accessing overall summary.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
+
+
+
+
 //end of dashboard----------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -587,10 +756,6 @@ router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
 
 
 
-const { DateTime } = require('luxon');
-const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
-const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
-const QuizResult = require('../models/QuizResult');
 
 router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { subject, activityType } = req.body;

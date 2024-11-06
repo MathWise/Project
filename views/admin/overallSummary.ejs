@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+    <title>Overall Summary</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Overall Summary for <%= quiz.title %></h1>
+        <script>
+            console.log("roomId:", "<%= roomId %>");
+        </script>
+       <!-- Use roomId to navigate back to allTests -->
+       <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
+
+
+
+
+
+
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Score</th>
+                    <th>Submitted At</th>
+                    <th>Late Submission</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% resultData.forEach(result => { %>
+                    <tr>
+                        <td><%= result.first_name %> <%= result.last_name %></td>
+                        <td><%= result.score %> / <%= quiz.questions.length %> points</td>
+                        <td><%= new Date(result.submittedAt).toLocaleString() %></td>
+                        <td><%= result.isLate ? 'Yes' : 'No' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        
+        
+    </div>
+</body>
+</html>
