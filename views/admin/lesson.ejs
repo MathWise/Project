@@ -10,6 +10,44 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script> <!-- Include PDF.js -->
+    
+    <style>
+        #uploadedPdfs li, #uploadedVideos li {
+            display: inline-block; /* Allow list items to be inline */
+            margin: 10px; /* Add some spacing between thumbnails */
+            text-align: center; /* Center the text and canvas */
+        }
+
+        canvas {
+            border: 2px solid #007bff; /* Add a blue border around the thumbnail */
+            border-radius: 5px; /* Optional: round the corners */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional: add some shadow */
+            width: 150px; /* Set the width of the canvas for PDFs */
+            height: auto; /* Set the height of the canvas for PDFs */
+        }
+
+        video {
+            border: 2px solid #007bff; /* Add a blue border around the thumbnail */
+            border-radius: 5px; /* Optional: round the corners */
+            cursor: pointer; /* Change cursor to pointer on hover */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Optional: add some shadow */
+            width: 150px; /* Set the width of the video thumbnail */
+            height: auto; /* Set the height of the video thumbnail */
+        }
+
+        /* Modal styles for video */
+        #videoModal .modal-content {
+            width: 80%; /* Set modal width */
+            max-width: 800px; /* Set max width for larger screens */
+            margin: auto; /* Center the modal */
+        }
+
+        #videoViewer {
+            width: 100%; /* Make video fill modal */
+            height: auto; /* Maintain aspect ratio */
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid p-0">
@@ -346,12 +384,12 @@
 
                             const listItem = document.createElement('li');
                             listItem.innerHTML = `
-                               <div>
-                                     <strong>${videoFileName}</strong>
-                                     <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
-                                     <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                                    </div>
-                                     `;
+                                <div>
+                                    <strong>${videoFileName}</strong>
+                                    <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
+                                    <canvas id="thumbnail_${videoFileId}" style="width: 150px; height: auto; cursor: pointer;"></canvas>
+                                </div>
+                            `;
                             videoList.appendChild(listItem);
 
                             // Capture the first frame as a thumbnail
@@ -384,74 +422,62 @@
             }
 
             // Function to render a thumbnail from the first page of a PDF
-            // Function to render a thumbnail from the first page of a PDF
-async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
-    try {
-        const canvas = document.getElementById(`thumbnail_${pdfFileId}`);
-        const context = canvas.getContext('2d');
+            async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
+                const canvas = document.getElementById(`thumbnail_${pdfFileId}`);
+                const context = canvas.getContext('2d');
 
-        // Load the PDF
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdf = await loadingTask.promise;
+                // Load the PDF
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdf = await loadingTask.promise;
 
-        // Get the first page
-        const page = await pdf.getPage(1);
+                // Get the first page
+                const page = await pdf.getPage(1);
 
-        // Set the desired width and height for the thumbnail
-        const desiredWidth = 300; // Width for the thumbnail
-        const desiredHeight = 200; // Height for the thumbnail
+                // Set the desired dimensions for the thumbnail
+                const desiredWidth = 100; // Desired width in pixels
+                const desiredHeight = 75; // Desired height in pixels
 
-        // Get the viewport and calculate the scale based on the desired dimensions
-        const viewport = page.getViewport({ scale: 1 });
-        const widthScale = desiredWidth / viewport.width;
-        const heightScale = desiredHeight / viewport.height;
-        const scale = Math.min(widthScale, heightScale); // Use the smaller scale to maintain aspect ratio
-        const scaledViewport = page.getViewport({ scale });
+                // Get the original viewport to calculate the scale
+                const viewport = page.getViewport({ scale: 1 });
 
-        // Set the canvas dimensions
-        canvas.width = desiredWidth;
-        canvas.height = desiredHeight;
+                // Calculate scale based on desired dimensions
+                const scaleWidth = desiredWidth / viewport.width;
+                const scaleHeight = desiredHeight / viewport.height;
+                const scale = Math.min(scaleWidth, scaleHeight); // Use the smaller scale to maintain aspect ratio
 
-        // Ensure canvas style matches the new size
-        canvas.style.width = `${desiredWidth}px`;
-        canvas.style.height = `${desiredHeight}px`;
+                // Set canvas dimensions
+                canvas.width = viewport.width * scale;
+                canvas.height = viewport.height * scale;
 
-        // Clear the canvas before rendering
-        context.clearRect(0, 0, canvas.width, canvas.height);
+                // Render the page into the canvas context
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: page.getViewport({ scale })
+                };
+                await page.render(renderContext).promise;
 
-        // Render the page into the canvas context
-        const renderContext = {
-            canvasContext: context,
-            viewport: scaledViewport
-        };
-        await page.render(renderContext).promise;
+                // Add click event listener to open the PDF modal
+                canvas.addEventListener('click', () => {
+                    openPdfModal(pdfUrl, pdfFileId, '<%= currentUser._id %>'); // Pass userId as needed
+                });
 
-        // Add click event listener to open the PDF modal
-        canvas.addEventListener('click', () => {
-            openPdfModal(pdfUrl, pdfFileId, '<%= currentUser._id %>'); // Pass userId as needed
-        });
+                // Create a title element for the PDF
+                const titleElement = document.createElement('div');
+                titleElement.textContent = pdfFileName; // Set the title of the PDF
+                titleElement.style.textAlign = 'center'; // Center the title
+                titleElement.style.marginTop = '5px'; // Add some space above the title
 
-        // Create a title element for the PDF
-        const titleElement = document.createElement('div');
-        titleElement.textContent = pdfFileName; // Set the title of the PDF
-        titleElement.style.textAlign = 'center'; // Center the title
-        titleElement.style.marginTop = '5px'; // Add some space above the title
-
-        // Append the title element after the canvas
-        canvas.parentElement.appendChild(titleElement);
-    } catch (error) {
-        console.error('Error rendering PDF thumbnail:', error);
-    }
-}
+                // Append the title element after the canvas
+                canvas.parentElement.appendChild(titleElement);
+            }
 
             // Function to open the video modal
             function openVideoModal(videoUrl) {
     const videoViewer = document.getElementById("videoViewer");
     videoViewer.src = videoUrl;
-    document.getElementById("videoModal").style.display = "flex"; // Changed from "block" to "flex"
+    document.getElementById("videoModal").style.display = "block";
     console.log("Video modal opened");
 }
-
 
             // Function to close the video modal
             function closeVideoModal() {
@@ -512,75 +538,72 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
                 });
             });
 
-            
             // Event listener for video upload form submission
-document.getElementById('uploadVideoForm').addEventListener('submit', async function(event) {
-    event.preventDefault(); // Prevent default form submission
+            document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
 
-    const formData = new FormData(this);
-    const roomId = document.getElementById('videoRoomId').value;
+                const formData = new FormData(this);
 
-    try {
-        const response = await fetch(`/admin/upload-video/${roomId}`, {
-            method: 'POST',
-            body: formData
-        });
+                // Make sure to get the roomId from the input
+                const roomId = document.getElementById('videoRoomId').value;
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
+                fetch(`/admin/upload-video/${roomId}`, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (response.ok) {
+ return response.json(); // Assuming you return JSON from the server
+                    } else {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    // Handle the successful upload here
+                    alert('Video uploaded successfully!');
+                    
+                    // Optionally, refresh the uploaded videos list
+                    const videoList = document.getElementById('uploadedVideos');
+                    videoList.innerHTML = ''; // Clear existing list
 
-        const data = await response.json(); // Assuming your server responds with JSON data
+                    data.videoFiles.forEach(function(video) {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            <div>
+                                <strong>${video.videoFileName}</strong>
+                                <video id="video_${video.videoFileId}" style="display:none;" src="/admin/video/${video.videoFileId}" preload="metadata"></video>
+                                <canvas id="thumbnail_${video.videoFileId}" style="width: 150px; height: auto; cursor: pointer;"></canvas>
+                            </div>
+                        `;
+                        videoList.appendChild(listItem);
 
-        // Handle the successful upload here
-        alert('Video uploaded successfully!');
+                        // Capture the first frame as a thumbnail
+                        const videoElement = document.getElementById(`video_${video.videoFileId}`);
+                        const canvas = document.getElementById(`thumbnail_${video.videoFileId}`);
+                        const context = canvas.getContext('2d');
 
-        // Clear existing list and re-render videos
-        const videoList = document.getElementById('uploadedVideos');
+                        videoElement.addEventListener('loadedmetadata', function() {
+                            // Seek to the first frame (0 seconds)
+                            videoElement.currentTime = 0; // Seek to the first frame
+                        });
 
-      
-        
-     // Loop through all video files returned in the response and display them
-data.videoFiles.forEach(function(video) {
-    const listItem = document.createElement('li');
-    listItem.innerHTML = `
-        <div>
-            <strong>${video.videoFileName}</strong>
-            <video id="video_${video.videoFileId}" style="display:none;" src="/admin/video/${video.videoFileId}" preload="metadata"></video>
-            <canvas id="thumbnail_${video.videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-        </div>
-    `;
-    videoList.appendChild(listItem);
+                        videoElement.addEventListener('seeked', function() {
+                            // Draw the frame onto the canvas
+                            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                        });
 
-    // Capture the first frame as a thumbnail
-    const videoElement = document.getElementById(`video_${video.videoFileId}`);
-    const canvas = document.getElementById(`thumbnail_${video.videoFileId}`);
-    const context = canvas.getContext('2d');
-
-    videoElement.addEventListener('loadedmetadata', function() {
-        videoElement.currentTime = 0; // Seek to the first frame
-    });
-
-    videoElement.addEventListener('seeked', function() {
-        // Set the canvas dimensions to match the desired thumbnail size
-        canvas.width = 300; // Set canvas width
-        canvas.height = 200; // Set canvas height
-        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-    });
-
-    // Add click event listener to open the video modal
-    const videoThumbnail = canvas;
-    videoThumbnail.addEventListener('click', () => {
-        openVideoModal(`/admin/video/${video.videoFileId}`, video.videoFileId);
-    });
-});
-
-    } catch (error) {
-        console.error('Error uploading video:', error);
-        alert('Error uploading video. Please try again.');
-    }
-});
-
+                        // Add click event listener to open the video modal
+                        const videoThumbnail = canvas;
+                        videoThumbnail.addEventListener('click', () => {
+                            openVideoModal(`/admin/video/${video.videoFileId}`, video.videoFileId);
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error uploading video:', error);
+                    alert('Error uploading video.');
+                });
+            });
         </script>
 
 <script>
