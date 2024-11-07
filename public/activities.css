@@ -5,6 +5,67 @@ body {
     
 }
 
+.card {
+    position: relative;
+    max-width: 550px; /* Adjust the width as needed */
+    height: auto; /* Set the height as needed */
+    margin: 50px auto; /* Center the container horizontally */
+    overflow: hidden; /* Ensures any overflow is hidden */
+    border-radius: 8px; /* Optional: add rounded corners */
+}
+
+/* Pseudo-element for background image */
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('assets/math.jpg'); /* Set the background image */
+    background-repeat: no-repeat; /* Prevent image repetition */
+    background-size: cover; /* Cover the entire area */
+    background-position: center; /* Center the image */
+    opacity: 0.55; /* Set the opacity of the background image to 5% */
+    z-index: 0; /* Ensure it is below the text */
+}
+
+.card-body {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure form is above the background */
+    color: black; /* Change text color for visibility */
+}
+
+/* Existing CSS */
+.card-body {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure form is above the background */
+    color: black; /* Change text color for visibility */
+}
+
+
+.card-body h5, .card-body label {
+    font-weight: bold;
+}
+
+.color-1 {
+    background-color: #F9B4AB;
+}
+
+.color-2 {
+    background-color: #CECBEC;
+}
+
+.color-3 {
+    background-color: #FFDF9F;
+}
+
+.color-4 {
+    background-color: #C1EAF4;
+}
+
 .container-fluid {
     padding-bottom: 20px; /* Added padding for bottom spacing */
 }
@@ -13,11 +74,12 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 450px; /* Adjusted height */
+    height: auto; /* Adjusted height */
     margin: 20px 0;
     background-image: url('assets/bg.png'); /* Set background image */
     background-size: cover; /* Cover the entire box */
-    background-position: center; /* Center the image */
+    border-radius: 8px;
+
 }
 
 .big-box > div {

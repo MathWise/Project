@@ -91,46 +91,37 @@
             </aside>
 
             <main class="col-md-11">
-               
-
                 <div class="d-flex align-items-center mb-4">
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Activities</h4>
                 </div>
             
-                <!-- Form to create a new activity/quiz room -->
-                <div class="mb-4">
-                    <h5>Create a New Activity/Quiz Room</h5>
-                    <form action="/admin/create-activity-room/<%= room._id %>" method="POST">
-                        <div class="form-group">
-                            <label for="subject">Subject</label>
-                            <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
-                        </di v>
-                        <div class="form-group">
-                            <label for="activityType">Activity Type</label>
-                            <select class="form-control" id="activityType" name="activityType" required>
-                                <option value="Activity">Activity</option>
-                                <option value="Quiz">Quiz</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Create Room</button>
-                    </form>
-                </div>
-            
                 <!-- Display existing activity/quiz rooms -->
-                <div id="activityRoomList" class="mb-4">
                     <h5>Existing Activity/Quiz Rooms</h5>
                     <ul class="list-group d-flex flex-row flex-wrap">
-                        <% activityRooms.forEach(activityRoom => { %>
-                            <li class="list-group-item d-flex align-items-center mr-2 clickable" data-room-id="<%= activityRoom._id %>">
+                        <% 
+                        const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
+                        const imgSources = [
+                        "/assets/english-4.svg",
+                        "/assets/layer-1.svg",
+                        "/assets/geography-1.svg",
+                        "/assets/socio-1.svg"
+                        ];
+
+                        activityRooms.forEach(function(activityRoom, index) { 
+                            const colorClass = buttonColors[index % buttonColors.length];
+                            const imgSrc = imgSources[index % imgSources.length];
+                        %>
+                        
+                            <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" data-room-id="<%= activityRoom._id %>">
                                 <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
                                 <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
-                
+                    
                                 <!-- Kebab Menu Icon -->
                                 <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
                                     &#x22EE;
                                 </div>
-                
+                    
                                 <!-- Dropdown Menu for each room -->
                                 <div class="dropdown-menu" id="menu-<%= activityRoom._id %>" style="display: none;">
                                     <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
@@ -138,9 +129,7 @@
                             </li>
                         <% }); %>
                     </ul>
-                </div>
-
-               
+                    
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
                         <div class="left-content">
@@ -224,10 +213,28 @@
                             <h2>Available Quizzes</h2>
                             <ul id="loadedQuizzes" class="list-group">
                                 <li class="list-group-item">No quizzes available.</li>
-                            </ul>
-
-                           
+                            </ul> 
                         </div>
+                    </div>
+                </div>
+               <!-- Card for Create Activity/Quiz Room Form -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Create a New Activity/Quiz Room</h5>
+                        <form action="/admin/create-activity-room/<%= room._id %>" method="POST">
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="activityType">Activity Type</label>
+                                <select class="form-control" id="activityType" name="activityType" required>
+                                    <option value="Activity">Activity</option>
+                                    <option value="Quiz">Quiz</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Room</button>
+                        </form>
                     </div>
                 </div>
             </main>

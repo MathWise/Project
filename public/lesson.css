@@ -17,7 +17,7 @@ body {
     margin: 20px 0;
     background-image: url('assets/bg.png'); /* Set background image */
     background-size: cover; /* Cover the entire box */
-    background-position: center; /* Center the image */
+    border-radius: 8px;
 }
 
 .big-box > div {
@@ -165,6 +165,7 @@ body {
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
     height: auto;
+    border-radius: 8px;
 }
 
 .upload-box {
@@ -174,6 +175,7 @@ body {
     background-size: cover;
     background-repeat: no-repeat;
     height: auto;
+    border-radius: 8px;
 }
 
 .color-1 {
