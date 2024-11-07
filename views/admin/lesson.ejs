@@ -334,45 +334,51 @@
 
                     // Populate the Videos
                     if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
-                        lessonData.videoFiles.forEach(function (video) {
-                            const videoFileId = video.videoFileId;
-                            const videoFileName = video.videoFileName;
-                            const videoUrl = `/admin/video/${videoFileId}`; // URL to fetch the video
+    lessonData.videoFiles.forEach(function (video) {
+        const videoFileId = video.videoFileId;
+        const videoFileName = video.videoFileName;
+        const videoUrl = `/admin/video/${videoFileId}`; // URL to fetch the video
 
-                            const listItem = document.createElement('li');
-                            listItem.innerHTML = `
-                                <div>
-                                   <strong>${videoFileName}</strong>
-                                     <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
-                                     <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                                </div>
-                            `;
-                            videoList.appendChild(listItem);
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <div>
+               <strong>${videoFileName}</strong>
+               <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
+               <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
+            </div>
+        `;
+        videoList.appendChild(listItem);
 
-                            // Capture the first frame as a thumbnail
-                            const videoElement = document.getElementById(`video_${videoFileId}`);
-                            const canvas = document.getElementById(`thumbnail_${videoFileId}`);
-                            const context = canvas.getContext('2d');
+        // Capture the frame at the 5th second as a thumbnail
+        const videoElement = document.getElementById(`video_${videoFileId}`);
+        const canvas = document.getElementById(`thumbnail_${videoFileId}`);
+        const context = canvas.getContext('2d');
 
-                            videoElement.addEventListener('loadedmetadata', function() {
-                                // Seek to the first frame (0 seconds)
-                                videoElement.currentTime = 0; // Seek to the first frame
-                            });
+        // Listen for metadata to load, then set the currentTime to 5 seconds
+        videoElement.addEventListener('loadedmetadata', function() {
+            // Seek to 5 seconds
+            videoElement.currentTime = 5;
+        });
 
-                            videoElement.addEventListener('seeked', function() {
-                                // Draw the frame onto the canvas
-                                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                            });
+        // When the seek operation completes, add a delay before drawing the frame
+        videoElement.addEventListener('seeked', function() {
+            setTimeout(() => {
+                // Draw the frame at the 5th second onto the canvas
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                videoElement.style.display = 'none'; // Optional: Hide the video element after capturing
+            }, 250); // Adjust the delay time as needed
+        });
 
-                            // Add click event listener to open the video modal
-                            const videoThumbnail = canvas;
-                            videoThumbnail.addEventListener('click', () => {
-                                openVideoModal(videoUrl, videoFileId);
-                            });
-                        });
-                    } else {
-                        videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
-                    }
+        // Add click event listener to open the video modal
+        canvas.addEventListener('click', () => {
+            openVideoModal(videoUrl, videoFileId);
+        });
+    });
+} else {
+    videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+}
+
+
                 } catch (error) {
                     console.error('Error loading lesson files:', error);
                 }
@@ -538,6 +544,12 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
         // Optionally, update the list of videos without refreshing the page
         const videoList = document.getElementById('uploadedVideos');
 
+        // Check if "No uploaded videos" message is present and remove it
+        const noVideosMessage = videoList.querySelector('p');
+        if (noVideosMessage) {
+            videoList.removeChild(noVideosMessage);
+        }
+
         // Append the newly uploaded video to the list
         data.videoFiles.forEach(function(video) {
             const listItem = document.createElement('li');
@@ -550,18 +562,18 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
             `;
             videoList.appendChild(listItem);
 
-            // Capture the first frame as a thumbnail
+            
             const videoElement = document.getElementById(`video_${video.videoFileId}`);
             const canvas = document.getElementById(`thumbnail_${video.videoFileId}`);
             const context = canvas.getContext('2d');
 
-             // Set fixed dimensions for the thumbnail
-             canvas.width = 300; // Width of the thumbnail
+            // Set fixed dimensions for the thumbnail
+            canvas.width = 300; // Width of the thumbnail
             canvas.height = 200; // Height of the thumbnail
 
             videoElement.addEventListener('loadedmetadata', function() {
-                // Seek to the first frame (0 seconds)
-                videoElement.currentTime = 0; // Seek to the first frame
+               
+                videoElement.currentTime = 5; 
             });
 
             videoElement.addEventListener('seeked', function() {
@@ -581,6 +593,7 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
         alert('Error uploading video.');
     });
 });
+
 
         </script>
 
