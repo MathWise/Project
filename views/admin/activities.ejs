@@ -97,68 +97,64 @@
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
-                    <h5>Existing Activity/Quiz Rooms</h5>
-                    <ul class="list-group d-flex flex-row flex-wrap">
-                        <% 
-                        const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
-                        const imgSources = [
+                <h5>Existing Activity/Quiz Rooms</h5>
+                <ul class="list-group d-flex flex-row flex-wrap">
+                    <% 
+                    const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
+                    const imgSources = [
                         "/assets/english-4.svg",
                         "/assets/layer-1.svg",
                         "/assets/geography-1.svg",
                         "/assets/socio-1.svg"
-                        ];
-
-                        activityRooms.forEach(function(activityRoom, index) { 
-                            const colorClass = buttonColors[index % buttonColors.length];
-                            const imgSrc = imgSources[index % imgSources.length];
-                        %>
-                        
-                            <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" data-room-id="<%= activityRoom._id %>">
-                                <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
-                                <img src="/assets/english-4.svg" alt="English Icon" class="ml-2" style="width: 40px;">
+                    ];
+            
+                    activityRooms.forEach(function(activityRoom, index) { 
+                        const colorClass = buttonColors[index % buttonColors.length];
+                        const imgSrc = imgSources[index % imgSources.length];
+                    %>
                     
-                                <!-- Kebab Menu Icon -->
-                                <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
-                                    &#x22EE;
-                                </div>
-                    
-                                <!-- Dropdown Menu for each room -->
-                                <div class="dropdown-menu" id="menu-<%= activityRoom._id %>" style="display: none;">
-                                    <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
-                                </div>
-                            </li>
-                        <% }); %>
-                    </ul>
-                    
+                        <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" data-room-id="<%= activityRoom._id %>">
+                            <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
+                            <img src="<%= imgSrc %>" alt="Activity Icon" class="ml-2" style="width: 40px;">
+                
+                            <!-- Kebab Menu Icon -->
+                            <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
+                                &#x22EE;
+                            </div>
+                
+                            <!-- Dropdown Menu for each room -->
+                            <div class="dropdown-menu" id="menu-<%= activityRoom._id %>" style="display: none;">
+                                <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
+                            </div>
+                        </li>
+                    <% }); %>
+                </ul>
+                
+                <!-- Quiz Activity Room Content -->
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
                         <div class="left-content">
-                            <!-- Hidden content section that will be shown upon clicking a room -->
                             <h1>Create a Quiz</h1>
                             <form id="quizForm" action="/admin/quiz/create" method="POST">
-                                <input type="hidden" name="activityRoomId" id="activityRoomId" value=""> <!-- Add the activityRoomId -->
-
+                                <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
                                 <label for="title">Quiz Title:</label>
                                 <input type="text" name="title" id="title" required><br><br>
-
+            
                                 <div id="questions">
-                                    <!-- The first question structure, more questions will be added dynamically -->
                                     <div class="question" data-question-index="0">
                                         <label>Question 1:</label>
                                         <input type="text" name="questions[0][questionText]" required><br>
-
-                                        <!-- Dropdown to select question type -->
+            
                                         <label>Question Type:</label>
                                         <select name="questions[0][type]" class="questionType" required>
                                             <option value="multiple-choice">Choose a Question Type</option>
                                             <option value="multiple-choice">Multiple Choice</option>
                                             <option value="fill-in-the-blank">Fill in the Blank</option>
                                         </select><br>
-
-                                        <!-- Add timer selection options -->
+            
                                         <div class="form-group">
                                             <label for="timer">Set Timer (Optional)</label>
-                                            <select class="form-control" id="timer" name="timer"> <!-- Added name="timer" -->
+                                            <select class="form-control" id="timer" name="timer">
                                                 <option value="">No Timer</option>
                                                 <option value="5">5 Minutes</option>
                                                 <option value="10">10 Minutes</option>
@@ -174,12 +170,10 @@
                                             <option value="4">4</option>
                                             <option value="5">5</option>
                                         </select><br><br>
-
-                                         <!-- Deadline -->
+            
                                         <label for="deadline">Set Deadline</label>
                                         <input type="datetime-local" id="deadline" name="deadline"><br><br>   
                                         
-                                        <!-- For multiple-choice, choices will be added here -->
                                         <div class="choices" style="display: none;">
                                             <label>Choices:</label>
                                             <div class="choice" data-choice-index="0">
@@ -189,27 +183,23 @@
                                             </div>
                                             <button type="button" class="addChoice">Add Choice</button><br>
                                         </div>
-
-                                        <!-- For fill-in-the-blank, correct answer input -->
+            
                                         <div class="fill-in-the-blank" style="display: none;">
                                             <label>Correct Answer:</label>
                                             <input type="text" name="questions[0][correctAnswer]" required><br>
                                         </div>
-
-                                        <!-- Button to remove the current question -->
+            
                                         <button type="button" class="removeQuestion">Remove Question</button><br><br>
                                     </div>
                                 </div>
-
-                                <!-- Button to add a new question -->
+            
                                 <button type="button" id="addQuestion">Add Question</button><br><br>
-
+            
                                 <button type="submit">Submit Quiz</button>
                             </form>
                         </div>
-
+            
                         <div class="right-content">
-                            <!-- Display available quizzes dynamically -->
                             <h2>Available Quizzes</h2>
                             <ul id="loadedQuizzes" class="list-group">
                                 <li class="list-group-item">No quizzes available.</li>
@@ -217,7 +207,8 @@
                         </div>
                     </div>
                 </div>
-               <!-- Card for Create Activity/Quiz Room Form -->
+                
+                <!-- Card for Create Activity/Quiz Room Form -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <h5 class="card-title">Create a New Activity/Quiz Room</h5>
@@ -238,8 +229,30 @@
                     </div>
                 </div>
             </main>
-        </div>
-
+        </div>  
+            <script>
+                document.addEventListener("DOMContentLoaded", function () {
+                    // Select all lesson room items (existing activity/quiz rooms)
+                    const lessonRoomItems = document.querySelectorAll('.list-group-item');
+                    const layeredContainer = document.querySelector('.card'); // The card for creating a new activity/quiz room
+                    const quizActivityRoomContent = document.getElementById('quizActivityRoomContent'); // The content section for quiz creation
+            
+                    // Attach click event to each lesson room item
+                    lessonRoomItems.forEach(item => {
+                        item.addEventListener('click', function () {
+                            // Hide the "Create a New Activity/Quiz Room" form
+                            layeredContainer.style.display = 'none';
+                            // Show the "Quiz Activity Room Content" section
+                            quizActivityRoomContent.style.display = 'block';
+                            
+                            const roomId = item.getAttribute('data-room-id'); // Get the room ID from the clicked item
+                            // Set the roomId for hidden inputs
+                            document.getElementById('activityRoomId').value = roomId;
+                        });
+                    });
+                });
+            </script>
+            
 
     
         <script src="/js/quiz.js"></script> 
