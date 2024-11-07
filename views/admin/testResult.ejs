@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+    <title>Test Result for <%= user.first_name %> <%= user.last_name %></title>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Result for <%= user.first_name %> <%= user.last_name %></h1>
+        <p>Quiz: <%= quiz.title %></p>
+        <p>Score: <%= score %> / <%= totalScore %> points</p>
+        <p>Submitted At: <%= new Date(submittedAt).toLocaleString() %></p>
+
+        <table class="table table-bordered mt-3">
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Your Answer</th>
+                    <th>Correct</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% answers.forEach(answer => { %>
+                    <tr>
+                        <td><%= answer.questionText %></td>
+                        <!-- Display user answer; incorrect answers are shown in red -->
+                        <td style="color: <%= answer.isCorrect ? 'black' : 'red' %>;">
+                            <%= answer.userAnswer %>
+                        </td>
+                        <!-- Indicate if the answer was correct or incorrect -->
+                        <td><%= answer.isCorrect ? 'Yes' : 'No' %></td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        
+        <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-secondary">Back to Overall Summary</a>
+    </div>
+</body>
+</html>

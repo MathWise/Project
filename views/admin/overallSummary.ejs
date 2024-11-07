@@ -10,13 +10,11 @@
         <script>
             console.log("roomId:", "<%= roomId %>");
         </script>
-       <!-- Use roomId to navigate back to allTests -->
-       <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
 
-
-
-
-
+        <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
+       
+        <!-- Export to Excel Button -->
+        <a href="/admin/overallSummary/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
 
         <table class="table table-bordered mt-3">
             <thead>
@@ -25,21 +23,34 @@
                     <th>Score</th>
                     <th>Submitted At</th>
                     <th>Late Submission</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 <% resultData.forEach(result => { %>
+                    <% 
+                        // Calculate the percentage score
+                        const scorePercentage = (result.score / quiz.questions.length) * 100;
+                        const isBelowThreshold = scorePercentage < 75; // Check if it's below 75%
+                    %>
                     <tr>
                         <td><%= result.first_name %> <%= result.last_name %></td>
-                        <td><%= result.score %> / <%= quiz.questions.length %> points</td>
+                        
+                        <!-- Apply conditional color to the score based on threshold -->
+                        <td style="color: <%= isBelowThreshold ? 'red' : 'black' %>;">
+                            <%= result.score %> / <%= quiz.questions.length %> points
+                        </td>
+                        
                         <td><%= new Date(result.submittedAt).toLocaleString() %></td>
                         <td><%= result.isLate ? 'Yes' : 'No' %></td>
+                        <td>
+                            <!-- Test Result Button -->
+                            <a href="/admin/testResult/<%= quiz._id %>/<%= result.userId %>" class="btn btn-primary">Test Result</a>
+                        </td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
-        
-        
     </div>
 </body>
 </html>

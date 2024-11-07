@@ -220,12 +220,12 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
-        
         // Fetch quiz results, populating user details
         const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name');
 
-        // Format result data for rendering
+        // Format result data for rendering, now including userId
         const resultData = results.map(result => ({
+            userId: result.userId ? result.userId._id : null, // Include userId
             first_name: result.userId ? result.userId.first_name : 'Unknown',
             last_name: result.userId ? result.userId.last_name : 'User',
             score: result.score,
@@ -234,7 +234,7 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
         }));
 
         // Pass roomId explicitly to render the link
-        res.render('admin/overallSummary', {  quiz, resultData, roomId: activityRoom.roomId  });
+        res.render('admin/overallSummary', { quiz, resultData, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error accessing overall summary:', err);
         req.flash('error', 'Error accessing overall summary.');
@@ -243,7 +243,91 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
 });
 
 
+const ExcelJS = require('exceljs');
 
+// Route to export overall summary to Excel
+router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        const quiz = await QuizActivity.findById(quizId);
+        const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name');
+
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Overall Summary');
+
+        // Set worksheet columns
+        worksheet.columns = [
+            { header: 'User', key: 'user', width: 30 },
+            { header: 'Score', key: 'score', width: 15 },
+            { header: 'Submitted At', key: 'submittedAt', width: 20 },
+            { header: 'Late Submission', key: 'isLate', width: 15 }
+        ];
+
+        // Add rows to the worksheet
+        results.forEach(result => {
+            worksheet.addRow({
+                user: `${result.userId.first_name} ${result.userId.last_name}`,
+                score: `${result.score} / ${quiz.questions.length}`,
+                submittedAt: new Date(result.submittedAt).toLocaleString(),
+                isLate: result.isLate ? 'Yes' : 'No'
+            });
+        });
+
+        // Set response headers for download
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader('Content-Disposition', `attachment; filename=Overall_Summary_${quiz.title}.xlsx`);
+
+        // Send workbook to response
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('Error exporting to Excel:', err);
+        req.flash('error', 'Failed to export data.');
+        res.redirect(`/admin/overallSummary/${quizId}`);
+    }
+});
+
+
+// Route to display individual test result for a specific user on a quiz
+router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId, userId } = req.params;
+
+    try {
+        // Fetch quiz and user details
+        const quiz = await QuizActivity.findById(quizId).lean();
+        const user = await User.findById(userId).lean();
+        if (!quiz || !user) {
+            req.flash('error', 'Quiz or User not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch the specific user's quiz result
+        const quizResult = await QuizResult.findOne({ quizId, userId }).lean();
+        if (!quizResult) {
+            req.flash('error', 'Test result not found for this user.');
+            return res.redirect(`/admin/overallSummary/${quizId}`);
+        }
+
+        // Render testResult.ejs with quiz, user, and result data
+        res.render('admin/testResult', {
+            quiz,
+            user,
+            answers: quizResult.answers, // Assuming answers contains correctness info
+            score: quizResult.score,
+            totalScore: quiz.questions.length,
+            submittedAt: quizResult.submittedAt
+        });
+    } catch (err) {
+        console.error('Error fetching test result:', err);
+        req.flash('error', 'Error accessing test result.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
 
 
 
