@@ -78,6 +78,7 @@ body {
     margin: 20px 0;
     background-image: url('assets/bg.png'); /* Set background image */
     background-size: cover; /* Cover the entire box */
+    background-repeat: no-repeat;
     border-radius: 8px;
 
 }
