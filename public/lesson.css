@@ -159,16 +159,65 @@ body {
 }
 
 .newbigbox {
-    margin-top: 20px; 
-    padding: 20px; 
-    background-image: url('assets/bg.png'); 
+    margin-top: 20px;
+    padding: 5%; /* Use relative padding for better scaling */
+    background-image: url('assets/bg.png');
     background-repeat: no-repeat;
+    background-size: cover; /* Make background image responsive */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    height: auto;
+    max-width: 90%; /* Restrict max-width for better responsiveness */
+}
+
+.custom-btn {
     display: flex; /* Use flexbox for centering */
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
-    height: auto;
-    border-radius: 8px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5% 10%; /* Use relative padding */
+    margin: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    height: 150px;
+    width: 150px;
+    max-width: 100%; /* Ensure button does not exceed container width */
+    font-size: 16px; /* Adjust font size as needed */
+    text-align: center; /* Center text alignment */
 }
+
+.custom-btn:hover {
+    background-color: #0056b3;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .newbigbox {
+        padding: 3%; /* Reduce padding on smaller screens */
+    }
+    .custom-btn {
+        height: 100px;
+        width: 100px; /* Smaller buttons on smaller screens */
+        font-size: 14px; /* Adjust font size for readability */
+    }
+}
+
+@media (max-width: 480px) {
+    .newbigbox {
+        padding: 2%; /* Further reduce padding */
+    }
+    .custom-btn {
+        height: 80px;
+        width: 80px; /* Smaller button size for very small screens */
+        font-size: 12px;
+    }
+}
+
 
 .upload-box {
     padding: 20px;
@@ -196,25 +245,6 @@ body {
 .color-4 {
     background-color: #C1EAF4;
 }
-
-
-/* Custom button styles */
-.custom-btn {
-    background-color: #007bff; /* Button background color */
-    color: white; /* Button text color */
-    border: none; /* Remove border */
-    padding: 10px 20px; /* Padding for better spacing */
-    margin: 10px; /* Add margin around the buttons */
-    cursor: pointer; /* Change cursor to pointer */
-    transition: background-color 0.3s; /* Transition effect for hover */
-    height: 150px;
-    width: 150px;
-}
-
-.custom-btn:hover {
-    background-color: #0056b3; /* Darker shade on hover */
-}
-
 
 .list-group-item {
     padding: 15px;
