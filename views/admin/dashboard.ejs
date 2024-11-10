@@ -103,31 +103,35 @@
                             <!-- Display the latest quiz, which is now the first item in sorted quizAnalytics -->
                             <% const latestQuiz = quizAnalytics[0]; %>
                             <div class="quiz-analytics my-4">
-                                <h3><%= latestQuiz.quizTitle %></h3>
-                               
+                                <h3><%= latestQuiz.quizTitle %>      
+                                    
+                               </h3>
+                                
                                 <div class="d-flex">
-                                    <div class="stat-box mr-2">
+                                    <div class="stat-box mr-5">
                                         <strong>Average</strong>
                                         <p><%= latestQuiz.averageScore %> / <%= latestQuiz.totalScore %> points</p>
                                     </div>
-                                    <div class="stat-box mr-2">
+                                    <div class="stat-box mr-5">
                                         <strong>Median</strong>
                                         <p><%= latestQuiz.medianScore %> / <%= latestQuiz.totalScore %> points</p>
                                     </div>
-                                    <div class="stat-box">
+                                    <div class="stat-box mr-5">
                                         <strong>Range</strong>
                                         <p><%= latestQuiz.range %></p>
                                     </div>
-                                   
+                                    
+
+                                    <div class=" stat-box  ">
+                                        <a href="/admin/dashboard/allTests/<%= room._id %>" class="btn btn-primary">Show All Test Results</a>
+                                    </div>
                                 </div>
                                
                                 <canvas id="chart-<%= latestQuiz.quizTitle.replace(/\s+/g, '-') %>" width="400" height="200"></canvas>
 
                             </div>
                             <!-- Button to view all test results -->
-                            <div class="text-center mt-4">
-                                <a href="/admin/dashboard/allTests/<%= room._id %>" class="btn btn-primary">Show All Test Results</a>
-                            </div>
+                        
                         <% } else { %>
                             <p>No quiz analytics available.</p>
                         <% } %>
@@ -144,18 +148,23 @@
                                 <div class="updates-header d-flex align-items-center mb-2">
                                     <img src="/assets/codesandbox.svg" alt="CodeSandbox Icon" class="icon">
                                     <h3 class="h6 mb-0 ml-2">Updates</h3>
-                                    <a href="#" class="ml-auto text-primary">View All</a>
+                                    <a  href="/admin/lesson/<%= room._id %>"  class="ml-auto text-primary">View All</a>
+                                    
                                 </div>
-                                <div class="update-item">
-                                    <img src="/assets/dog.png" style="width: 40px;">
-                                    <span>Favourite lesson:</span> 
-                                    <hr>
-                                </div>
-                                <div class="update-item">
-                                    <img src="/assets/witch.png" style="width: 30px;">
-                                    <span>Preferred learning method:</span>
-                                    <hr>
-                                </div>
+                                <!-- Latest PDF Lesson Update -->
+                                <% if (latestPdf) { %>
+                                    <div class="update-item">
+                                        <img src="/assets/pdf-icon.svg" alt="PDF Icon" style="width: 40px;">
+                                        <span>Latest Lesson: <a href="/admin/pdf/<%= latestPdf.pdfFileId %>" target="_blank"><%= latestPdf.pdfFileName %></a></span>
+                                        <hr>
+                                    </div>
+                                <% } else { %>
+                                    <div class="update-item">
+                                        <span>No lessons uploaded yet.</span>
+                                        <hr>
+                                    </div>
+                                <% } %>
+                                
                                 <div class="update-item">
                                     <img src="/assets/hand.png" style="width: 40px;">
                                     <span>Lessons completed:</span>
@@ -172,7 +181,18 @@
                                 <div class="videos-header d-flex align-items-center mb-2">
                                     <img src="/assets/youtube.svg" alt="YouTube Icon" class="icon">
                                     <h3 class="h6 mb-0 ml-2">Videos</h3>
-                                    <a href="/lesson.html" class="ml-auto text-primary">View All</a>
+                                    <a href="/admin/lesson/<%= room._id %>" class="ml-auto text-primary">View All</a>
+                                </div>
+                                <div class="video-update-item">
+                                    <% if (latestVideo) { %>
+                                        <p>Latest Video: <br>
+                                            <a href="/admin/video/<%= latestVideo.videoFileId %>" target="_blank">
+                                                <%= latestVideo.videoFileName %>
+                                            </a>
+                                        </p>
+                                    <% } else { %>
+                                        <p>No videos uploaded yet.</p>
+                                    <% } %>
                                 </div>
                                 
                             </div>

@@ -16,6 +16,8 @@ const { DateTime } = require('luxon');
 const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
 const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
 const QuizResult = require('../models/QuizResult');
+const PdfProgress = require('../models/PdfProgress');
+const { ObjectId } = require('mongodb'); 
 
 // Route to grant access to a specific room
 router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
@@ -85,6 +87,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 
 
+
 router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const { roomId } = req.params;
 
@@ -94,7 +97,31 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
+        
+        // Debugging: Print roomId format to verify compatibility
+        console.log("Room ID type:", typeof roomId, "Room ID value:", roomId);
 
+        // Fetch Lesson document by roomId as either ObjectId or string
+        const lesson = await Lesson.findOne({
+            $or: [
+                { roomId: new ObjectId(roomId) },
+                { roomId: roomId }
+            ]
+        });
+
+        console.log("Lesson document found:", lesson); // Check if lesson document is found
+
+        // Fetch the latest PDF if available
+        const latestPdf = lesson && lesson.pdfFiles && lesson.pdfFiles.length > 0
+            ? lesson.pdfFiles[lesson.pdfFiles.length - 1]
+            : null;
+        
+         // Get the latest Video (if available)
+         const latestVideo = lesson && lesson.videoFiles && lesson.videoFiles.length > 0
+         ? lesson.videoFiles[lesson.videoFiles.length - 1]
+         : null;
+
+        
         const activityRooms = await ActivityRoom.find({ roomId });
         const activityRoomIds = activityRooms.map(ar => ar._id);
         
@@ -137,7 +164,8 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
         quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Render the dashboard with only the sorted analytics
-        res.render('admin/dashboard', { room, quizAnalytics });
+        res.render('admin/dashboard', { room, quizAnalytics, latestPdf, latestVideo });
+        
     } catch (err) {
         console.error('Error accessing dashboard:', err);
         req.flash('error', 'Error accessing the dashboard.');
@@ -676,8 +704,8 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
             console.log('File uploaded:', file);
 
             await Lesson.findOneAndUpdate(
-                { roomId },
-                { 
+                { roomId: new mongoose.Types.ObjectId(roomId) },  // Convert roomId to ObjectId
+                {
                     $push: {
                         pdfFiles: {
                             pdfFileId: file._id,
@@ -704,6 +732,8 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
 
 // Route to serve PDF by file ID from GridFS
 router.get('/pdf/:id', async (req, res) => {
+
+    console.log("Serving PDF with ID:", req.params.id); 
     try {
         const fileId = new mongoose.Types.ObjectId(req.params.id);
         const downloadStream = pdfBucket.openDownloadStream(fileId); // Use pdfBucket here
@@ -800,8 +830,7 @@ router.get('/video/:id', async (req, res) => {
     }
 });
 
-const PdfProgress = require('../models/PdfProgress');
-const { ObjectId } = require('mongodb'); 
+
 
 // Route to save PDF reading progress
 router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {

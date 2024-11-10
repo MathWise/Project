@@ -10,6 +10,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script> <!-- Include PDF.js -->
+        
+    <script>
+        const roomId = "<%= room._id %>";  // Define roomId for client-side use
+        console.log("Room ID:", roomId);    // Check if roomId is correctly defined
+    </script>
 </head>
 <body>
     <div class="container-fluid p-0">
@@ -503,9 +508,11 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.clickable').forEach(function (roomElement) {
                     roomElement.addEventListener('click', function () {
+                       // Retrieve roomId from data-room-id attribute
                         const roomId = this.getAttribute('data-room-id');
                         const userId = '<%= currentUser._id %>';
-
+                        
+                        // Load PDFs and Videos for the selected room
                         document.getElementById('lessonRoomContent').style.display = 'block';
                         loadLessonFiles(roomId, userId);
 
@@ -693,8 +700,8 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
         });
     });
     </script>
-    
 
+    
 
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
