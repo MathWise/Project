@@ -293,7 +293,7 @@ router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, re
 });
 
 
-// Route to display individual test result for a specific user on a quiz
+// Route to display individual test results for a specific user on a quiz
 router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId, userId } = req.params;
 
@@ -306,21 +306,19 @@ router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) 
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch the specific user's quiz result
-        const quizResult = await QuizResult.findOne({ quizId, userId }).lean();
-        if (!quizResult) {
-            req.flash('error', 'Test result not found for this user.');
+        // Fetch all quiz results for the specific user and quiz
+        const quizResults = await QuizResult.find({ quizId, userId }).sort({ submittedAt: -1 }).lean();
+        if (!quizResults.length) {
+            req.flash('error', 'No test results found for this user.');
             return res.redirect(`/admin/overallSummary/${quizId}`);
         }
 
-        // Render testResult.ejs with quiz, user, and result data
+        // Render testResult.ejs with quiz, user, and all results
         res.render('admin/testResult', {
             quiz,
             user,
-            answers: quizResult.answers, // Assuming answers contains correctness info
-            score: quizResult.score,
-            totalScore: quiz.questions.length,
-            submittedAt: quizResult.submittedAt
+            quizResults, // Pass all quiz attempts
+            totalScore: quiz.questions.length
         });
     } catch (err) {
         console.error('Error fetching test result:', err);
