@@ -8,6 +8,19 @@ const middleware = {
         res.redirect("/login"); // Redirect to the login page
     },
 
+    ensureRoomAccess: (req, res, next) => {
+        const roomId = req.params.roomId;
+
+        // Check if the user has access to the room in the session
+        if (req.session.roomAccess && req.session.roomAccess[roomId]) {
+            return next(); // User has access, proceed to the next middleware
+        }
+
+        // Redirect to homeAdmin if access is not granted
+        req.flash('warning', 'Please enter the room password to access this page.');
+        res.redirect('/admin/homeAdmin');
+    },
+
     // Ensures the user is an admin
     ensureAdminLoggedIn: (req, res, next) => {
         
@@ -35,7 +48,7 @@ const middleware = {
         }
         if (req.user.role !== "student") {
             req.flash("warning", "This route is allowed for students only!");
-            return res.redirect("/user/homeUser"); // Redirect to the admin home page
+            return res.redirect("/login"); // Redirect to the admin home page
         }
         next();
     },
@@ -53,6 +66,8 @@ const middleware = {
         }
         next();
     }
+    
+
 };
 
 module.exports = middleware;

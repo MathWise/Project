@@ -7,13 +7,8 @@
 <body>
     <div class="container">
         <h1>Overall Summary for <%= quiz.title %></h1>
-        <script>
-            console.log("roomId:", "<%= roomId %>");
-        </script>
 
         <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
-       
-        <!-- Export to Excel Button -->
         <a href="/admin/overallSummary/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
 
         <table class="table table-bordered mt-3">
@@ -21,6 +16,7 @@
                 <tr>
                     <th>User</th>
                     <th>Score</th>
+                    <th>Attempt</th>
                     <th>Submitted At</th>
                     <th>Late Submission</th>
                     <th>Action</th>
@@ -29,22 +25,19 @@
             <tbody>
                 <% resultData.forEach(result => { %>
                     <% 
-                        // Calculate the percentage score
                         const scorePercentage = (result.score / quiz.questions.length) * 100;
-                        const isBelowThreshold = scorePercentage < 75; // Check if it's below 75%
+                        const isBelowThreshold = scorePercentage < 75;
                     %>
                     <tr>
                         <td><%= result.first_name %> <%= result.last_name %></td>
-                        
-                        <!-- Apply conditional color to the score based on threshold -->
                         <td style="color: <%= isBelowThreshold ? 'red' : 'black' %>;">
                             <%= result.score %> / <%= quiz.questions.length %> points
                         </td>
-                        
+                        <!-- Display the attempt number -->
+                        <td><%= result.attempt %></td>
                         <td><%= new Date(result.submittedAt).toLocaleString() %></td>
                         <td><%= result.isLate ? 'Yes' : 'No' %></td>
                         <td>
-                            <!-- Test Result Button -->
                             <a href="/admin/testResult/<%= quiz._id %>/<%= result.userId %>" class="btn btn-primary">Test Result</a>
                         </td>
                     </tr>

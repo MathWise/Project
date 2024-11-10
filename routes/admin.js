@@ -17,6 +17,19 @@ const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for
 const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
 const QuizResult = require('../models/QuizResult');
 
+// Route to grant access to a specific room
+router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
+    const { roomId } = req.params;
+
+    // Initialize session roomAccess object if it doesn't exist
+    if (!req.session.roomAccess) {
+        req.session.roomAccess = {};
+    }
+
+    // Store the room access in the session
+    req.session.roomAccess[roomId] = true;
+    res.status(200).send('Access granted');
+});
 
 // Render the homeAdmin page with room creation and existing rooms
 router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
@@ -72,7 +85,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 
 
-router.get('/dashboard/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const { roomId } = req.params;
 
     try {
@@ -220,20 +233,45 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch quiz results, populating user details
-        const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name');
+        // Fetch quiz results, populate user details, and sort by name
+        const results = await QuizResult.find({ quizId })
+            .populate('userId', 'first_name last_name')
+            .sort({ 'userId.last_name': 1, 'userId.first_name': 1 })  // Sort by last name, then first name
+            .lean();
 
-        // Format result data for rendering, now including userId
-        const resultData = results.map(result => ({
-            userId: result.userId ? result.userId._id : null, // Include userId
-            first_name: result.userId ? result.userId.first_name : 'Unknown',
-            last_name: result.userId ? result.userId.last_name : 'User',
-            score: result.score,
-            submittedAt: result.submittedAt,
-            isLate: result.isLate
+        // Organize results by user and calculate attempt count for each result
+        const resultData = await Promise.all(results.map(async (result) => {
+            // Fetch all attempts for the user on this quiz, sorted by submission date
+            const userAttempts = await QuizResult.find({ quizId, userId: result.userId._id })
+                .sort({ submittedAt: 1 }) // Sort by oldest to newest
+                .lean();
+
+            // Determine the attempt number for this specific result
+            const attemptNumber = userAttempts.findIndex(r => r._id.equals(result._id)) + 1;
+
+            return {
+                userId: result.userId._id,
+                first_name: result.userId.first_name,
+                last_name: result.userId.last_name,
+                score: result.score,
+                submittedAt: result.submittedAt,
+                isLate: result.isLate,
+                attempt: attemptNumber // Include attempt number in each result
+            };
         }));
 
-        // Pass roomId explicitly to render the link
+        // Sort resultData by last name, first name, and attempt
+        resultData.sort((a, b) => {
+            if (a.last_name === b.last_name) {
+                if (a.first_name === b.first_name) {
+                    return a.attempt - b.attempt; // Sort by attempt if names are identical
+                }
+                return a.first_name.localeCompare(b.first_name); // Sort by first name
+            }
+            return a.last_name.localeCompare(b.last_name); // Sort by last name
+        });
+
+        // Render the overallSummary view with the modified resultData
         res.render('admin/overallSummary', { quiz, resultData, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error accessing overall summary:', err);
@@ -244,14 +282,43 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
 
 
 const ExcelJS = require('exceljs');
-
 // Route to export overall summary to Excel
 router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
 
     try {
         const quiz = await QuizActivity.findById(quizId);
-        const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name');
+        const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name').lean();
+
+        // Sort results by last name, first name, and attempt
+        const sortedResults = await Promise.all(results.map(async (result) => {
+            const userAttempts = await QuizResult.find({ quizId, userId: result.userId._id })
+                .sort({ submittedAt: 1 }) // Sort by oldest to newest
+                .lean();
+
+            const attemptNumber = userAttempts.findIndex(r => r._id.equals(result._id)) + 1;
+
+            return {
+                user: `${result.userId.first_name} ${result.userId.last_name}`,
+                score: `${result.score} / ${quiz.questions.length}`,
+                submittedAt: new Date(result.submittedAt).toLocaleString(),
+                isLate: result.isLate ? 'Yes' : 'No',
+                attempt: attemptNumber
+            };
+        }));
+
+        // Sort by user last name, first name, and attempt for Excel export
+        sortedResults.sort((a, b) => {
+            const [aFirst, aLast] = a.user.split(' ');
+            const [bFirst, bLast] = b.user.split(' ');
+            if (aLast === bLast) {
+                if (aFirst === bFirst) {
+                    return a.attempt - b.attempt;
+                }
+                return aFirst.localeCompare(bFirst);
+            }
+            return aLast.localeCompare(bLast);
+        });
 
         // Create a new workbook and worksheet
         const workbook = new ExcelJS.Workbook();
@@ -261,19 +328,13 @@ router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, re
         worksheet.columns = [
             { header: 'User', key: 'user', width: 30 },
             { header: 'Score', key: 'score', width: 15 },
+            { header: 'Attempt', key: 'attempt', width: 10 },
             { header: 'Submitted At', key: 'submittedAt', width: 20 },
             { header: 'Late Submission', key: 'isLate', width: 15 }
         ];
 
-        // Add rows to the worksheet
-        results.forEach(result => {
-            worksheet.addRow({
-                user: `${result.userId.first_name} ${result.userId.last_name}`,
-                score: `${result.score} / ${quiz.questions.length}`,
-                submittedAt: new Date(result.submittedAt).toLocaleString(),
-                isLate: result.isLate ? 'Yes' : 'No'
-            });
-        });
+        // Add rows to the worksheet from sorted results
+        sortedResults.forEach(result => worksheet.addRow(result));
 
         // Set response headers for download
         res.setHeader(
@@ -477,7 +538,7 @@ router.get('/Archive', ensureLoggedIn, async (req, res) => {
 //end of managing room--------------------------------------------------------------------------------
 
 // Route to handle lessons for a specific room
-router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const roomId = req.params.roomId;
     console.log('Rendering lesson page for Room ID:', roomId);
     const currentUser = req.user; 
@@ -865,7 +926,7 @@ router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, re
 
 
 
-router.get('/activities/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const { roomId } = req.params;
     console.log('Received roomId in activities:', roomId);
 
@@ -1019,8 +1080,11 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/quizzes/result/' + id);
         }
 
-        req.session.quizStartTime = Date.now();
-
+         // Reset quizStartTime if starting a new quiz or if it's missing
+         if (!req.session.quizStartTime || req.session.currentQuizId !== id) {
+            req.session.quizStartTime = Date.now();
+            req.session.currentQuizId = id;  // Track current quiz ID to handle new quiz starts
+        }
         res.render('quizzes/start', {
             quiz,
             currentUserId: userId,
@@ -1104,6 +1168,10 @@ router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
             score: savedQuizResult.score,
             submittedAt: savedQuizResult.submittedAt
         });
+
+        // Clear quizStartTime and currentQuizId after submission
+        delete req.session.quizStartTime;
+        delete req.session.currentQuizId;
 
         req.flash('success', `You got ${correctCount} out of ${quiz.questions.length} correct!`);
         return res.redirect(`/admin/quizzes/result/${quizId}`);
@@ -1220,7 +1288,7 @@ router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) =
 
 
 
-router.get('/educGames/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.get('/educGames/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const roomId = req.params.roomId;
 
     try {

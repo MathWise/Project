@@ -1,34 +1,77 @@
 const timerDisplayElement = document.getElementById('timer-display');
+const timeUpMessageElement = document.getElementById('time-up-message');
+const quizForm = document.getElementById('quizForm');
+const timerDisplay = document.getElementById('timer');
+const quizId = quizForm.action.split('/').pop(); // Extract the quiz ID from the form action URL
 
-if (timerDisplayElement) {
-    const startTime = parseInt(timerDisplayElement.getAttribute('data-start-time'), 10);
-    const quizDuration = parseInt(timerDisplayElement.getAttribute('data-timer'), 10) * 60 * 1000;
-    const endTime = startTime + quizDuration;
+// Initialize or load the start time from localStorage
+let startTime = parseInt(localStorage.getItem(`quizStartTime_${quizId}`), 10);
+const quizDuration = parseInt(timerDisplayElement.getAttribute('data-timer'), 10) * 60 * 1000; // in milliseconds
 
-    const timerDisplay = document.getElementById('timer');
-    const quizForm = document.getElementById('quizForm');
-
-    function updateTimer() {
-        const now = Date.now();
-        const remainingTime = endTime - now;
-
-        if (remainingTime <= 0) {
-            clearInterval(countdown);
-            alert("Time's up! Submitting your quiz automatically.");
-            if (quizForm) {
-                quizForm.submit();
-            } else {
-                console.error("Quiz form not found.");
-            }
-        } else {
-            const minutes = Math.floor(remainingTime / 1000 / 60);
-            const seconds = Math.floor((remainingTime / 1000) % 60);
-            timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-        }
-    }
-
-    const countdown = setInterval(updateTimer, 1000);
-    updateTimer();
-} else {
-    console.error('Timer or form element is missing.');
+if (!startTime) {
+    // If no start time in localStorage, set a new start time
+    startTime = Date.now();
+    localStorage.setItem(`quizStartTime_${quizId}`, startTime);
 }
+
+const endTime = startTime + quizDuration;
+
+function updateTimer() {
+    const now = Date.now();
+    const remainingTime = endTime - now;
+
+    if (remainingTime <= 0) {
+        clearInterval(countdown);
+        // Show the time-up notification message
+        if (timeUpMessageElement) {
+            timeUpMessageElement.style.display = 'block';
+        }
+        // Automatically submit the quiz without any user interaction
+        setTimeout(() => quizForm.submit(), 2000); // Give user 2 seconds to see the message
+    } else {
+        const minutes = Math.floor(remainingTime / 1000 / 60);
+        const seconds = Math.floor((remainingTime / 1000) % 60);
+        timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+        // Save remaining time in localStorage for persistence
+        localStorage.setItem(`quizRemainingTime_${quizId}`, remainingTime);
+    }
+}
+
+// Interval to update the timer every second
+const countdown = setInterval(updateTimer, 1000);
+updateTimer(); // Initial call to display timer immediately
+
+// Save answers periodically to localStorage
+function saveProgress() {
+    const answers = {};
+    const formData = new FormData(quizForm);
+    formData.forEach((value, key) => {
+        answers[key] = value;
+    });
+    localStorage.setItem(`quizProgress_${quizId}`, JSON.stringify(answers));
+}
+
+// Load answers from localStorage when the page loads
+function loadProgress() {
+    const savedAnswers = JSON.parse(localStorage.getItem(`quizProgress_${quizId}`));
+    if (savedAnswers) {
+        Object.keys(savedAnswers).forEach(key => {
+            const input = quizForm.elements[key];
+            if (input) {
+                if (input.type === 'radio') {
+                    const radioButton = document.querySelector(`input[name="${key}"][value="${savedAnswers[key]}"]`);
+                    if (radioButton) radioButton.checked = true;
+                } else {
+                    input.value = savedAnswers[key];
+                }
+            }
+        });
+    }
+}
+
+// Event listeners to save progress
+quizForm.addEventListener('input', saveProgress);
+window.addEventListener('beforeunload', saveProgress);
+
+// Load progress when the page is loaded
+loadProgress();

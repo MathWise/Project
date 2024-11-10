@@ -29,9 +29,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Session middleware should be defined before passport middleware
 app.use(session({
-  secret: 'yourSecret', // Replace with your own secret
+  secret: process.env.SESSION_SECRET || 'yourSecret', // Replace with your own secret
   resave: false,
-  saveUninitialized: true
+  saveUninitialized: true,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',  // Ensures cookies are sent over HTTPS in production
+    httpOnly: true,  // Prevent JavaScript from accessing cookies
+    maxAge: 24 * 60 * 60 * 1000  // Session expires after 1 day
+  }
+  
 }));
 
 app.use(flash());
@@ -44,6 +50,12 @@ app.use((req, res, next) => {
   res.locals.successMessage = req.flash('success');
   res.locals.errorMessage = req.flash('error');
   res.locals.warningMessage = req.flash('warning');
+  next();
+});
+
+// Cache control middleware to prevent caching of protected routes
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
 });
 

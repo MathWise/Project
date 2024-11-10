@@ -15,7 +15,7 @@
         <div class="dropdown-content">
             <a href="/admin/manage-access">Manage Access</a>
             <a href="/admin/Archive">Archive</a>
-            <a href="/login">Logout</a>
+            <a href="/logout">Logout</a>
         </div>
     </div>
  
@@ -146,7 +146,36 @@
         console.log("Success Message:", "<%= successMessage %>");
         console.log("Error Message:", "<%= errorMessage %>");
     </script>
-    
+
+ <script>
+    window.addEventListener("load", () => {
+        if (!sessionStorage.getItem("loggedIn")) {
+            sessionStorage.clear();
+            window.location.href = "/login";  // Redirect to login if sessionStorage is cleared
+        }
+    });
+</script>
+
+<script>
+    function promptPassword(correctPassword, roomId) {
+        const userPassword = prompt('Enter the room password:');
+        if (userPassword === correctPassword) {
+            // Store room access in the session via an AJAX request
+            fetch(`/admin/grant-access/${roomId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = `/admin/dashboard/${roomId}`;
+                    } else {
+                        alert('Failed to grant access. Please try again.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            alert('Incorrect password. Please try again.');
+        }
+    }
+</script>
+
 
     
     <style>
