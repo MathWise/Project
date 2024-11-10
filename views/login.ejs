@@ -13,59 +13,59 @@
     
     <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center" style="background-color: #b3e5fc;">
         <div class="card shadow-lg" style="max-width: 900px; width: 100%; position: relative;">
-            <div class="card-body p-5 d-flex bg-image">
-                <div class="text-start" style="max-width: 60%; margin-right: 150px;">
+            <div class="card-body p-5 d-flex">
+                <!-- Left Side Content: Text and Logo -->
+                <div class="d-flex flex-column justify-content-center" style="max-width: 60%; margin-right: 50px; margin-top: -90px;"> <!-- Adjusted margin-top -->
+                    <!-- Logo above the text -->
+                    <div class="text-center mb-3">
+                        <img src="assets/logo.png" alt="MathWise Icon" class="img-fluid" style="width: 120px;">
+                    </div>
+                    <!-- Text content -->
                     <h1 class="card-title mb-3" style="color: #680A76; font-weight: bold;">Welcome to MathWise</h1>
-                    <p class="card-text text-left" style="color: #680A76; font-size: 1.2rem; line-height: 1.5;">
+                    <p class="card-text" style="color: #680A76; font-size: 1.2rem; line-height: 1.5;">
                         A Math E-learning platform<br>
                         specifically designed for students at<br>
                         Sto. Niño Elementary School in Parañaque.
                     </p>
                 </div>
-                <div class="icon">
-                    <img src="assets/logo.png" alt="MathWise Icon" class="img-fluid" style="width: 180px;">
-                </div>
-            </div>
-            
-         <div class="card-body p-4">
-            <div class="card-body p-4">
-                <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
-                    <div class="alert alert-success" id="success-alert">
-                        <%= successMessage[0] %>
-                    </div>
-                <% } %>
-                <% if (typeof error !== 'undefined' && error.length > 0) { %>
-                    <div class="alert alert-danger" id="error-alert">
-                        <%= error[0] %>
-                    </div>
-                <% } %>
-            </div>
-            
-            <form action="/login" method="post">
-                <div class="form-group mb-3">
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
-                </div>
-                <div class="form-group mb-3 position-relative">
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required>
-                    <span class="toggle-password position-absolute end-0 top-0 mt-2 me-3" style="cursor: pointer;">
-                        <i class="bi bi-eye" id="togglePasswordIcon"></i>
-                    </span>
-                </div>
-                <button type="submit" id="submitButton" class="btn btn-primary w-100">Log In</button>
-            </form>
 
-            <div class="text-center mt-3">
-                <a href="/signup" class="text-muted">Don't have an account? <span class="text-primary">Register here</span></a>
-                <br>
-                <a href="/mail/forgetpassword" class="text-muted">Forgot Password? <span class="text-primary">Click here</span></a>
-              
+                <!-- Right Side Content: Login Form -->
+                <div class="d-flex flex-column justify-content-center" style="max-width: 40%; margin-top: 120px;"> <!-- Adjusted margin-top -->
+                    <form action="/login" method="post">
+                        <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                            <div class="alert alert-success" id="success-alert">
+                                <%= successMessage[0] %>
+                            </div>
+                        <% } %>
+                        <% if (typeof error !== 'undefined' && error.length > 0) { %>
+                            <div class="alert alert-danger" id="error-alert">
+                                <%= error[0] %>
+                            </div>
+                        <% } %>
+
+                        <div class="form-group mb-3">
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+                        </div>
+                        <div class="form-group mb-3 position-relative">
+                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required>
+                            <span class="toggle-password position-absolute end-0 top-0 mt-2 me-3" style="cursor: pointer;">
+                                <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                            </span>
+                        </div>
+                        <button type="submit" id="submitButton" class="btn btn-primary w-100">Log In</button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <a href="/signup" class="text-muted">Don't have an account? <span class="text-primary">Register here</span></a>
+                        <br>
+                        <a href="/mail/forgetpassword" class="text-muted">Forgot Password? <span class="text-primary">Click here</span></a>
+                    </div>
+                    <br>
+                    <div class="position-absolute bottom-0 start-0 p-3">
+                        <p class="text-muted mb-0">Powered by <strong>MathWise</strong></p>
+                    </div>
+                </div>
             </div>
-            <br>
-            <div class="position-absolute bottom-0 start-0 p-3">
-                
-                <p class="text-muted mb-0">Powered by <strong>MathWise</strong></p>
-            </div>
-         </div>
         </div>
     </div>
     
@@ -97,7 +97,6 @@
                 }, 3000);
             }
         };
-        console.log('Success message:', '<%= successMessage.length %>');
     </script>
 </body>
 </html>
