@@ -4,12 +4,51 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600&display=swap" rel="stylesheet">
     <title>Quiz Results</title>
+    <style>
+        /* Set background and font style */
+        body {
+            background-color: #E0F4F9;
+            font-family: 'Baloo 2', cursive;
+            margin: 0;
+            padding: 0;
+        }
+
+        .status-on-time {
+            color: green;
+        }
+
+        .status-late {
+            color: red;
+        }
+
+        .text-success {
+            color: green;
+        }
+
+        .text-warning {
+            color: orange;
+        }
+
+        .text-danger {
+            color: red;
+        }
+
+        h1, h2, p, strong, span, ul, li {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        .container {
+            margin-top: 20px;
+            background-image: url('/assets/bg.png');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
-<style>
-    .status-on-time { color: green; }
-    .status-late { color: red; }
-</style>
 <body>
     <div class="container">
         <h1>Quiz Results</h1>

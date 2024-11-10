@@ -59,26 +59,28 @@
         </div>
 
         <div class="containers row">
-            <aside class="col-md-1 sidebar text-center p-3" style="height: 700px;">
+            <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/dashboard/<%= room._id %>"  class="text-dark">
-                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
-                                Dashboard
-                            </a>
+                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
+                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
+                            Dashboard
+                            </span>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/lesson/<%= room._id %>" class="text-dark" style="padding: 10px; border-radius: 5px; display: block;">
+                            <a href="/admin/lesson/<%= room._id %>" class="text-dark">
                                 <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
                                 Lesson
+                                </span>
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>"  class="text-dark font-weight-bold" style="background-color: #FFDF9F; padding: 10px; border-radius: 5px; display: block;">
+                            <a href="/admin/activities/<%= room._id %>" class="text-dark activities-button">
+                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
-                            </a>
+                            </a >
                         </li>
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/educGames/<%= room._id %>" class="text-dark">

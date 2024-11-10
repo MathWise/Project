@@ -229,3 +229,12 @@ body {
 .dropdown-menu a:hover {
     background-color: #f0f0f0;
 }
+.rounded-sidebar {
+    border-radius: 15px; /* Adjust the radius as needed */
+}
+.activities-button {
+    background-color: #FFDF9F; /* Set background color for the Lesson button */
+    padding: 10px; /* Add padding for better appearance */
+    border-radius: 5px; /* Round the corners of the Lesson button */
+    display: block;
+}
