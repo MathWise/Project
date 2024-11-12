@@ -297,14 +297,7 @@
                 videoList.innerHTML = ''; // Clear the Video list
 
                 try {
-                    console.log(`Fetching lessons for roomId: ${roomId}`);
                     const response = await fetch(`/admin/get-lessons/${roomId}`);
-                    
-
-                    if (!response.ok) {
-                        throw new Error(`Failed to fetch lesson files: ${response.status} ${response.statusText}`);
-                    }
-
                     const lessonData = await response.json();
 
                     // Check if pdfFiles is a valid array and populate PDFs
@@ -355,49 +348,49 @@
 
                     // Populate the Videos
                     if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
-                    lessonData.videoFiles.forEach(function (video) {
-                        const videoFileId = video.videoFileId;
-                        const videoFileName = video.videoFileName;
-                        const videoUrl = `/admin/video/${videoFileId}`; // URL to fetch the video
+    lessonData.videoFiles.forEach(function (video) {
+        const videoFileId = video.videoFileId;
+        const videoFileName = video.videoFileName;
+        const videoUrl = `/admin/video/${videoFileId}`; // URL to fetch the video
 
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `
-                            <div>
-                            <strong>${videoFileName}</strong>
-                            <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
-                            <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                            </div>
-                        `;
-                        videoList.appendChild(listItem);
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <div>
+               <strong>${videoFileName}</strong>
+               <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
+               <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
+            </div>
+        `;
+        videoList.appendChild(listItem);
 
-                        // Capture the frame at the 5th second as a thumbnail
-                        const videoElement = document.getElementById(`video_${videoFileId}`);
-                        const canvas = document.getElementById(`thumbnail_${videoFileId}`);
-                        const context = canvas.getContext('2d');
+        // Capture the frame at the 5th second as a thumbnail
+        const videoElement = document.getElementById(`video_${videoFileId}`);
+        const canvas = document.getElementById(`thumbnail_${videoFileId}`);
+        const context = canvas.getContext('2d');
 
-                        // Listen for metadata to load, then set the currentTime to 5 seconds
-                        videoElement.addEventListener('loadedmetadata', function() {
-                            // Seek to 5 seconds
-                            videoElement.currentTime = 5;
-                        });
+        // Listen for metadata to load, then set the currentTime to 5 seconds
+        videoElement.addEventListener('loadedmetadata', function() {
+            // Seek to 5 seconds
+            videoElement.currentTime = 5;
+        });
 
-                        // When the seek operation completes, add a delay before drawing the frame
-                        videoElement.addEventListener('seeked', function() {
-                            setTimeout(() => {
-                                // Draw the frame at the 5th second onto the canvas
-                                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                                videoElement.style.display = 'none'; // Optional: Hide the video element after capturing
-                            }, 250); // Adjust the delay time as needed
-                        });
+        // When the seek operation completes, add a delay before drawing the frame
+        videoElement.addEventListener('seeked', function() {
+            setTimeout(() => {
+                // Draw the frame at the 5th second onto the canvas
+                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                videoElement.style.display = 'none'; // Optional: Hide the video element after capturing
+            }, 250); // Adjust the delay time as needed
+        });
 
-                        // Add click event listener to open the video modal
-                        canvas.addEventListener('click', () => {
-                            openVideoModal(videoUrl, videoFileId);
-                        });
-                    });
-                } else {
-                    videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
-                }
+        // Add click event listener to open the video modal
+        canvas.addEventListener('click', () => {
+            openVideoModal(videoUrl, videoFileId);
+        });
+    });
+} else {
+    videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+}
 
 
                 } catch (error) {

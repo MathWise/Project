@@ -13,11 +13,12 @@ const User = require('../models/user'); // Use your existing User model
 const connectDB = require('../config/dbConnection');
 const mongoURI = process.env.MONGODB_URI;
 const { DateTime } = require('luxon');
-const QuizActivity = require('../models/QuizActivityRoom'); // Correct model for quizzes
+const Quiz = require('../models/QuizActivityRoom'); // Matches the export in QuizActivityRoom.js
 const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
 const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
 const { ObjectId } = require('mongodb'); 
+
 
 // Route to grant access to a specific room
 router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
@@ -54,33 +55,115 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
     const { name, gradeLevel, teacherName, roomPassword } = req.body;
 
     try {
-        
-        // Validate input data if necessary
+        // Step 1: Create a new Room
         const newRoom = new Room({ name, gradeLevel, teacherName, roomPassword });
         await newRoom.save();
+        console.log('New room created successfully:', newRoom);
 
-
-        console.log('New room created successfully:', newRoom); // Debugging confirmation
-
-        // Automatically create a default ActivityRoom for the new Room
+        // Step 2: Create a default ActivityRoom for quizzes
         const defaultActivityRoom = new ActivityRoom({
-            roomId: newRoom._id,  // Link to the newly created Room
-            subject: "Default Subject",  // Use a default subject or customize based on your needs
-            activityType: "Quiz",        // Default activity type, e.g., "Quiz"
+            roomId: newRoom._id,
+            subject: "Default Subject",
+            activityType: "Quiz",
             createdAt: new Date()
         });
-        
         await defaultActivityRoom.save();
         console.log('Default ActivityRoom created successfully:', defaultActivityRoom);
 
-        req.flash('success', 'Room created successfully!');
+        // Step 3: Define default quizzes by difficulty level
+        const quizzes = [
+            {
+                title: "Sample Quiz - Easy",
+                roomId: defaultActivityRoom._id,
+                difficultyLevel: "easy",
+                questions: [
+                    {
+                        questionText: "What is 5 + 3?",
+                        type: "fill-in-the-blank",
+                        correctAnswer: "8"
+                    },
+                    {
+                        questionText: "What is the color of the sky?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "Blue", isCorrect: true },
+                            { text: "Green", isCorrect: false },
+                            { text: "Yellow", isCorrect: false },
+                            { text: "Red", isCorrect: false }
+                        ]
+                    }
+                ],
+                timer: 5, // Easy quiz timer (in minutes)
+                maxAttempts: 3
+            },
+            {
+                title: "Sample Quiz - Medium",
+                roomId: defaultActivityRoom._id,
+                difficultyLevel: "medium",
+                questions: [
+                    {
+                        questionText: "What is the capital of Germany?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "Berlin", isCorrect: true },
+                            { text: "Munich", isCorrect: false },
+                            { text: "Frankfurt", isCorrect: false },
+                            { text: "Hamburg", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "Solve for x: 3x = 12",
+                        type: "fill-in-the-blank",
+                        correctAnswer: "4"
+                    }
+                ],
+                timer: 10, // Medium quiz timer (in minutes)
+                maxAttempts: 3
+            },
+            {
+                title: "Sample Quiz - Hard",
+                roomId: defaultActivityRoom._id,
+                difficultyLevel: "hard",
+                questions: [
+                    {
+                        questionText: "What is the derivative of x^2?",
+                        type: "fill-in-the-blank",
+                        correctAnswer: "2x"
+                    },
+                    {
+                        questionText: "Who developed the theory of relativity?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "Albert Einstein", isCorrect: true },
+                            { text: "Isaac Newton", isCorrect: false },
+                            { text: "Galileo Galilei", isCorrect: false },
+                            { text: "Marie Curie", isCorrect: false }
+                        ]
+                    }
+                ],
+                timer: 15, // Hard quiz timer (in minutes)
+                maxAttempts: 3
+            }
+        ];
+
+        // Step 4: Save each quiz to the database
+        for (const quizData of quizzes) {
+            const newQuiz = new Quiz(quizData);
+            await newQuiz.save();
+            console.log(`Default Quiz - ${quizData.difficultyLevel} created successfully:`, newQuiz);
+        }
+
+        // Flash a success message and redirect to the admin home page
+        req.flash('success', 'Room and default quizzes created successfully!');
         res.redirect('/admin/homeAdmin');
     } catch (err) {
         console.error(err);
-        req.flash('error', 'Error creating room. Please ensure all fields are filled in correctly.');
+        req.flash('error', 'Error creating room and quizzes. Please ensure all fields are filled in correctly.');
         res.redirect('/admin/homeAdmin');
     }
 });
+
+
 
 // end of home Admin-----------------------------------------------------------------------------------------------------------------
 
@@ -140,7 +223,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
         const activityRooms = await ActivityRoom.find({ roomId });
         const activityRoomIds = activityRooms.map(ar => ar._id);
 
-        const quizzes = await QuizActivity.find({ roomId: { $in: activityRoomIds } });
+        const quizzes = await Quiz.find({ roomId: { $in: activityRoomIds } });
 
         const quizAnalytics = await Promise.all(
             quizzes.map(async (quiz) => {
@@ -210,7 +293,7 @@ router.get('/dashboard/allTests/:roomId', ensureAdminLoggedIn, async (req, res) 
         const activityRooms = await ActivityRoom.find({ roomId });
         const activityRoomIds = activityRooms.map(ar => ar._id);
 
-        const quizzes = await QuizActivity.find({ roomId: { $in: activityRoomIds } });
+        const quizzes = await Quiz.find({ roomId: { $in: activityRoomIds } });
         
         // Prepare analytics for each quiz as done in the dashboard route
         const quizAnalytics = await Promise.all(
@@ -263,7 +346,7 @@ router.get('/overallSummary/:quizId', ensureAdminLoggedIn, async (req, res) => {
 
     try {
         // Fetch quiz and populate roomId for navigation
-        const quiz = await QuizActivity.findById(quizId).lean();
+        const quiz = await Quiz.findById(quizId).lean();
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
@@ -329,7 +412,7 @@ router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, re
     const { quizId } = req.params;
 
     try {
-        const quiz = await QuizActivity.findById(quizId);
+        const quiz = await Quiz.findById(quizId);
         const results = await QuizResult.find({ quizId }).populate('userId', 'first_name last_name').lean();
 
         // Sort results by last name, first name, and attempt
@@ -402,7 +485,7 @@ router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) 
 
     try {
         // Fetch quiz and user details
-        const quiz = await QuizActivity.findById(quizId).lean();
+        const quiz = await Quiz.findById(quizId).lean();
         const user = await User.findById(userId).lean();
         if (!quiz || !user) {
             req.flash('error', 'Quiz or User not found.');
@@ -514,7 +597,7 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
-// Archive a room
+
 // Archive a room with password verification
 router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
@@ -639,11 +722,8 @@ router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, async (req, res)
     }
 });
 
-// Route to fetch lessons (PDFs and Videos) for a specific room
 router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    console.log(`Fetching lessons for roomId: ${roomId}`);
-
 
     try {
         const lesson = await Lesson.findOne(
@@ -658,7 +738,6 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
             return res.status(404).json({ message: 'No lessons found for this room.' });
         }
 
-        console.log('Lesson found:', lesson);
         // Send the lesson's PDF and video data as JSON
         res.json({
             pdfFiles: lesson.pdfFiles,
@@ -669,7 +748,6 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
         res.status(500).json({ message: 'Error fetching lessons.' });
     }
 });
-
 
 
 let pdfBucket;
@@ -1085,11 +1163,12 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
             return res.redirect('/admin/homeAdmin');
         }
 
+        
         // Filter non-archived activity rooms to display
         const activityRooms = allActivityRooms.filter(room => !room.archived);
 
         // Fetch quizzes related to non-archived activity rooms if needed
-        const quizzes = await QuizActivity.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
+        const quizzes = await Quiz.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
 
         res.render('admin/activities', {
             room,
@@ -1106,18 +1185,20 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
 
 
 
-// API route to fetch quizzes for a specific activity room
+// API route to fetch non-archived quizzes for a specific activity room
 router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    console.log('Fetching quizzes for room:', roomId); // Add logging
+    console.log('Fetching non-archived quizzes for room:', roomId); // Add logging
 
     try {
-        // Fetch quizzes associated with the roomId
-        const quizzes = await QuizActivity.find({ roomId: new mongoose.Types.ObjectId(roomId) });
-
+        // Fetch only quizzes associated with the roomId and where archived is false
+        const quizzes = await Quiz.find({ 
+            roomId: new mongoose.Types.ObjectId(roomId),
+            archived: false // Only fetch quizzes that are not archived
+        });
 
         if (!quizzes || quizzes.length === 0) {
-            console.log('No quizzes found for room:', roomId);
+            console.log('No non-archived quizzes found for room:', roomId);
         }
 
         res.json({ quizzes });
@@ -1126,6 +1207,7 @@ router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => 
         res.status(500).json({ message: 'Error fetching quizzes.' });
     }
 });
+
 
 
 // Route to submit a new quiz
@@ -1163,7 +1245,7 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
             throw new Error('Invalid deadline format. Please enter a valid date.');
         }
 
-        const newQuiz = new QuizActivity({
+        const newQuiz = new Quiz({
             title,
             roomId: new mongoose.Types.ObjectId(activityRoomId),  // Ensures ObjectId format
             questions,
@@ -1190,7 +1272,7 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.user._id);
 
     try {
-        const quiz = await QuizActivity.findById(id);
+        const quiz = await Quiz.findById(id);
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
@@ -1236,7 +1318,7 @@ router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.user._id);
 
     try {
-        const quiz = await QuizActivity.findById(quizId);
+        const quiz = await Quiz.findById(quizId);
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
@@ -1326,7 +1408,7 @@ router.get('/quizzes/result/:quizId', ensureAdminLoggedIn, async (req, res) => {
     res.setHeader('Expires', '0');
 
     try {
-        const quiz = await QuizActivity.findById(quizId).lean();
+        const quiz = await Quiz.findById(quizId).lean();
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
@@ -1390,20 +1472,51 @@ router.post('/unarchive-activity-room/:activityRoomId', ensureAdminLoggedIn, asy
 });
 
 
-// Route to display archived activity rooms
+
+// Ensure archived quizzes are fetched correctly in the activitiesArchive route
 router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     try {
-        const archivedActivityRooms = await ActivityRoom.find({ roomId, archived: true });
-        res.render('admin/activitiesArchive', { archivedActivityRooms, roomId });
+        const archivedActivityRooms = await ActivityRoom.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: true });
+      const archivedQuizzes = await Quiz.find({ archived: true });
+        res.render('admin/activitiesArchive', { 
+            archivedActivityRooms, 
+            archivedQuizzes, 
+            roomId 
+        });
     } catch (error) {
-        console.error('Error fetching archived activity rooms:', error);
+        console.error('Error fetching archived activity rooms and quizzes:', error);
         req.flash('error', 'Failed to load archived activities.');
         res.redirect(`/admin/activities/${roomId}`);
     }
 });
 
 
+
+
+
+// Archive a specific quiz
+router.post('/archive-quiz/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        const quiz = await Quiz.findByIdAndUpdate(
+            quizId,
+            { archived: true, archivedAt: new Date() }, // Set archived and archivedAt
+            { new: true }
+        );
+
+        if (quiz) {
+            console.log('Quiz archived:', quiz); // Verify the quiz was archived
+            res.status(200).json({ message: 'Quiz archived successfully.' });
+        } else {
+            res.status(404).json({ message: 'Quiz not found.' });
+        }
+    } catch (error) {
+        console.error('Error archiving quiz:', error);
+        res.status(500).json({ message: 'Error archiving quiz.' });
+    }
+});
 
 
 

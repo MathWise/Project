@@ -12,7 +12,8 @@ document.querySelectorAll('.clickable').forEach(function(roomElement) {
     });
 });
 
-// Function to load quizzes for a specific activity room
+
+// Function to load non-archived quizzes for a specific activity room
 async function loadQuizzesForRoom(activityRoomId) {
     try {
         const response = await fetch(`/admin/activities/data/${activityRoomId}`);
@@ -27,10 +28,15 @@ async function loadQuizzesForRoom(activityRoomId) {
                 const createdAt = new Date(quiz.createdAt).toLocaleString();
                 const deadline = quiz.deadline ? new Date(quiz.deadline).toLocaleString() : 'No deadline';
                 const quizHtml = `
-                    <li class="list-group-item">
-                        <a href="/admin/quizzes/start/${quiz._id}">${quiz.title}</a>
+                    <li class="list-group-item" id="quiz-item-${quiz._id}">
+                        <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
+                        <!-- Kebab Menu for each Quiz -->
+                        <div class="kebab-menu" onclick="toggleQuizMenu('${quiz._id}')">&#x22EE;</div>
+                        <div class="dropdown-menu quiz-menu" id="quiz-menu-${quiz._id}" style="display: none;">
+                            <a href="#" onclick="archiveQuiz('${quiz._id}'); return false;">Archive</a>
+                        </div>
                     </li>`;
                 quizList.insertAdjacentHTML('beforeend', quizHtml);
             });
@@ -39,6 +45,57 @@ async function loadQuizzesForRoom(activityRoomId) {
         }
     } catch (error) {
         console.error('Error fetching quizzes:', error);
+    }
+}
+
+
+
+// Function to toggle the kebab menu for quizzes
+function toggleQuizMenu(quizId) {
+    const menu = document.getElementById(`quiz-menu-${quizId}`);
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+
+
+
+// Function to archive a quiz
+function archiveQuiz(quizId) {
+    fetch(`/admin/archive-quiz/${quizId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(data.message);
+                // Remove the archived quiz from the DOM
+                const quizElement = document.getElementById(`quiz-item-${quizId}`);
+                if (quizElement) {
+                    quizElement.remove();
+                }
+            } else {
+                alert('Error archiving quiz.');
+            }
+        })
+        .catch(error => console.error('Error archiving quiz:', error));
+}
+
+
+
+
+// Close quiz kebab menus when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.kebab-menu')) {
+        document.querySelectorAll('.quiz-menu').forEach(menu => menu.style.display = 'none');
+    }
+});
+// Confirmation function for starting the quiz
+function confirmStartQuiz(quizId, quizTitle) {
+    const userConfirmed = confirm(`Are you sure you want to start the quiz: "${quizTitle}"? You cannot cancel once you begin.`);
+    
+    if (userConfirmed) {
+        // Redirect to the quiz start page
+        window.location.href = `/admin/quizzes/start/${quizId}`;
+    } else {
+        console.log('User canceled the quiz start.');
     }
 }
 
@@ -54,6 +111,7 @@ document.getElementById('addQuestion').addEventListener('click', function() {
 
             <label>Question Type:</label>
             <select name="questions[${questionIndex}][type]" class="questionType" required>
+                <option value="multiple-choice">Choose a Question Type</option>
                 <option value="multiple-choice">Multiple Choice</option>
                 <option value="fill-in-the-blank">Fill in the Blank</option>
             </select><br>

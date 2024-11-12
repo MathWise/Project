@@ -59,7 +59,10 @@ const quizSchema = new mongoose.Schema({
             message: 'Deadline must be in the future'
         }
     },
-    maxAttempts: { type: Number, default: 5, min: 1, max: 5 } // Add maxAttempts
+    maxAttempts: { type: Number, default: 5, min: 1, max: 5 },
+     // New fields for archiving
+     archived: { type: Boolean, default: false }, // Archive status
+     archivedAt: { type: Date } // Optional field to store when the quiz was archived 
 
 }, { timestamps: true });
 
