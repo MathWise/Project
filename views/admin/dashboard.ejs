@@ -168,8 +168,17 @@
                                 <div class="update-item">
                                     <img src="/assets/hand.png" style="width: 40px;">
                                     <span>Lessons completed:</span>
+                                    <% if (latestCompletedPdf) { %>
+                                        <a href="/admin/pdf/<%= latestCompletedPdf.pdfFileId %>" target="_blank">
+                                            <%= latestCompletedPdf.pdfFileName %>
+                                        </a>
+                                    <% } else { %>
+                                        <span>No completed lessons yet.</span>
+                                    <% } %>
                                     <hr>
                                 </div>
+                                
+                                
                                 <div class="update-item">
                                     <img src="/assets/man.png" style="width: 40px;">
                                     <span>Activity completed:</span>

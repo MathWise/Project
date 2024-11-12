@@ -4,21 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Archived Lessons</title>
-    <link rel="stylesheet" href="/lesson.css"> <!-- Replace with your actual stylesheet -->
+    <link rel="stylesheet" href="/lesson.css">
 </head>
 <body>
     <h1>Archived Lessons</h1>
-    
+
+    <!-- Navigation Links -->
     <div class="dropdown">
-    
         <div class="dropdown-content">
-            <a href="/admin/lesson/<%= roomId %>">Go Back</a> <!-- Using roomId instead of room._id -->
+            <a href="/admin/lesson/<%= roomId %>">Go Back</a>
             <a href="/login">Logout</a>
         </div>
     </div>
-    <h5>Archived Lesson Rooms</h5>
-    <main class="col-md-11">
-      
+
+    <!-- Dropdown to Select Archived Content Type -->
+    <div class="form-group">
+        <label for="archiveSelect">Archived Option</label>
+        <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="loadArchivedContent()">
+            <option value="lessons">Archived Lesson Rooms</option>
+            <option value="pdfs">Archived PDF Lessons</option>
+            <option value="videos">Archived Video Lessons</option>
+        </select>
+    </div>
+    
+    <!-- Archived Lesson Rooms Section -->
+    <main class="col-md-11" id="archivedLessons">
         <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
             <% if (archivedLessonRooms.length > 0) { %>
                 <% archivedLessonRooms.forEach(function(lessonRoom) { %>
@@ -33,22 +43,98 @@
                     </li>
                 <% }) %>
             <% } else { %>
-                <p>No archived lessons available.</p>
+                <p>No archived lesson rooms available.</p>
+            <% } %>
+        </ul>
+    </main>
+
+    <!-- Archived PDF Lessons Section -->
+    <main class="col-md-11" id="archivedPdfs" style="display: none;">
+        <ul class="list-group d-flex flex-row flex-wrap pdf-archive-list">
+            <% if (archivedPdfs.length > 0) { %>
+                <% archivedPdfs.forEach(function(pdf) { %>
+                    <li class="list-group-item d-flex align-items-center mr-2">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <strong>PDF Title:</strong> <%= pdf.pdfFileName %>
+                            </div>
+                            <button onclick="unarchivePdf('<%= pdf.pdfFileId %>')">Unarchive</button>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived PDFs available.</p>
+            <% } %>
+        </ul>
+    </main>
+
+    <!-- Archived Video Lessons Section -->
+    <main class="col-md-11" id="archivedVideos" style="display: none;">
+        <ul class="list-group d-flex flex-row flex-wrap video-archive-list">
+            <% if (archivedVideos.length > 0) { %>
+                <% archivedVideos.forEach(function(video) { %>
+                    <li class="list-group-item d-flex align-items-center mr-2">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <strong>Video Title:</strong> <%= video.videoFileName %>
+                            </div>
+                            <button onclick="unarchiveVideo('<%= video.videoFileId %>')">Unarchive</button>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived videos available.</p>
             <% } %>
         </ul>
     </main>
 
     <script>
+        // Function to toggle visibility based on selected archived content
+        function loadArchivedContent() {
+            const selectedOption = document.getElementById('archiveSelect').value;
+            document.getElementById('archivedLessons').style.display = selectedOption === 'lessons' ? 'block' : 'none';
+            document.getElementById('archivedPdfs').style.display = selectedOption === 'pdfs' ? 'block' : 'none';
+            document.getElementById('archivedVideos').style.display = selectedOption === 'videos' ? 'block' : 'none';
+        }
+
+        // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
+        document.addEventListener('DOMContentLoaded', loadArchivedContent);
+
+        // Unarchive functions for each type
         function unarchiveLessonRoom(lessonRoomId) {
             fetch(`/admin/unarchive-lesson-room/${lessonRoomId}`, {
                 method: 'POST'
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message); // Display success or error message
-                window.location.reload(); // Refresh the page to update the list
+                alert(data.message);
+                window.location.reload();
             })
             .catch(error => console.error('Error unarchiving lesson room:', error));
+        }
+
+        function unarchivePdf(pdfFileId) {
+            fetch(`/admin/unarchive-pdf/${pdfFileId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => console.error('Error unarchiving PDF:', error));
+        }
+
+        function unarchiveVideo(videoFileId) {
+            fetch(`/admin/unarchive-video/${videoFileId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.reload();
+            })
+            .catch(error => console.error('Error unarchiving video:', error));
         }
     </script>
 </body>

@@ -456,43 +456,50 @@ video {
     background-color: #f0f0f0;
 }
 
+/* Kebab Menu Icon Styling */
 .kebab-menu {
-    font-size: 30px;
-    font-weight: bold;
+    font-size: 20px; /* Adjust font size */
     cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    color: #333;
+    position: relative;
+   
+    padding: 5px;
+    font-weight: bold;
+    z-index: 10;
 }
 
+/* Dropdown Menu for PDF Archive */
 .dropdown-menu {
+    display: none; /* Initially hidden */
     position: absolute;
-    top: 30px;
-    right: 10px;
+    top: 30px; /* Position below the kebab icon */
+    right: 0;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 5px;
-    padding: 5px 0;
-    width: 100px;
+    min-width: 120px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
+    z-index: 20;
 }
 
 .dropdown-menu a {
-    display: block;
-    padding: 8px 10px;
-    text-decoration: none;
     color: #333;
+    padding: 8px 12px;
+    text-decoration: none;
+    display: block;
     font-size: 14px;
 }
 
 .dropdown-menu a:hover {
     background-color: #f0f0f0;
 }
+
+/* Style adjustment for list items in PDF and video uploads */
 #uploadedPdfs li, #uploadedVideos li {
-    display: inline-block; /* Allow list items to be inline */
-    margin: 10px; /* Add some spacing between thumbnails */
-    text-align: center; /* Center the text and canvas */
+    display: inline-block;
+    position: relative; /* For dropdown alignment */
+    margin: 10px;
+    text-align: center;
 }
 
 canvas {
@@ -520,7 +527,6 @@ canvas {
     z-index: 10;
 }
 
-/* Hover effect for close button */
 .close-btn:hover {
-    color: rgb(31, 195, 224);
+    color: #1FC3E0;
 }
