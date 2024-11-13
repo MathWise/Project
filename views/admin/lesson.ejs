@@ -200,6 +200,8 @@
 
                             </div>
                         </div>
+
+
                     </div>
                 </div>
             </main>
@@ -207,103 +209,151 @@
 
 
         <script>
+            // Set global roomId and userId variables for all functions to use
+            const roomId = '<%= room._id %>';
+            const userId = '<%= currentUser._id %>';
+        
             // Function to toggle the PDF kebab menu display
             function togglePdfMenu(pdfFileId) {
                 const menu = document.getElementById(`pdfMenu-${pdfFileId}`);
-                
-                // Toggle display, ensuring no other menu is open
                 document.querySelectorAll('.dropdown-menu').forEach((dropdown) => {
-                    if (dropdown !== menu) {
-                        dropdown.style.display = 'none'; // Close other menus
-                    }
+                    if (dropdown !== menu) dropdown.style.display = 'none';
                 });
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
+        
+            // Function to toggle the video kebab menu display
+            function toggleVideoMenu(videoFileId) {
+                const menu = document.getElementById(`videoMenu-${videoFileId}`);
+                document.querySelectorAll('.dropdown-menu').forEach(dropdown => {
+                    if (dropdown !== menu) dropdown.style.display = 'none';
+                });
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
+        
+            // Archive function for a video
+            function archiveVideo(videoFileId) {
+                fetch(`/admin/archive-video/${videoFileId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('Video archived successfully.');
+                        document.getElementById(`videoMenu-${videoFileId}`).style.display = 'none';
+                        loadLessonFiles(roomId, userId); // Refresh list
+                    } else {
+                        throw new Error('Failed to archive video');
+                    }
+                })
+                .catch(error => console.error('Error archiving video:', error));
             }
         
             // Close dropdowns if clicked outside
             document.addEventListener('click', function(event) {
                 const isKebab = event.target.classList.contains('kebab-menu');
                 const isDropdownItem = event.target.closest('.dropdown-menu');
-        
-                // Only close if clicked outside any dropdown menu or kebab icon
                 if (!isKebab && !isDropdownItem) {
                     document.querySelectorAll('.dropdown-menu').forEach(menu => {
                         menu.style.display = 'none';
                     });
                 }
             });
-            
+        
             // Archive function to send an AJAX request for archiving a PDF
             function archivePdf(pdfFileId) {
                 fetch(`/admin/archive-pdf/${pdfFileId}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    headers: { 'Content-Type': 'application/json' }
                 })
                 .then(response => {
                     if (response.ok) {
                         alert('PDF archived successfully.');
-                        document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none'; // Hide menu after archiving
+                        document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none';
                         loadLessonFiles(roomId, userId); // Reload list to reflect archived PDF
                     } else {
                         alert('Failed to archive PDF.');
                     }
                 })
-                .catch(error => {
-                    console.error('Error archiving PDF:', error);
-                });
-            }
-                    
-            async function loadLessonFiles(roomId, userId) {
-                const pdfList = document.getElementById('uploadedPdfs');
-                pdfList.innerHTML = ''; // Clear the list
-        
-                try {
-                    const response = await fetch(`/admin/get-lessons/${roomId}`);
-                    const lessonData = await response.json();
-        
-                    if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
-                        for (const pdf of lessonData.pdfFiles) {
-                            const pdfFileId = pdf.pdfFileId;
-                            const listItem = document.createElement('li');
-                            listItem.innerHTML = `
-                                <div style="position: relative;">
-                                    <strong>${pdf.pdfFileName}</strong>
-                                    <button class="btn btn-link" onclick="openPdfModal('/admin/pdf/${pdfFileId}', '${pdfFileId}', '${userId}')">
-                                        Preview PDF
-                                    </button>
-                                    <span id="progress_${pdfFileId}">Loading progress...</span>
-        
-                                    <!-- Kebab Menu Icon -->
-                                    <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer;">
-                                        &#x22EE; <!-- Vertical ellipsis icon -->
-                                    </div>
-                                    
-                                    <!-- Dropdown Menu for PDF Options -->
-                                    <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                                        <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
-                                    </div>
-                                </div>
-                            `;
-                            pdfList.appendChild(listItem);
-        
-                            // Fetch and display initial progress
-                            const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
-                            const progressData = await progressResponse.json();
-                            const progress = progressData.progress || 0;
-                            document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
-                        }
-                    } else {
-                        pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
-                    }
-                } catch (error) {
-                    console.error('Error loading lesson files:', error);
-                }
+                .catch(error => console.error('Error archiving PDF:', error));
             }
         
-            // Function to open the PDF modal and track progress by scrolling
-            function openPdfModal(pdfUrl, pdfFileId, userId) {
+async function loadLessonFiles(roomId, userId) {
+    const pdfList = document.getElementById('uploadedPdfs');
+    const videoList = document.getElementById('uploadedVideos');
+    pdfList.innerHTML = ''; // Clear previous PDFs
+    videoList.innerHTML = ''; // Clear previous Videos
+
+    try {
+        const response = await fetch(`/admin/get-lessons/${roomId}`);
+        const lessonData = await response.json();
+        console.log('Filtered lesson data:', lessonData);
+
+        // Load PDFs from server response
+        if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
+            lessonData.pdfFiles.forEach(pdf => {
+                const pdfFileId = pdf.pdfFileId;
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div style="position: relative;">
+                        <strong>${pdf.pdfFileName}</strong>
+                        <button class="btn btn-link" onclick="openPdfModal('/admin/pdf/${pdfFileId}', '${pdfFileId}', '${userId}')">
+                            Preview PDF
+                        </button>
+                        <span id="progress_${pdfFileId}">Loading progress...</span>
+                        <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer;">
+                            &#x22EE;
+                        </div>
+                        <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                            <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
+                        </div>
+                    </div>
+                `;
+                pdfList.appendChild(listItem);
+
+                // Fetch and display initial progress for each PDF
+                fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`)
+                    .then(progressResponse => progressResponse.json())
+                    .then(progressData => {
+                        const progress = progressData.progress || 0;
+                        document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
+                    });
+            });
+        } else {
+            pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+        }
+
+          // Verify Videos are populated correctly
+          if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
+            console.log('Videos found:', lessonData.videoFiles); // Debug log
+
+            lessonData.videoFiles.forEach(video => {
+                console.log('Rendering video:', video);
+
+                const videoFileId = video.videoFileId;
+                const videoFileName = video.videoFileName;
+                const videoUrl = `/admin/video/${videoFileId}`;
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <div style="position: relative;">
+                        <strong>${videoFileName}</strong>
+                        <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
+                        <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
+                       
+                    </div>
+                `;
+                videoList.appendChild(listItem);
+            });
+        } else {
+            videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+        }
+
+    } catch (error) {
+        console.error('Error loading lesson files:', error);
+    }
+}
+             // Function to open the PDF modal and track progress by scrolling
+             function openPdfModal(pdfUrl, pdfFileId, userId) {
                 // Display the modal with the PDF content
                 const pdfViewer = document.getElementById("pdfViewer");
                 pdfViewer.src = pdfUrl;
@@ -358,8 +408,11 @@
                 .catch(error => console.error('Error saving progress:', error));
             }
 
-            // Event listener for PDF upload form submission
-            document.getElementById('uploadPdfForm').addEventListener('submit', async function(event) {
+        
+            // Other functions remain unchanged (e.g., openPdfModal, closePdfModal, savePdfProgress)
+        
+             // Event listener for PDF upload form submission
+             document.getElementById('uploadPdfForm').addEventListener('submit', async function(event) {
                 event.preventDefault(); // Prevent default form submission
 
                 const formData = new FormData(this);
@@ -386,9 +439,28 @@
                     alert('Error uploading PDF.');
                 }
             });
+        
+            // Event listener for Video upload form submission
+            document.getElementById('uploadVideoForm').addEventListener('submit', async function(event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+                const roomId = document.getElementById('videoRoomId').value;
+                 const userId = '<%= currentUser._id %>'; // For dynamic reloading
 
-    
+                try {
+                    const response = await fetch(`/admin/upload-video/${roomId}`, { method: 'POST', body: formData });
+                    if (response.ok) {
+                        alert('Video uploaded successfully!');
+                        loadLessonFiles(roomId, userId);
+                    } else throw new Error('Error uploading video');
+                } catch (error) {
+                    console.error('Error uploading video:', error);
+                    alert('Error uploading video.');
+                }
+            });
+        
         </script>
+        
 
 
 
@@ -471,48 +543,6 @@
     
         </script>
 
-<script>
-    document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-
-        const formData = new FormData(this);
-
-        // Make sure to get the roomId from the input
-        const roomId = document.getElementById('videoRoomId').value;
-
-        fetch(`/admin/upload-video/${roomId}`, {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json(); // Assuming you return JSON from the server
-            } else {
-                throw new Error('Network response was not ok');
-            }
-        })
-        .then(data => {
-            // Handle the successful upload here
-            alert('Video uploaded successfully!');
-            
-            // Optionally, refresh the uploaded videos list
-            const videoList = document.getElementById('uploadedVideos');
-            videoList.innerHTML = ''; // Clear existing list
-
-            data.videoFiles.forEach(function(video) {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
-                videoList.appendChild(listItem);
-            });
-        })
-        .catch(error => {
-            console.error('Error uploading video:', error);
-            alert('Error uploading video.');
-        });
-    });
-
-    
-</script>
 
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->

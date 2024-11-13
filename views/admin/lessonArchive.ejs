@@ -70,6 +70,28 @@
         </ul>
     </main>
 
+    <!-- Archived Videos Section -->
+    <main class="col-md-11" id="archivedVideos" style="display: none;">
+        <h2>Archived Videos</h2>
+        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+            <% if (archivedVideos.length > 0) { %>
+                <% archivedVideos.forEach(function(video) { %>
+                    <li class="list-group-item d-flex align-items-center mr-2">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <strong>Video Name: <%= video.videoFileName %></strong>
+                                <p>Video ID: <%= video.videoFileId %></p>
+                            </div>
+                            <button onclick="unarchiveVideo('<%= video.videoFileId %>')">Unarchive</button>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived videos available.</p>
+            <% } %>
+        </ul>
+    </main>
+
     <!-- JavaScript functions to manage the archive sections and unarchive requests -->
     <script>
         // Function to toggle visibility based on selected archived content

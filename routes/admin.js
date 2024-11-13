@@ -689,6 +689,8 @@ router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, middleware.ensur
         res.redirect(`/admin/lesson/${roomId}`);
     }
 });
+
+
 router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
 
@@ -702,6 +704,10 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
            // Filter out archived files
            const pdfFiles = lesson.pdfFiles.filter(pdf => !pdf.archived);
            const videoFiles = lesson.videoFiles.filter(video => !video.archived);
+
+                   // Log filtered results to verify correct filtering
+                    console.log('Filtered PDFs:', pdfFiles);
+                    console.log('Filtered Videos:', videoFiles);
 
         // Send the lesson's PDF and video data as JSON
         res.json({
@@ -842,7 +848,6 @@ router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res
     }
 
     const videoUploadStream = videoBucket.openUploadStream(req.file.originalname);
-
     videoUploadStream.end(req.file.buffer);
 
     videoUploadStream.on('error', (error) => {
@@ -853,30 +858,48 @@ router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res
 
     videoUploadStream.on('finish', async () => {
         try {
+
+
+
             const uploadedVideo = await videoBucket.find({ filename: req.file.originalname }).toArray();
 
             if (!uploadedVideo || uploadedVideo.length === 0) {
+                
                 req.flash('error', 'Error saving video reference. Please try again.');
                 return res.status(500).json({ error: 'Error saving video reference.' }); // Change to JSON response
             }
 
             const video = uploadedVideo[0];
+            console.log('Uploaded video info:', video);
 
-            await Lesson.findOneAndUpdate(
+            // Update the Lesson document to add the video file
+            const updatedLesson = await Lesson.findOneAndUpdate(
                 { roomId },
                 {
                     $push: {
                         videoFiles: {
                             videoFileId: video._id,
-                            videoFileName: req.file.originalname
+                            videoFileName: req.file.originalname,
+                            archived: false
                         }
                     }
                 },
                 { new: true, upsert: true }
             );
 
+
+            if (!updatedLesson) {
+                console.error('Failed to update Lesson document for room:', roomId);
+                req.flash('error', 'Error updating lesson with video.');
+                return res.status(500).json({ error: 'Error updating lesson with video.' });
+            }
+            console.log('Updated Lesson document:', updatedLesson.videoFiles);
+
             req.flash('success', 'Video uploaded and saved to the lesson.');
-            return res.status(200).json({ message: 'Video uploaded successfully.', videoFiles: [{ videoFileId: video._id, videoFileName: req.file.originalname }] }); // Return JSON
+            return res.status(200).json({
+                message: 'Video uploaded successfully.',
+                videoFiles: updatedLesson.videoFiles
+            });
         } catch (error) {
             console.error('Error updating lesson with video ID:', error);
             req.flash('error', 'Error saving video reference. Please try again.');
@@ -997,8 +1020,9 @@ router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
         // Fetch archived PDFs from the Lesson collection
         const lesson = await Lesson.findOne({ roomId });
         const archivedPdfs = lesson ? lesson.pdfFiles.filter(pdf => pdf.archived) : [];
+        const archivedVideos = lesson ? lesson.videoFiles.filter(video => video.archived) : [];
 
-        res.render('admin/lessonArchive', { archivedLessonRooms, archivedPdfs, roomId });
+        res.render('admin/lessonArchive', { archivedLessonRooms, archivedPdfs, archivedVideos, roomId });
     } catch (error) {
         console.error('Error fetching archived lesson rooms or PDFs:', error);
         req.flash('error', 'Failed to load archived lessons.');
@@ -1043,6 +1067,41 @@ router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) =
     }
 });
 
+// Route to archive a specific video
+router.post('/archive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
+    const { videoFileId } = req.params;
+
+    try {
+        // Update the `archived` status of the specific video file in the lesson
+        await Lesson.updateOne(
+            { "videoFiles.videoFileId": videoFileId },
+            { $set: { "videoFiles.$.archived": true } }
+        );
+
+        res.status(200).json({ message: 'Video archived successfully.' });
+    } catch (error) {
+        console.error('Error archiving video:', error);
+        res.status(500).json({ error: 'Failed to archive video.' });
+    }
+});
+
+// Route to unarchive a specific video
+router.post('/unarchive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
+    const { videoFileId } = req.params;
+
+    try {
+        // Update the `archived` status of the specific video file in the lesson
+        await Lesson.updateOne(
+            { "videoFiles.videoFileId": videoFileId },
+            { $set: { "videoFiles.$.archived": false } }
+        );
+
+        res.status(200).json({ message: 'Video unarchived successfully.' });
+    } catch (error) {
+        console.error('Error unarchiving video:', error);
+        res.status(500).json({ error: 'Failed to unarchive video.' });
+    }
+});
 
 //end of lesson ------------------------------------------------------------------------------------------
 
