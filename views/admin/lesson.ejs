@@ -9,18 +9,12 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script> <!-- Include PDF.js -->
-        
-    <script>
-        const roomId = "<%= room._id %>";  // Define roomId for client-side use
-        console.log("Room ID:", roomId);    // Check if roomId is correctly defined
-    </script>
 </head>
 <body>
     <div class="container-fluid p-0">
         <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
             <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center position-relative">
-                <span>Hello <br> <%= room.name %></span>
+                <span>Hello </span>
             
                 <!-- Dropdown Menu Trigger (Settings Icon) -->
                 <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2 dropdown-toggle" style="width: 30px; cursor: pointer;" onclick="toggleDropdownMenu()">
@@ -30,7 +24,7 @@
                     <a href="/admin/homeAdmin">Go back</a>
                     <a href="/admin/lessonArchive/<%= room._id %>">Lesson Archive</a>
                     <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
-                    <a href="/logout">Logout</a>
+                    <a href="/login">Logout</a>
                 </div>
             </aside>
             <main class="col-md-8 bg-main section">
@@ -56,28 +50,26 @@
         </div>
 
         <div class="containers row">
-            <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
+            <aside class="col-md-1 sidebar text-center p-3" style="height: 700px;">
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
-                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
-                            Dashboard
-                            </span>
-                        </li>
-                        <li style="margin-bottom: 35px;">
-                            <a href="/admin/lesson/<%= room._id %>" class="text-dark lesson-button">
-                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
-                                <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
-                                Lesson
-                                </span>
+                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
+                                Dashboard
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
+                            <a href="/admin/lesson/<%= room._id %>" class="text-dark font-weight-bold" style="background-color: #FFDF9F; padding: 10px; border-radius: 5px;">
+                                <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
+                                Lesson
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 35px;">
+                            <a href="/admin/activities/<%= room._id %>"  class="text-dark">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
-                            </a >
+                            </a>
                         </li>
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/educGames/<%= room._id %>" class="text-dark">
@@ -94,104 +86,11 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
-
-                <h5>Existing Lesson Rooms</h5>
-                <ul class="list-group d-flex flex-row flex-wrap">
-                    <% 
-                    const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
-                    const imgSources = [
-                        "/assets/english-4.svg",
-                        "/assets/layer-1.svg",
-                        "/assets/geography-1.svg",
-                        "/assets/socio-1.svg"
-                    ];
-                
-                    lessonRooms.forEach(function(lessonRoom, index) { 
-                        const colorClass = buttonColors[index % buttonColors.length];
-                        const imgSrc = imgSources[index % imgSources.length];
-                    %>
-                    
-                    <li class="list-group-item lesson-room d-flex align-items-center mr-2 clickable <%= colorClass %>" 
-                        data-room-id="<%= lessonRoom._id %>">
-                        
-                        <div class="d-flex align-items-center justify-content-between w-100">
-                            <div class="lesson-details">
-                                <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
-                                <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
-                            </div>
-                
-                            <!-- Kebab Menu Icon and Dropdown for Archiving -->
-                            <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= lessonRoom._id %>');">
-                                &#x22EE;
-                            </div>
-                
-                            <!-- Dropdown Menu for each room -->
-                            <div class="dropdown-menu" id="menu-<%= lessonRoom._id %>" style="display: none;">
-                                <a href="#" onclick="archiveLessonRoom('<%= lessonRoom._id %>'); event.stopPropagation();">Archive</a>
-                            </div>
-                        </div>
-                    </li>
-                    <% }); %>
-                </ul>
-                
-            
-              <!-- New big box section -->
-              <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
-                <div class="d-flex justify-content-center mt-3">
-                    <button id="moduleButton" class="btn custom-btn">Module</button>
-                    <button id="videoButton" class="btn custom-btn">Video</button>
-                </div>
-            </div>
-            
-
-<!-- Separate PDF Upload Box -->
-<div id="uploadPdfSection" class="upload-box" style="display: none;"> <!-- Initially hidden -->
-    <div class="left-content"> 
-        <h5 class="text-dark">Upload PDF</h5>
-        <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="roomId" id="pdfRoomId" value="">
-            <div class="form-group">
-                <label for="pdfFile">Choose PDF file:</label>
-                <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Upload PDF</button>
-        </form>
-        
-        <div class="lesson-content">
-            <h3>Uploaded PDFs</h3>
-            <ul id="uploadedPdfs">
-           
-            </ul>
-        </div>
-    </div>
-</div>
-
-<!-- Separate Video Upload Box -->
-<div id="uploadVideoSection" class="upload-box" style="display: none;"> <!-- Initially hidden -->
-    <div class="right-content">
-        <h5 class="text-dark">Upload Video</h5>
-        <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="roomId" id="videoRoomId" value="">
-            <div class="form-group">
-                <label for="videoFile">Choose MP4 video:</label>
-                <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Upload Video</button>
-        </form>
-        
-        <div class="lesson-content">
-            <!-- Placeholder for dynamically loaded videos -->
-            <h3>Uploaded Videos</h3>
-            <ul id="uploadedVideos"></ul>
-        </div>
-    </div>
-</div>
-
-            
                 <!-- Lesson Room Creation Form -->
                 <div class="layered-container">
+                    <div class="background-image"></div>
                     <div class="form-overlay">
-                        <h5 class="card-title">Create a New Lesson Room</h5>
+                        <h5>Create a New Lesson Room</h5>
                         <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
                             <div class="form-group">
                                 <label for="subject">Subject</label>
@@ -204,34 +103,240 @@
                             <button type="submit" class="btn btn-primary">Create Room</button>
                         </form>
                     </div>
-                </div>  
-            </main>                                   
-        </div>
-
-        <!-- Hidden content section that will be shown upon clicking a lesson room -->
-        <div id="lessonRoomContent" class="big-box" style="display: none;">
-            <div class="content-wrapper">
-                <!-- PDF Preview Modal -->
-                <div id="pdfModal" class="modal">
-                    <div class="modal-content">
-                        <span class="close" onclick="closePdfModal()">&times;</span>
-                        <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
-                    </div>
-                    <div class="arrow-box-container">
-                        <a href="/admin/activities/<%= room._id %>" class="arrow-text">would you like to take a Quiz </a>
-                    </div>
-                </div>
-                <!-- Video Modal -->
-                <div id="videoModal" style="display:none;">
-                    <span id="closeVideoModal" class="close-btn">&times;</span>
-                    <video id="videoViewer" controls></video>
                 </div>
 
-            </div>
+                <!-- Display existing lesson rooms dynamically -->
+                <div id="lessonRoomList" class="mb-4">
+                    <h5>Existing Lesson Rooms</h5>
+                    <ul class="list-group d-flex flex-row flex-wrap">
+                        <% 
+                        const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
+                        const imgSources = [
+                            "/assets/english-4.svg",
+                            "/assets/layer-1.svg",
+                            "/assets/geography-1.svg",
+                            "/assets/socio-1.svg"
+                        ];
+                    
+                        lessonRooms.forEach(function(lessonRoom, index) { 
+                            const colorClass = buttonColors[index % buttonColors.length];
+                            const imgSrc = imgSources[index % imgSources.length];
+                        %>
+                        
+                        <li class="list-group-item lesson-room d-flex align-items-center mr-2 clickable <%= colorClass %>" 
+                            data-room-id="<%= lessonRoom._id %>">
+                            
+                            <div class="d-flex align-items-center justify-content-between w-100">
+                                <div class="lesson-details">
+                                    <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
+                                    <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
+                                </div>
+                    
+                                <!-- Kebab Menu Icon and Dropdown for Archiving -->
+                                <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= lessonRoom._id %>');">
+                                    &#x22EE;
+                                </div>
+                    
+                                <!-- Dropdown Menu for each room -->
+                                <div class="dropdown-menu" id="menu-<%= lessonRoom._id %>" style="display: none;">
+                                    <a href="#" onclick="archiveLessonRoom('<%= lessonRoom._id %>'); event.stopPropagation();">Archive</a>
+                                </div>
+                            </div>
+                        </li>
+                        <% }); %>
+                    </ul>
+                </div>
+
+                <!-- Hidden content section that will be shown upon clicking a lesson room -->
+                <div id="lessonRoomContent" class="big-box" style="display: none;">
+                    <div class="content-wrapper">
+                        <div class="left-content"> 
+                            <h5 class="text-dark">Upload PDF</h5>
+                            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" id="pdfRoomId" value="">
+                                <div class="form-group">
+                                    <label for="pdfFile">Choose PDF file:</label>
+                                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload PDF</button>
+                            </form>
+                            
+                            <div class="lesson-content">
+                                <!-- Placeholder for dynamically loaded PDFs -->
+                                <h3>Uploaded PDFs</h3>
+                                <ul id="uploadedPdfs"></ul>
+                            </div>
+                        </div>
+
+                         <!-- PDF Preview Modal -->
+                         <div id="pdfModal" class="modal">
+                            <div class="modal-content">
+                                <span class="close" onclick="closePdfModal()">&times;</span>
+                                <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
+                              
+                            </div>
+                            <div class="arrow-box-container">
+                                
+                                <a href="/admin/activities/<%= room._id %>" class="arrow-text">would you like to take a Quiz </a>
+                            </div>
+                        </div>
+                        
+                        <div class="right-content">
+                            <h5 class="text-dark">Upload Video</h5>
+                            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" id="videoRoomId" value="">
+                                <div class="form-group">
+                                    <label for="videoFile">Choose MP4 video:</label>
+                                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload Video</button>
+                            </form>
+                            
+                            <div class="lesson-content">
+                                <!-- Placeholder for dynamically loaded videos -->
+                                <h3>Uploaded Videos</h3>
+                                <ul id="uploadedVideos"></ul>
+                               
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
         </div>
+
 
         <script>
-       
+            // Function to toggle the PDF kebab menu display
+            function togglePdfMenu(pdfFileId) {
+                const menu = document.getElementById(`pdfMenu-${pdfFileId}`);
+                
+                // Toggle display, ensuring no other menu is open
+                document.querySelectorAll('.dropdown-menu').forEach((dropdown) => {
+                    if (dropdown !== menu) {
+                        dropdown.style.display = 'none'; // Close other menus
+                    }
+                });
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
+        
+            // Close dropdowns if clicked outside
+            document.addEventListener('click', function(event) {
+                const isKebab = event.target.classList.contains('kebab-menu');
+                const isDropdownItem = event.target.closest('.dropdown-menu');
+        
+                // Only close if clicked outside any dropdown menu or kebab icon
+                if (!isKebab && !isDropdownItem) {
+                    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                        menu.style.display = 'none';
+                    });
+                }
+            });
+            
+            // Archive function to send an AJAX request for archiving a PDF
+            function archivePdf(pdfFileId) {
+                fetch(`/admin/archive-pdf/${pdfFileId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('PDF archived successfully.');
+                        document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none'; // Hide menu after archiving
+                        loadLessonFiles(roomId, userId); // Reload list to reflect archived PDF
+                    } else {
+                        alert('Failed to archive PDF.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error archiving PDF:', error);
+                });
+            }
+                    
+            async function loadLessonFiles(roomId, userId) {
+                const pdfList = document.getElementById('uploadedPdfs');
+                pdfList.innerHTML = ''; // Clear the list
+        
+                try {
+                    const response = await fetch(`/admin/get-lessons/${roomId}`);
+                    const lessonData = await response.json();
+        
+                    if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
+                        for (const pdf of lessonData.pdfFiles) {
+                            const pdfFileId = pdf.pdfFileId;
+                            const listItem = document.createElement('li');
+                            listItem.innerHTML = `
+                                <div style="position: relative;">
+                                    <strong>${pdf.pdfFileName}</strong>
+                                    <button class="btn btn-link" onclick="openPdfModal('/admin/pdf/${pdfFileId}', '${pdfFileId}', '${userId}')">
+                                        Preview PDF
+                                    </button>
+                                    <span id="progress_${pdfFileId}">Loading progress...</span>
+        
+                                    <!-- Kebab Menu Icon -->
+                                    <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer;">
+                                        &#x22EE; <!-- Vertical ellipsis icon -->
+                                    </div>
+                                    
+                                    <!-- Dropdown Menu for PDF Options -->
+                                    <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                                        <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
+                                    </div>
+                                </div>
+                            `;
+                            pdfList.appendChild(listItem);
+        
+                            // Fetch and display initial progress
+                            const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
+                            const progressData = await progressResponse.json();
+                            const progress = progressData.progress || 0;
+                            document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
+                        }
+                    } else {
+                        pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+                    }
+                } catch (error) {
+                    console.error('Error loading lesson files:', error);
+                }
+            }
+        
+            // Function to open the PDF modal and track progress by scrolling
+            function openPdfModal(pdfUrl, pdfFileId, userId) {
+                // Display the modal with the PDF content
+                const pdfViewer = document.getElementById("pdfViewer");
+                pdfViewer.src = pdfUrl;
+                document.getElementById("pdfModal").style.display = "block";
+    
+                // Save initial progress as 100% upon opening if it’s not already full
+                savePdfProgress(userId, pdfFileId, 100);
+    
+                // Track scroll progress within the modal
+                pdfViewer.onload = function () {
+                    const scrollHandler = () => {
+                        const totalHeight = pdfViewer.contentDocument.documentElement.scrollHeight - pdfViewer.clientHeight;
+                        const scrolled = pdfViewer.contentDocument.documentElement.scrollTop;
+                        const progress = Math.min((scrolled / totalHeight) * 100, 100); // Cap at 100%
+    
+                        // Save and update display if scrolled to 100%
+                        if (progress === 100) {
+                            savePdfProgress(userId, pdfFileId, 100).then(() => {
+                                pdfViewer.removeEventListener('scroll', scrollHandler);
+                            });
+                        }
+                    };
+    
+                    // Attach the scroll event handler to track progress
+                    pdfViewer.contentDocument.addEventListener('scroll', scrollHandler);
+                };
+            }
+    
+            // Function to close the PDF modal
+            function closePdfModal() {
+                document.getElementById("pdfModal").style.display = "none";
+                document.getElementById("pdfViewer").src = ""; // Clear src to stop loading
+            }
 
             // Function to send PDF progress to the server and update display in real-time
             function savePdfProgress(userId, pdfFileId, progress) {
@@ -253,238 +358,7 @@
                 .catch(error => console.error('Error saving progress:', error));
             }
 
-        
-            // Function to open the PDF modal and track progress by scrolling
-            function openPdfModal(pdfUrl, pdfFileId, userId) {
-                // Display the modal with the PDF content
-                const pdfViewer = document.getElementById("pdfViewer");
-                pdfViewer.src = pdfUrl;
-                document.getElementById("pdfModal").style.display = "block";
-        
-                // Save initial progress as 100% upon opening if it’s not already full
-                savePdfProgress(userId, pdfFileId, 100);
-        
-                // Track scroll progress within the modal
-                pdfViewer.onload = function () {
-                    const scrollHandler = () => {
-                        const totalHeight = pdfViewer.contentDocument.documentElement.scrollHeight - pdfViewer.clientHeight;
-                        const scrolled = pdfViewer.contentDocument.documentElement.scrollTop;
-                        const progress = Math.min((scrolled / totalHeight) * 100, 100); // Cap at 100%
-        
-                        // Save and update display if scrolled to 100%
-                        if (progress === 100) {
-                            savePdfProgress(userId, pdfFileId, 100 ).then(() => {
-                                pdfViewer.removeEventListener('scroll', scrollHandler);
-                            });
-                        }
-                    };
-        
-                    // Attach the scroll event handler to track progress
-                    pdfViewer.contentDocument.addEventListener('scroll', scrollHandler);
-                };
-            }
-        
-            // Function to close the PDF modal
-            function closePdfModal() {
-                document.getElementById("pdfModal").style.display = "none";
-                document.getElementById("pdfViewer").src = ""; // Clear src to stop loading
-            }
- // Function to load PDFs and Videos dynamically and display progress for PDFs
-            async function loadLessonFiles(roomId, userId) {
-                const pdfList = document.getElementById('uploadedPdfs');
-                const videoList = document.getElementById('uploadedVideos'); // For displaying uploaded videos
-                pdfList.innerHTML = ''; // Clear the PDF list
-                videoList.innerHTML = ''; // Clear the Video list
-
-                try {
-                    const response = await fetch(`/admin/get-lessons/${roomId}`);
-                    const lessonData = await response.json();
-
-                    // Check if pdfFiles is a valid array and populate PDFs
-                    if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
-                        for (const pdf of lessonData.pdfFiles) {
-                            const pdfFileId = pdf.pdfFileId;
-                            const pdfFileName = pdf.pdfFileName;
-                            const pdfUrl = `/admin/pdf/${pdfFileId}`; // URL to fetch the PDF
-
-                            const listItem = document .createElement('li');
-                            listItem.innerHTML = `
-                                 <div>
-                                <strong>
-                                    <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}')">
-                                        ${pdfFileName} &#x22EE;
-                                    </div>
-                                    <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none;">
-                                        <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
-                                    </div>
-                                </strong>
-                                <canvas id="thumbnail_${pdfFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                                <span id="progress_${pdfFileId}">Loading progress...</span>
-                            </div>
-                                
-                               
-                            `;
-                            pdfList.appendChild(listItem);
-
-                            // Generate thumbnail for the first page of the PDF
-                            await renderPdfThumbnail(pdfUrl, pdfFileId);
-
-                            // Fetch and display initial progress
-                            const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
-                            const progressData = await progressResponse.json();
-                            const progress = progressData.progress || 0;
-
-                            // Safely get the progress element and update it
-                            const progressElement = document.getElementById(`progress_${pdfFileId}`);
-                            if (progressElement) {
-                                progressElement.textContent = `Progress: ${progress}%`;
-                            } else {
-                                console.error(`Progress element for PDF ID ${pdfFileId} not found.`);
-                            }
-                        }
-                    } else {
-                        pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
-                    }
-
-                    // Populate the Videos
-                    if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
-    lessonData.videoFiles.forEach(function (video) {
-        const videoFileId = video.videoFileId;
-        const videoFileName = video.videoFileName;
-        const videoUrl = `/admin/video/${videoFileId}`; // URL to fetch the video
-
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `
-            <div>
-               <strong>${videoFileName}</strong>
-               <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
-               <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-            </div>
-        `;
-        videoList.appendChild(listItem);
-
-        // Capture the frame at the 5th second as a thumbnail
-        const videoElement = document.getElementById(`video_${videoFileId}`);
-        const canvas = document.getElementById(`thumbnail_${videoFileId}`);
-        const context = canvas.getContext('2d');
-
-        // Listen for metadata to load, then set the currentTime to 5 seconds
-        videoElement.addEventListener('loadedmetadata', function() {
-            // Seek to 5 seconds
-            videoElement.currentTime = 5;
-        });
-
-        // When the seek operation completes, add a delay before drawing the frame
-        videoElement.addEventListener('seeked', function() {
-            setTimeout(() => {
-                // Draw the frame at the 5th second onto the canvas
-                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-                videoElement.style.display = 'none'; // Optional: Hide the video element after capturing
-            }, 250); // Adjust the delay time as needed
-        });
-
-        // Add click event listener to open the video modal
-        canvas.addEventListener('click', () => {
-            openVideoModal(videoUrl, videoFileId);
-        });
-    });
-} else {
-    videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
-}
-
-
-                } catch (error) {
-                    console.error('Error loading lesson files:', error);
-                }
-            }
-
-            // Function to render a thumbnail from the first page of a PDF
-            async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
-    try {
-        const canvas = document.getElementById(`thumbnail_${pdfFileId}`);
-        const context = canvas.getContext('2d');
-
-        // Load the PDF
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        const pdf = await loadingTask.promise;
-
-        // Get the first page
-        const page = await pdf.getPage(1);
-
-        // Set the desired width and height for the thumbnail
-        const desiredWidth = 300; // Width for the thumbnail
-        const desiredHeight = 200; // Height for the thumbnail
-
-        // Get the viewport and calculate the scale based on the desired dimensions
-        const viewport = page.getViewport({ scale: 1 });
-        const widthScale = desiredWidth / viewport.width;
-        const heightScale = desiredHeight / viewport.height;
-        const scale = Math.min(widthScale, heightScale); // Use the smaller scale to maintain aspect ratio
-        const scaledViewport = page.getViewport({ scale });
-
-        // Set the canvas dimensions
-        canvas.width = desiredWidth;
-        canvas.height = desiredHeight;
-
-        // Ensure canvas style matches the new size
-        canvas.style.width = `${desiredWidth}px`;
-        canvas.style.height = `${desiredHeight}px`;
-
-        // Clear the canvas before rendering
-        context.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Render the page into the canvas context
-        const renderContext = {
-            canvasContext: context,
-            viewport: scaledViewport
-        };
-        await page.render(renderContext).promise;
-
-        // Add border directly after rendering
-        canvas.style.border = '7px solid #FFDF9F';
-
-        // Add click event listener to open the PDF modal
-        canvas.addEventListener('click', () => {
-            openPdfModal(pdfUrl, pdfFileId, '<%= currentUser._id %>'); // Pass userId as needed
-        });
-
-        // Create a title element for the PDF
-        const titleElement = document.createElement('div');
-        titleElement.textContent = pdfFileName; // Set the title of the PDF
-        titleElement.style.textAlign = 'center'; // Center the title
-        titleElement.style.marginTop = '5px'; // Add some space above the title
-
-        // Append the title element after the canvas
-        canvas.parentElement.appendChild(titleElement);
-    } catch (error) {
-        console.error('Error rendering PDF thumbnail:', error);
-    }
-}
-
-
-            // Function to open the video modal
-            function openVideoModal(videoUrl) {
-    console.log("Video modal opened");
-    const videoViewer = document.getElementById("videoViewer");
-    videoViewer.src = videoUrl;
-    document.getElementById("videoModal").style.display = "flex"; 
-}
-
-
-            // Function to close the video modal
-            function closeVideoModal() {
-    console.log("Close button clicked");  // Debugging step
-    const videoModal = document.getElementById("videoModal");
-    const videoViewer = document.getElementById("videoViewer");
-
-    videoModal.style.display = "none";
-    videoViewer.pause();  // Pause the video
-    videoViewer.src = ""; // Clear src to stop the video
-}
-// Add event listener for the close button (X)
-document.getElementById("closeVideoModal").addEventListener("click", closeVideoModal);
             // Event listener for PDF upload form submission
-
             document.getElementById('uploadPdfForm').addEventListener('submit', async function(event) {
                 event.preventDefault(); // Prevent default form submission
 
@@ -503,7 +377,8 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
                         alert('PDF uploaded successfully!');
                         
                         // Reload the list of PDFs and Videos to reflect the new upload
-                        loadLessonFiles(roomId, userId); } else {
+                        loadLessonFiles(roomId, userId); 
+                    } else {
                         throw new Error('Error uploading PDF');
                     }
                 } catch (error) {
@@ -512,15 +387,21 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
                 }
             });
 
+    
+        </script>
+
+
+
+
+
+        <script>
             // Event listener to handle room clicks and load PDFs and Videos for the room
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.clickable').forEach(function (roomElement) {
                     roomElement.addEventListener('click', function () {
-                       // Retrieve roomId from data-room-id attribute
                         const roomId = this.getAttribute('data-room-id');
                         const userId = '<%= currentUser._id %>';
-                        
-                        // Load PDFs and Videos for the selected room
+
                         document.getElementById('lessonRoomContent').style.display = 'block';
                         loadLessonFiles(roomId, userId);
 
@@ -533,129 +414,7 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
                 });
             });
 
-            // Event listener for video upload form submission
-            document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent default form submission
-
-    const formData = new FormData(this);
-
-    // Make sure to get the roomId from the input
-    const roomId = document.getElementById('videoRoomId').value;
-
-    fetch(`/admin/upload-video/${roomId}`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json(); // Assuming you return JSON from the server
-        } else {
-            throw new Error('Network response was not ok');
-        }
-    })
-    .then(data => {
-        // Handle the successful upload here
-        alert('Video uploaded successfully!');
-
-        // Optionally, update the list of videos without refreshing the page
-        const videoList = document.getElementById('uploadedVideos');
-
-        // Check if "No uploaded videos" message is present and remove it
-        const noVideosMessage = videoList.querySelector('p');
-        if (noVideosMessage) {
-            videoList.removeChild(noVideosMessage);
-        }
-
-        // Append the newly uploaded video to the list
-        data.videoFiles.forEach(function(video) {
-            const listItem = document.createElement('li');
-            listItem.innerHTML = `
-                <div>
-                    <strong>${video.videoFileName}</strong>
-                    <video id="video_${video.videoFileId}" style="display:none;" src="/admin/video/${video.videoFileId}" preload="metadata"></video>
-                    <canvas id="thumbnail_${video.videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                </div>
-            `;
-            videoList.appendChild(listItem);
-
-            
-            const videoElement = document.getElementById(`video_${video.videoFileId}`);
-            const canvas = document.getElementById(`thumbnail_${video.videoFileId}`);
-            const context = canvas.getContext('2d');
-
-            // Set fixed dimensions for the thumbnail
-            canvas.width = 300; // Width of the thumbnail
-            canvas.height = 200; // Height of the thumbnail
-
-            videoElement.addEventListener('loadedmetadata', function() {
-               
-                videoElement.currentTime = 5; 
-            });
-
-            videoElement.addEventListener('seeked', function() {
-                // Draw the frame onto the canvas
-                context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-            });
-
-            // Add click event listener to open the video modal
-            const videoThumbnail = canvas;
-            videoThumbnail.addEventListener('click', () => {
-                openVideoModal(`/admin/video/${video.videoFileId}`, video.videoFileId);
-            });
-        });
-    })
-    .catch(error => {
-        console.error('Error uploading video:', error);
-        alert('Error uploading video.');
-    });
-});
-
-
-        </script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Select all lesson room items
-        const lessonRoomItems = document.querySelectorAll('.list-group-item');
-        const layeredContainer = document.querySelector('.layered-container'); // Get the create lesson room section
-        const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
-        const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload box
-        const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload box
-    
-        // Attach click event to each lesson room item
-        lessonRoomItems.forEach(item => {
-            item.addEventListener('click', function () {
-                layeredContainer.style.display = 'none'; // Hide the create lesson room section
-                newBigBox.style.display = 'block'; // Show main container
-                uploadPdfSection.style.display = 'none'; // Hide PDF upload section initially
-                uploadVideoSection.style.display = 'none'; // Hide video upload section initially
-    
-               
-    
-                // Set the roomId for hidden inputs
-                document.getElementById('pdfRoomId').value = roomId;
-                document.getElementById('videoRoomId').value = roomId;
-            });
-        });
-    
-        // Module button click listener to show the PDF upload box and hide newbigbox
-        const moduleButton = document.getElementById('moduleButton');
-        moduleButton.addEventListener('click', function () {
-            newBigBox.style.display = 'none'; // Hide the new big box
-            uploadPdfSection.style.display = 'block'; // Show the PDF upload box
-            uploadVideoSection.style.display = 'none'; // Hide the video upload section
-        });
-    
-        // Video button click listener to show the video upload box and hide newbigbox
-        const videoButton = document.getElementById('videoButton');
-        videoButton.addEventListener('click', function () {
-            newBigBox.style.display = 'none'; // Hide the new big box
-            uploadPdfSection.style.display = 'none'; // Hide the PDF upload box
-            uploadVideoSection.style.display = 'block'; // Show the video upload section
-        });
-    });
-    
-    function toggleDropdownMenu() {
+            function toggleDropdownMenu() {
         const menu = document.getElementById("dropdownMenu");
         menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
@@ -698,48 +457,62 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
         });
     }
 
-   // Function to archive a PDF and remove it from the DOM
-   function archivePdf(pdfFileId) {
-
-    console.log(`Archiving PDF with ID: ${pdfFileId}`);
-    fetch(`/admin/archive-pdf/${pdfFileId}`, {  // Make sure this matches your route path
-        method: 'POST'
-    })
-    .then(response => response.ok ? response.json() : Promise.reject('Failed to archive PDF'))
-    .then(data => {
-        console.log(data.message);
-        alert(data.message);
-        const pdfElement = document.getElementById(`pdfMenu-${pdfFileId}`).closest('li');
-        if (pdfElement) pdfElement.remove();
-    })
-    .catch(error => console.error('Error archiving PDF:', error));
-}
-
-
-    // Function to toggle the dropdown menu for each PDF
-    function togglePdfMenu(pdfFileId) {
-        const menu = document.getElementById(`pdfMenu-${pdfFileId}`);
-        menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
     // Close dropdowns if clicked outside
     document.addEventListener('click', function(event) {
 
-        const isKebabIcon = event.target.classList.contains('kebab-menu');
-        const isDropdownItem = event.target.closest('.dropdown-menu');
-        
-
-         // Toggle visibility of each dropdown
-        document.querySelectorAll('.dropdown-menu').forEach(menu => {
-            if (!menu.contains(event.target) && !isKebabIcon && !isDropdownItem) {
+        const dropdowns = document.querySelectorAll('.dropdown-menu');
+        dropdowns.forEach(menu => {
+            if (!menu.contains(event.target) && menu.style.display === 'block') {
                 menu.style.display = 'none';
             }
         });
-
     });
-    </script>
+
     
-  
+        </script>
+
+<script>
+    document.getElementById('uploadVideoForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(this);
+
+        // Make sure to get the roomId from the input
+        const roomId = document.getElementById('videoRoomId').value;
+
+        fetch(`/admin/upload-video/${roomId}`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json(); // Assuming you return JSON from the server
+            } else {
+                throw new Error('Network response was not ok');
+            }
+        })
+        .then(data => {
+            // Handle the successful upload here
+            alert('Video uploaded successfully!');
+            
+            // Optionally, refresh the uploaded videos list
+            const videoList = document.getElementById('uploadedVideos');
+            videoList.innerHTML = ''; // Clear existing list
+
+            data.videoFiles.forEach(function(video) {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `<a href="/admin/video/${video.videoFileId}" target="_blank">${video.videoFileName}</a>`;
+                videoList.appendChild(listItem);
+            });
+        })
+        .catch(error => {
+            console.error('Error uploading video:', error);
+            alert('Error uploading video.');
+        });
+    });
+
     
+</script>
 
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
@@ -747,5 +520,6 @@ document.getElementById("closeVideoModal").addEventListener("click", closeVideoM
             <img src="/assets/logo.png" alt="Logo" class="img-fluid text-left mt-2" style="width: 80px;">
             <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
         </div>
-    </body>
+    </div>
+</body>
 </html>

@@ -598,35 +598,7 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
 });
 
 
-// Archive a room with password verification
-router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { roomId } = req.params;
-    const { roomPassword } = req.body; // Password entered by the user
 
-    try {
-        // Find the room by ID
-        const room = await Room.findById(roomId);
-        if (!room) {
-            req.flash('error', 'Room not found.');
-            return res.redirect('/admin/homeAdmin');
-        }
-
-        // Check if the entered password matches the room's password
-        if (room.roomPassword !== roomPassword) {
-            req.flash('error', 'Incorrect password. Cannot archive the room.');
-            return res.redirect('/admin/homeAdmin');
-        }
-
-        // Update the room to mark it as archived
-        await Room.findByIdAndUpdate(roomId, { isArchived: true });
-        req.flash('success', 'Room archived successfully!');
-        res.redirect('/admin/homeAdmin');
-    } catch (err) {
-        console.error('Error archiving room:', err);
-        req.flash('error', 'Error archiving room.');
-        res.redirect('/admin/homeAdmin');
-    }
-});
 
 
 // Unarchive a room
@@ -671,7 +643,7 @@ router.get('/Archive', ensureLoggedIn, async (req, res) => {
 
 
 // Route to handle lessons for a specific room
-router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
+router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const roomId = req.params.roomId;
     console.log('Rendering lesson page for Room ID:', roomId);
     const currentUser = req.user; 
@@ -686,13 +658,9 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, 
 
         const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
         const lessonRooms = await LessonRoom.find({ roomId, archived: false }); // Fetch lesson rooms associated with the room
-
-         // Pass pdfFiles and videoFiles if they exist within lesson
-         const pdfFiles = lesson ? lesson.pdfFiles : [];
-         const videoFiles = lesson ? lesson.videoFiles : [];
         
 
-        res.render('admin/lesson', { room, lesson, lessonRooms, currentUser, pdfFiles, videoFiles }); // Pass lessonRooms to the view
+        res.render('admin/lesson', { room, lesson, lessonRooms, currentUser }); // Pass lessonRooms to the view
     } catch (err) {
         console.error(err);
         req.flash('error', 'Error accessing the room.');
@@ -701,7 +669,7 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, 
 });
 
 // Route to create a lessonRoom for a specific room
-router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
     const { subject, topic } = req.body;
     const { roomId } = req.params;
 
@@ -721,27 +689,23 @@ router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, async (req, res)
         res.redirect(`/admin/lesson/${roomId}`);
     }
 });
-
 router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
 
     try {
-        const lesson = await Lesson.findOne(
-            { roomId },
-            {
-                pdfFiles: { $elemMatch: { archived: { $ne: true } } },
-                videoFiles: { $elemMatch: { archived: { $ne: true } } }
-            }
-        );
+        const lesson = await Lesson.findOne({ roomId });
 
         if (!lesson) {
             return res.status(404).json({ message: 'No lessons found for this room.' });
         }
+        
+           // Filter out archived files
+           const pdfFiles = lesson.pdfFiles.filter(pdf => !pdf.archived);
+           const videoFiles = lesson.videoFiles.filter(video => !video.archived);
 
         // Send the lesson's PDF and video data as JSON
         res.json({
-            pdfFiles: lesson.pdfFiles,
-            videoFiles: lesson.videoFiles
+        pdfFiles, videoFiles
         });
     } catch (err) {
         console.error('Error fetching lessons:', err);
@@ -820,8 +784,8 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
             console.log('File uploaded:', file);
 
             await Lesson.findOneAndUpdate(
-                { roomId: new mongoose.Types.ObjectId(roomId) },  // Convert roomId to ObjectId
-                {
+                { roomId },
+                { 
                     $push: {
                         pdfFiles: {
                             pdfFileId: file._id,
@@ -848,8 +812,6 @@ router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) =>
 
 // Route to serve PDF by file ID from GridFS
 router.get('/pdf/:id', async (req, res) => {
-
-    console.log("Serving PDF with ID:", req.params.id); 
     try {
         const fileId = new mongoose.Types.ObjectId(req.params.id);
         const downloadStream = pdfBucket.openDownloadStream(fileId); // Use pdfBucket here
@@ -947,7 +909,6 @@ router.get('/video/:id', async (req, res) => {
 });
 
 
-
 // Route to save PDF reading progress
 router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {
     const userId = req.user?._id || req.body.userId;
@@ -975,6 +936,9 @@ router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to save progress' });
     }
 });
+
+
+
 
 
 
@@ -1023,35 +987,20 @@ router.post('/unarchive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (
     }
 });
 
-// Route to display archived lesson rooms, passing roomId for "Go Back" link
+// Route to display archived lesson rooms and PDFs, passing roomId for "Go Back" link
 router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     try {
         // Fetch archived lesson rooms
-        const archivedLessonRooms = await LessonRoom.find({ archived: true });
-        console.log('Archived Lesson Rooms:', archivedLessonRooms);
+        const archivedLessonRooms = await LessonRoom.find({ archived: true, roomId });
 
+        // Fetch archived PDFs from the Lesson collection
+        const lesson = await Lesson.findOne({ roomId });
+        const archivedPdfs = lesson ? lesson.pdfFiles.filter(pdf => pdf.archived) : [];
 
-        // Fetch archived PDFs and videos specifically for the room
-        const archivedLesson = await Lesson.findOne(
-            { roomId },
-            {
-                pdfFiles: { $elemMatch: { archived: true } },
-                videoFiles: { $elemMatch: { archived: true } }
-            }
-        );
-
-        // Check if archived PDFs and videos exist and pass them to the view
-        const archivedPdfs = archivedLesson?.pdfFiles || [];
-        const archivedVideos = archivedLesson?.videoFiles || [];
-
-        console.log('Archived PDFs:', archivedPdfs);
-        console.log('Archived Videos:', archivedVideos);
-
-
-        res.render('admin/lessonArchive', { archivedLessonRooms, roomId, archivedPdfs, archivedVideos });
+        res.render('admin/lessonArchive', { archivedLessonRooms, archivedPdfs, roomId });
     } catch (error) {
-        console.error('Error fetching archived lesson rooms:', error);
+        console.error('Error fetching archived lesson rooms or PDFs:', error);
         req.flash('error', 'Failed to load archived lessons.');
         res.redirect('/admin/homeAdmin');
     }
@@ -1062,26 +1011,20 @@ router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
 // Route to archive a specific PDF
 router.post('/archive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) => {
     const { pdfFileId } = req.params;
-    console.log(`Received request to archive PDF with ID: ${pdfFileId}`);
-    
+
     try {
-        const result = await Lesson.updateOne(
-            { 'pdfFiles.pdfFileId': pdfFileId },
-            { $set: { 'pdfFiles.$.archived': true } }
+        // Update the `archived` status of the specific PDF file in the lesson
+        await Lesson.updateOne(
+            { "pdfFiles.pdfFileId": pdfFileId },
+            { $set: { "pdfFiles.$.archived": true } }
         );
-        
-        if (result.modifiedCount > 0) {
-            res.status(200).json({ message: 'PDF archived successfully.' });
-        } else {
-            res.status(404).json({ message: 'PDF not found or already archived.' });
-        }
+
+        res.status(200).json({ message: 'PDF archived successfully.' });
     } catch (error) {
         console.error('Error archiving PDF:', error);
         res.status(500).json({ error: 'Failed to archive PDF.' });
     }
 });
-
-
 
 // Route to unarchive a specific PDF
 router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) => {
@@ -1089,9 +1032,10 @@ router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) =
 
     try {
         await Lesson.updateOne(
-            { 'pdfFiles.pdfFileId': pdfFileId },
-            { $set: { 'pdfFiles.$.archived': false } }
+            { "pdfFiles.pdfFileId": pdfFileId },
+            { $set: { "pdfFiles.$.archived": false } }
         );
+
         res.status(200).json({ message: 'PDF unarchived successfully.' });
     } catch (error) {
         console.error('Error unarchiving PDF:', error);
@@ -1101,6 +1045,7 @@ router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) =
 
 
 //end of lesson ------------------------------------------------------------------------------------------
+
 
 
 
