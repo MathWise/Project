@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Archived PDFs and Videos</title>
+    <link rel="stylesheet" href="/lesson.css">
+</head>
+<body>
+    <h1>Archived PDFs and Videos</h1>
+    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
+
+    <h2>Archived PDFs</h2>
+    <ul class="list-group">
+        <% if (archivedPdfs.length > 0) { %>
+            <% archivedPdfs.forEach(function(pdf) { %>
+                <li class="list-group-item">
+                    <strong>PDF Name:</strong> <%= pdf.pdfFileName %>
+                    <button onclick="confirmUnarchive('pdf', '<%= pdf.pdfFileId %>')">Unarchive</button>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived PDFs available.</p>
+        <% } %>
+    </ul>
+
+    <h2>Archived Videos</h2>
+    <ul class="list-group">
+        <% if (archivedVideos.length > 0) { %>
+            <% archivedVideos.forEach(function(video) { %>
+                <li class="list-group-item">
+                    <strong>Video Name:</strong> <%= video.videoFileName %>
+                    <button onclick="confirmUnarchive('video', '<%= video.videoFileId %>')">Unarchive</button>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived videos available.</p>
+        <% } %>
+    </ul>
+
+    <script>
+        function confirmUnarchive(type, id) {
+            if (confirm(`Are you sure you want to unarchive this ${type}?`)) {
+                const url = type === 'pdf' ? `/admin/unarchive-pdf/${id}` : `/admin/unarchive-video/${id}`;
+                fetch(url, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
+                })
+                .catch(error => console.error(`Error unarchiving ${type}:`, error));
+            }
+        }
+    </script>
+</body>
+</html>

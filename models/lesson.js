@@ -1,3 +1,4 @@
+// models/lesson.js
 const mongoose = require('mongoose');
 
 const lessonSchema = new mongoose.Schema({
@@ -10,12 +11,7 @@ const lessonSchema = new mongoose.Schema({
     pdfFiles: [{
         pdfFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'GridFSFile' },
         pdfFileName: { type: String },
-        archived: { type: Boolean, default: false }  // Add this field to track archival status
-    }],
-    videoFiles: [{
-        videoFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'GridFSFile' },
-        videoFileName: { type: String },
-        archived: { type: Boolean, default: false }  // Optionally add an archived field for video files if needed
+        archived: { type: Boolean, default: false }
     }]
 });
 

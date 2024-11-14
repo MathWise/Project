@@ -25,10 +25,11 @@
             <option value="videos">Archived Video Lessons</option>
         </select>
     </div>
-    
+
     <!-- Archived Lesson Rooms Section -->
     <main class="col-md-11" id="archivedLessons" style="display: none;">
         <h2>Archived Lesson Rooms</h2>
+
         <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
             <% if (archivedLessonRooms.length > 0) { %>
                 <% archivedLessonRooms.forEach(function(lessonRoom) { %>
@@ -38,7 +39,7 @@
                                 <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
                                 <p>Room ID: <%= lessonRoom.roomId %></p>
                             </div>
-                            <button onclick="unarchiveLessonRoom('<%= lessonRoom._id %>')">Unarchive</button>
+                            <button onclick="confirmUnarchive('lessonRoom', '<%= lessonRoom._id %>')">Unarchive</button>
                         </div>
                     </li>
                 <% }) %>
@@ -48,53 +49,51 @@
         </ul>
     </main>
 
-    <!-- Archived PDFs Section -->
-    <main class="col-md-11" id="archivedPdfs" style="display: none;">
-        <h2>Archived PDFs</h2>
-        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
-            <% if (archivedPdfs.length > 0) { %>
-                <% archivedPdfs.forEach(function(pdf) { %>
-                    <li class="list-group-item d-flex align-items-center mr-2">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <strong>PDF Name: <%= pdf.pdfFileName %></strong>
-                                <p>PDF ID: <%= pdf.pdfFileId %></p>
-                            </div>
-                            <button onclick="unarchivePdf('<%= pdf.pdfFileId %>')">Unarchive</button>
+ <!-- Debugging output to confirm data in archived PDFs section -->
+ <main class="col-md-11" id="archivedPdfs" style="display: none;">
+    <h2>Archived PDFs</h2>
+    <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+        <% if (archivedPdfs && archivedPdfs.length > 0) { %>
+            <% archivedPdfs.forEach(function(pdf) { %>
+                <li class="list-group-item d-flex align-items-center mr-2">
+                    <div class="d-flex justify-content-between w-100">
+                        <div>
+                            <strong>PDF Name: <%= pdf.pdfFileName %></strong>
+                            <p>PDF ID: <%= pdf.pdfFileId %></p>
                         </div>
-                    </li>
-                <% }) %>
-            <% } else { %>
-                <p>No archived PDFs available.</p>
-            <% } %>
-        </ul>
-    </main>
+                        <button onclick="confirmUnarchive('pdf', '<%= pdf.pdfFileId %>')">Unarchive</button>
+                    </div>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived PDFs available.</p>
+        <% } %>
+    </ul>
+</main>
 
-    <!-- Archived Videos Section -->
-    <main class="col-md-11" id="archivedVideos" style="display: none;">
-        <h2>Archived Videos</h2>
-        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
-            <% if (archivedVideos.length > 0) { %>
-                <% archivedVideos.forEach(function(video) { %>
-                    <li class="list-group-item d-flex align-items-center mr-2">
-                        <div class="d-flex justify-content-between w-100">
-                            <div>
-                                <strong>Video Name: <%= video.videoFileName %></strong>
-                                <p>Video ID: <%= video.videoFileId %></p>
-                            </div>
-                            <button onclick="unarchiveVideo('<%= video.videoFileId %>')">Unarchive</button>
+<!-- Archived Videos Section -->
+<main class="col-md-11" id="archivedVideos" style="display: none;">
+    <h2>Archived Videos</h2>
+    <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+        <% if (archivedVideos && archivedVideos.length > 0) { %>
+            <% archivedVideos.forEach(function(video) { %>
+                <li class="list-group-item d-flex align-items-center mr-2">
+                    <div class="d-flex justify-content-between w-100">
+                        <div>
+                            <strong>Video Name: <%= video.videoFileName %></strong>
+                            <p>Video ID: <%= video.videoFileId %></p>
                         </div>
-                    </li>
-                <% }) %>
-            <% } else { %>
-                <p>No archived videos available.</p>
-            <% } %>
-        </ul>
-    </main>
-
+                        <button onclick="confirmUnarchive('video', '<%= video.videoFileId %>')">Unarchive</button>
+                    </div>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived videos available.</p>
+        <% } %>
+    </ul>
+</main>
     <!-- JavaScript functions to manage the archive sections and unarchive requests -->
     <script>
-        // Function to toggle visibility based on selected archived content
         function loadArchivedContent() {
             const selectedOption = document.getElementById('archiveSelect').value;
             document.getElementById('archivedLessons').style.display = selectedOption === 'lessons' ? 'block' : 'none';
@@ -103,9 +102,23 @@
         }
 
         // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
-        document.addEventListener('DOMContentLoaded', loadArchivedContent);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadArchivedContent();
+        });
 
-        // Unarchive functions for each type
+        // Confirmation function for unarchiving
+        function confirmUnarchive(type, id) {
+            if (confirm("Are you sure you want to unarchive this item?")) {
+                if (type === 'lessonRoom') {
+                    unarchiveLessonRoom(id);
+                } else if (type === 'pdf') {
+                    unarchivePdf(id);
+                } else if (type === 'video') {
+                    unarchiveVideo(id);
+                }
+            }
+        }
+
         function unarchiveLessonRoom(lessonRoomId) {
             fetch(`/admin/unarchive-lesson-room/${lessonRoomId}`, { method: 'POST' })
             .then(response => response.json())

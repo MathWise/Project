@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Archived Lesson Rooms</title>
+    <link rel="stylesheet" href="/lesson.css">
+</head>
+<body>
+    <h1>Archived Lesson Rooms</h1>
+    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
+    <ul class="list-group d-flex flex-row flex-wrap">
+        <% if (archivedLessonRooms.length > 0) { %>
+            <% archivedLessonRooms.forEach(function(lessonRoom) { %>
+                <li class="list-group-item lesson-room">
+                    <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
+                    <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived lesson rooms available.</p>
+        <% } %>
+    </ul>
+
+    <script>
+        function confirmUnarchive(lessonRoomId) {
+            if (confirm("Are you sure you want to unarchive this lesson room?")) {
+                fetch(`/admin/unarchive-lesson-room/${lessonRoomId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
+                })
+                .catch(error => console.error('Error unarchiving lesson room:', error));
+            }
+        }
+    </script>
+</body>
+</html>

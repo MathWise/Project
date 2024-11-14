@@ -2,9 +2,12 @@
 const multer = require('multer');
 const { MongoClient, GridFSBucket } = require('mongodb');
 const express = require('express');
-const Lesson = require('../models/lesson.js'); 
+const Lesson = require('../models/lesson.js');
+const Video = require('../models/video'); 
 const mongoose = require('mongoose');
 const router = express.Router();
+// Import the `initBuckets` function and buckets
+const { getPdfBucket, getVideoBucket, initBuckets } = require('../config/gridFS');
 const Room = require('../models/room');
 const LessonRoom = require('../models/lessonRoom');
 const middleware = require('../middleware'); // Ensure this import is correct
@@ -18,6 +21,7 @@ const ActivityRoom = require('../models/activityRoom'); // Correct model for act
 const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
 const { ObjectId } = require('mongodb'); 
+const { archiveItem, cascadeArchive, cascadeUnarchive, cascadeDelete } = require('../utils/archiveHelper');
 
 
 // Route to grant access to a specific room
@@ -166,6 +170,232 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 
 // end of home Admin-----------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+// Route to manage user access
+router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
+    try {
+        const users = await User.find();
+        res.render('admin/manageAccess', {
+            users,
+            successMessage: req.flash('success'),
+            errorMessage: req.flash('error')
+        });
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Error fetching users.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+// Grant access to a user (changing role to admin)
+router.post('/give-access/:userId', ensureAdminLoggedIn, async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            if (user.role !== 'admin') {
+                user.role = 'admin'; // Change role to admin
+                await user.save();
+                req.flash('success', 'Access granted successfully!');
+            } else {
+                req.flash('error', 'User is already an admin.');
+            }
+        } else {
+            req.flash('error', 'User not found.');
+        }
+        res.redirect('/admin/manage-access');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Error granting access.');
+        res.redirect('/admin/manage-access');
+    }
+});
+
+// Remove access from a user (changing role to student)
+router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const user = await User.findById(userId);
+        if (user) {
+            if (user.role !== 'student') {
+                user.role = 'student'; // Change role to student
+                await user.save();
+                req.flash('success', 'Access revoked successfully!');
+            } else {
+                req.flash('error', 'User is already a student.');
+            }
+        } else {
+            req.flash('error', 'User not found.');
+        }
+        res.redirect('/admin/manage-access');
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Error revoking access.');
+        res.redirect('/admin/manage-access');
+    }
+});
+
+
+
+router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    const { roomPassword } = req.body; // Password entered by the user
+
+    try {
+        // Find the room by ID
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Check if the entered password matches the room's password
+        if (room.roomPassword !== roomPassword) {
+            req.flash('error', 'Incorrect password. Cannot archive the room.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Archive the room itself
+        await archiveItem(Room, roomId);
+        // Archive all associated items
+        await cascadeArchive(roomId);
+
+        req.flash('success', 'Room and related items archived successfully!');
+        res.redirect('/admin/homeAdmin');
+    } catch (err) {
+        console.error('Error archiving room:', err);
+        req.flash('error', 'Error archiving room.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
+
+
+// Unarchive a room
+router.post('/unarchive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+
+    try {
+        // Unarchive the room itself
+        await Room.findByIdAndUpdate(roomId, { isArchived: false });
+        // Unarchive all associated items
+        await cascadeUnarchive(roomId);
+
+        req.flash('success', 'Room and related items restored successfully!');
+    } catch (err) {
+        console.error('Error restoring room:', err);
+        req.flash('error', 'Error restoring room.');
+    }
+    res.redirect('/admin/Archive');
+});
+
+
+// Render the archive page with archived rooms and their related archived content
+router.get('/Archive', ensureLoggedIn, async (req, res) => {
+    try {
+        // Fetch all archived rooms
+        const rooms = await Room.find({ isArchived: true });
+
+        // Fetch related archived content for each room
+        const roomDetails = await Promise.all(
+            rooms.map(async (room) => {
+                const lessons = await Lesson.find({ roomId: room._id, "pdfFiles.archived": true });
+                const quizzes = await Quiz.find({ roomId: room._id, archived: true });
+                const activities = await ActivityRoom.find({ roomId: room._id, archived: true });
+                
+                // Return room details along with related archived content
+                return { ...room.toObject(), lessons, quizzes, activities };
+            })
+        );
+
+        // Render the archive page with rooms and their archived content
+        res.render('admin/archive', {
+            rooms: roomDetails,
+            successMessage: req.flash('success'),
+            errorMessage: req.flash('error')
+        });
+    } catch (err) {
+        console.error('Error fetching archived rooms:', err);
+        req.flash('error', 'Error fetching archived rooms.');
+        res.redirect('/error');
+    }
+});
+
+// Route to delete a specific room from the database
+router.post('/delete-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
+    const { roomId } = req.params;
+    const { roomPassword } = req.body;
+
+    try {
+        // Step 1: Verify the room exists
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/admin/Archive');
+        }
+
+        // Step 2: Verify the password
+        if (room.roomPassword !== roomPassword) {
+            req.flash('error', 'Incorrect password. Room deletion canceled.');
+            return res.redirect('/admin/Archive');
+        }
+
+        // Step 3: Delete the room and related data from the database
+        console.log(`Deleting room with ID: ${roomId}`);
+        await Room.findByIdAndDelete(roomId);
+        console.log('Room deleted successfully.');
+
+        console.log(`Deleting associated LessonRooms for room ID: ${roomId}`);
+        await LessonRoom.deleteMany({ roomId });        // Delete related lesson rooms
+        console.log('Associated LessonRooms deleted successfully.');
+
+        console.log(`Deleting associated ActivityRooms for room ID: ${roomId}`);
+        await ActivityRoom.deleteMany({ roomId });      // Delete related activity rooms
+        console.log('Associated ActivityRooms deleted successfully.');
+
+        console.log(`Deleting associated Quizzes for room ID: ${roomId}`);
+        await Quiz.deleteMany({ roomId });              // Delete related quizzes
+        console.log('Associated Quizzes deleted successfully.');
+
+        console.log(`Deleting associated Lessons for room ID: ${roomId}`);
+        await Lesson.deleteMany({ roomId });            // Delete lessons (including PDFs/videos)
+        console.log('Associated Lessons deleted successfully.');
+
+        req.flash('success', 'Room and all related content deleted successfully.');
+        res.redirect('/admin/Archive');
+    } catch (err) {
+        console.error('Error deleting room:', err);
+        req.flash('error', 'Error deleting room.');
+        res.redirect('/admin/Archive');
+    }
+});
+
+
+//end of managing room--------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -528,145 +758,46 @@ router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) 
 
 
 
-
-
-
-// Route to manage user access
-router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
-    try {
-        const users = await User.find();
-        res.render('admin/manageAccess', {
-            users,
-            successMessage: req.flash('success'),
-            errorMessage: req.flash('error')
-        });
-    } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error fetching users.');
-        res.redirect('/admin/homeAdmin');
-    }
-});
-
-// Grant access to a user (changing role to admin)
-router.post('/give-access/:userId', ensureAdminLoggedIn, async (req, res) => {
-    const { userId } = req.params;
-
-    try {
-        const user = await User.findById(userId);
-        if (user) {
-            if (user.role !== 'admin') {
-                user.role = 'admin'; // Change role to admin
-                await user.save();
-                req.flash('success', 'Access granted successfully!');
-            } else {
-                req.flash('error', 'User is already an admin.');
-            }
-        } else {
-            req.flash('error', 'User not found.');
-        }
-        res.redirect('/admin/manage-access');
-    } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error granting access.');
-        res.redirect('/admin/manage-access');
-    }
-});
-
-// Remove access from a user (changing role to student)
-router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
-    const { userId } = req.params;
-
-    try {
-        const user = await User.findById(userId);
-        if (user) {
-            if (user.role !== 'student') {
-                user.role = 'student'; // Change role to student
-                await user.save();
-                req.flash('success', 'Access revoked successfully!');
-            } else {
-                req.flash('error', 'User is already a student.');
-            }
-        } else {
-            req.flash('error', 'User not found.');
-        }
-        res.redirect('/admin/manage-access');
-    } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error revoking access.');
-        res.redirect('/admin/manage-access');
-    }
-});
-
-
-
-
-
-// Unarchive a room
-router.post('/unarchive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { roomId } = req.params;
-
-    try {
-        await Room.findByIdAndUpdate(roomId, { isArchived: false });
-        req.flash('success', 'Room restored successfully!');
-    } catch (err) {
-        console.error('Error restoring room:', err);
-        req.flash('error', 'Error restoring room.');
-    }
-    res.redirect('/admin/Archive');
-});
-
-// Render the archive page with archived rooms
-router.get('/Archive', ensureLoggedIn, async (req, res) => {
-    try {
-        const rooms = await Room.find({ isArchived: true }); // Fetch only archived rooms
-        res.render('admin/archive', {
-            rooms,
-            successMessage: req.flash('success'),
-            errorMessage: req.flash('error')
-        });
-    } catch (err) {
-        console.error('Error fetching archived rooms:', err);
-        req.flash('error', 'Error fetching archived rooms.');
-        res.redirect('/error');
-    }
-});
-
-//end of managing room--------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
 // Route to handle lessons for a specific room
-router.get('/lesson/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const roomId = req.params.roomId;
-    console.log('Rendering lesson page for Room ID:', roomId);
-    const currentUser = req.user; 
-    console.log("Current User:",  currentUser);
- 
+router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
+    const { roomId } = req.params;
+    console.log('Received roomId:', roomId);
+
+    // Convert roomId to ObjectId, if valid
+    const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
+    if (!roomObjectId) {
+        console.error('Invalid roomId format');
+        req.flash('error', 'Invalid room ID format.');
+        return res.redirect('/admin/homeAdmin');
+    }
+
     try {
-        const room = await Room.findById(roomId);
+        // Fetch room information to ensure room exists
+        const room = await Room.findById(roomObjectId);
         if (!room) {
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
-        const lessonRooms = await LessonRoom.find({ roomId, archived: false }); // Fetch lesson rooms associated with the room
-        
+        // Retrieve associated documents using roomObjectId
+        const lesson = await Lesson.findOne({ roomId: roomObjectId });
+        const video = await Video.findOne({ roomId: roomObjectId });
+        const lessonRooms = await LessonRoom.find({ roomId: roomObjectId, archived: false });
 
-        res.render('admin/lesson', { room, lesson, lessonRooms, currentUser }); // Pass lessonRooms to the view
+        // Logging retrieved documents for debugging
+        console.log('Lesson found:', lesson);
+        console.log('Video found:', video);
+        console.log('Lesson Rooms:', lessonRooms);
+
+        // Render the lesson page with the retrieved data
+        res.render('admin/lesson', { room, lesson, video, lessonRooms, currentUser: req.user });
     } catch (err) {
-        console.error(err);
+        console.error('Error accessing the room:', err);
         req.flash('error', 'Error accessing the room.');
         res.redirect('/admin/homeAdmin');
     }
 });
+
 
 // Route to create a lessonRoom for a specific room
 router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
@@ -693,143 +824,92 @@ router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, middleware.ensur
 
 router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
+    const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new ObjectId(roomId) : null;
+
+    if (!roomObjectId) {
+        console.error('Invalid roomId format in get-lessons');
+        return res.status(400).send('Invalid roomId format');
+    }
 
     try {
-        const lesson = await Lesson.findOne({ roomId });
+        // Retrieve lesson and video documents
+        const lesson = await Lesson.findOne({ roomId: roomObjectId });
+        const videoLesson = await Video.findOne({ roomId: roomObjectId });
 
-        if (!lesson) {
-            return res.status(404).json({ message: 'No lessons found for this room.' });
-        }
-        
-           // Filter out archived files
-           const pdfFiles = lesson.pdfFiles.filter(pdf => !pdf.archived);
-           const videoFiles = lesson.videoFiles.filter(video => !video.archived);
+        // Filter out archived items
+        const pdfFiles = lesson ? lesson.pdfFiles.filter(pdf => !pdf.archived) : [];
+        const videoFiles = videoLesson ? videoLesson.videoFiles.filter(video => !video.archived) : [];
 
-                   // Log filtered results to verify correct filtering
-                    console.log('Filtered PDFs:', pdfFiles);
-                    console.log('Filtered Videos:', videoFiles);
+        console.log('Non-archived PDFs:', pdfFiles);
+        console.log('Non-archived Videos:', videoFiles);
 
-        // Send the lesson's PDF and video data as JSON
-        res.json({
-        pdfFiles, videoFiles
-        });
-    } catch (err) {
-        console.error('Error fetching lessons:', err);
-        res.status(500).json({ message: 'Error fetching lessons.' });
+        res.json({ pdfFiles, videoFiles });
+    } catch (error) {
+        console.error('Error fetching lessons:', error);
+        res.status(500).json({ message: 'Error fetching lessons' });
     }
 });
 
 
-let pdfBucket;
-let videoBucket;
 
-const initDB = async () => {
-    try {
-        const client = await MongoClient.connect(mongoURI);
-        const db = client.db();
-        
-        // Initialize separate buckets for PDFs and videos
-        pdfBucket = new GridFSBucket(db, { bucketName: 'pdfs' }); 
-        videoBucket = new GridFSBucket(db, { bucketName: 'videos' });
 
-        console.log('MongoDB connected and GridFSBuckets for PDFs and Videos initialized');
-    } catch (error) {
-        console.error('MongoDB connection error:', error);
-        throw new Error('Failed to connect to MongoDB');
-    }
-};
 
-initDB();
 
+initBuckets();
 
 // Set up multer storage in memory
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Route to upload PDF to MongoDB GridFS
+
+
+// Separate PDF upload route
 router.post('/upload-pdf/:roomId', upload.single('pdfFile'), async (req, res) => {
     const { roomId } = req.params;
-    console.log('Room ID:', roomId);
-    console.log('Uploaded File:', req.file);
+    const pdfBucket = getPdfBucket();
+    const filename = `${roomId}-${req.file.originalname}`;
 
     if (!req.file) {
-        console.error('No file uploaded.');
-        req.flash('error', 'No file uploaded. Please select a file to upload.');
-        console.log('Redirecting to lesson page due to no file.');
+        req.flash('error', 'No file uploaded.');
         return res.redirect(`/admin/lesson/${roomId}`);
     }
 
-    // Create an upload stream to the PDFs GridFS bucket
-    const filename = `${roomId}-${req.file.originalname}`;
-    const uploadStream = pdfBucket.openUploadStream(filename);
+    try {
+        const uploadStream = pdfBucket.openUploadStream(filename);
+        uploadStream.end(req.file.buffer);
 
-    // Write the buffer to GridFS
-    uploadStream.end(req.file.buffer);
-
-    // Handle errors during the upload process
-    uploadStream.on('error', (error) => {
-        console.error('Error uploading file to GridFS:', error);
-        req.flash('error', 'Error uploading PDF. Please try again.');
-        console.log('Redirecting to lesson page due to upload error.');
-        return res.redirect(`/admin/lesson/${roomId}`);
-    });
-
-    // Handle the finish event
-    uploadStream.on('finish', async () => {
-        try {
-            const uploadedFile = await pdfBucket.find({ filename }).toArray();
-
-            if (!uploadedFile || uploadedFile.length === 0) {
-                console.error('File not found in GridFS after upload.');
-                req.flash('error', 'Error saving file reference. Please try again.');
-                console.log('Redirecting to lesson page due to file not found.');
-                return res.redirect(`/admin/lesson/${roomId}`);
+        uploadStream.on('finish', async () => {
+            const file = await pdfBucket.find({ filename }).toArray();
+            if (file.length > 0) {
+                await Lesson.findOneAndUpdate(
+                    { roomId },
+                    { $push: { pdfFiles: { pdfFileId: file[0]._id, pdfFileName: req.file.originalname } } },
+                    { new: true, upsert: true }
+                );
+                req.flash('success', 'PDF uploaded successfully.');
+            } else {
+                req.flash('error', 'Error saving file reference.');
             }
-
-            const file = uploadedFile[0];
-            console.log('File uploaded:', file);
-
-            await Lesson.findOneAndUpdate(
-                { roomId },
-                { 
-                    $push: {
-                        pdfFiles: {
-                            pdfFileId: file._id,
-                            pdfFileName: req.file.originalname
-                        }
-                    }
-                },
-                { new: true, upsert: true }
-            );
-
-            req.flash('success', 'PDF uploaded and saved to the lesson.');
-            console.log('Redirecting to lesson page after successful upload.');
             res.redirect(`/admin/lesson/${roomId}`);
-        } catch (error) {
-            console.error('Error updating lesson with file ID:', error);
-            req.flash('error', 'Error saving file reference. Please try again.');
-            console.log('Redirecting to lesson page due to update error.');
-            return res.redirect(`/admin/lesson/${roomId}`);
-        }
-    });
+        });
+    } catch (error) {
+        console.error('Error during PDF upload:', error);
+        req.flash('error', 'Failed to upload PDF.');
+        res.redirect(`/admin/lesson/${roomId}`);
+    }
 });
-
-
 
 // Route to serve PDF by file ID from GridFS
 router.get('/pdf/:id', async (req, res) => {
     try {
+        const pdfBucket = getPdfBucket();  // Use the getter
         const fileId = new mongoose.Types.ObjectId(req.params.id);
-        const downloadStream = pdfBucket.openDownloadStream(fileId); // Use pdfBucket here
+        const downloadStream = pdfBucket.openDownloadStream(fileId);
 
-        // Set the response headers to show the PDF inline
         res.set('Content-Type', 'application/pdf');
         res.set('Content-Disposition', 'inline');
-
-        // Pipe the data to the response
         downloadStream.pipe(res);
 
-        // Handle errors during the download stream
         downloadStream.on('error', () => {
             res.status(404).send('File not found.');
         });
@@ -838,90 +918,60 @@ router.get('/pdf/:id', async (req, res) => {
         res.status(500).send('Error retrieving file.');
     }
 });
-
+// Separate Video upload route
 router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res) => {
     const { roomId } = req.params;
+    const videoBucket = getVideoBucket();
+    const filename = `${roomId}-${req.file.originalname}`;
 
     if (!req.file) {
         req.flash('error', 'No video uploaded.');
-        return res.status(400).json({ error: 'No video uploaded.' }); // Change to JSON response
+        return res.status(400).json({ error: 'No video uploaded.' });
     }
 
-    const videoUploadStream = videoBucket.openUploadStream(req.file.originalname);
-    videoUploadStream.end(req.file.buffer);
+    try {
+        const videoUploadStream = videoBucket.openUploadStream(filename);
+        videoUploadStream.end(req.file.buffer);
 
-    videoUploadStream.on('error', (error) => {
-        console.error('Error uploading video to GridFS:', error);
-        req.flash('error', 'Error uploading video. Please try again.');
-        return res.status(500).json({ error: 'Error uploading video.' }); // Change to JSON response
-    });
-
-    videoUploadStream.on('finish', async () => {
-        try {
-
-
-
-            const uploadedVideo = await videoBucket.find({ filename: req.file.originalname }).toArray();
-
-            if (!uploadedVideo || uploadedVideo.length === 0) {
-                
-                req.flash('error', 'Error saving video reference. Please try again.');
-                return res.status(500).json({ error: 'Error saving video reference.' }); // Change to JSON response
-            }
-
-            const video = uploadedVideo[0];
-            console.log('Uploaded video info:', video);
-
-            // Update the Lesson document to add the video file
-            const updatedLesson = await Lesson.findOneAndUpdate(
-                { roomId },
-                {
-                    $push: {
-                        videoFiles: {
-                            videoFileId: video._id,
-                            videoFileName: req.file.originalname,
-                            archived: false
+        videoUploadStream.on('finish', async () => {
+            const video = await videoBucket.find({ filename }).toArray();
+            if (video.length > 0) {
+                await Video.findOneAndUpdate(
+                    { roomId },
+                    {
+                        $push: {
+                            videoFiles: {
+                                videoFileId: video[0]._id,
+                                videoFileName: req.file.originalname,
+                                archived: false
+                            }
                         }
-                    }
-                },
-                { new: true, upsert: true }
-            );
-
-
-            if (!updatedLesson) {
-                console.error('Failed to update Lesson document for room:', roomId);
-                req.flash('error', 'Error updating lesson with video.');
-                return res.status(500).json({ error: 'Error updating lesson with video.' });
+                    },
+                    { new: true, upsert: true }
+                );
+                req.flash('success', 'Video uploaded successfully.');
+            } else {
+                req.flash('error', 'Error saving video reference.');
             }
-            console.log('Updated Lesson document:', updatedLesson.videoFiles);
-
-            req.flash('success', 'Video uploaded and saved to the lesson.');
-            return res.status(200).json({
-                message: 'Video uploaded successfully.',
-                videoFiles: updatedLesson.videoFiles
-            });
-        } catch (error) {
-            console.error('Error updating lesson with video ID:', error);
-            req.flash('error', 'Error saving video reference. Please try again.');
-            return res.status(500).json({ error: 'Error saving video reference.' }); // Change to JSON response
-        }
-    });
+            res.status(200).json({ message: 'Video uploaded successfully.' });
+        });
+    } catch (error) {
+        console.error('Error during video upload:', error);
+        req.flash('error', 'Failed to upload video.');
+        res.status(500).json({ error: 'Failed to upload video.' });
+    }
 });
-
 
 // Route to serve video by file ID from GridFS
 router.get('/video/:id', async (req, res) => {
     try {
+        const videoBucket = getVideoBucket();  // Use the getter
         const fileId = new mongoose.Types.ObjectId(req.params.id);
         const downloadStream = videoBucket.openDownloadStream(fileId);
 
-        // Set the response headers to stream the video
-        res.set('Content-Type', 'video/mp4'); // Adjust this if your videos are in different formats
-
-        // Pipe the video data to the response
+        res.set('Content-Type', 'video/mp4');
         downloadStream.pipe(res);
 
-        // Handle errors during the download stream
         downloadStream.on('error', () => {
             res.status(404).send('Video not found.');
         });
@@ -930,7 +980,6 @@ router.get('/video/:id', async (req, res) => {
         res.status(500).send('Error retrieving video.');
     }
 });
-
 
 // Route to save PDF reading progress
 router.post('/lesson/pdf-progress', ensureLoggedIn, async (req, res) => {
@@ -983,125 +1032,6 @@ router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async 
     }
 });
 
-
-// Route to archive a specific lesson room
-router.post('/archive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (req, res) => {
-    const { lessonRoomId } = req.params;
-
-    try {
-        await LessonRoom.findByIdAndUpdate(lessonRoomId, { archived: true }); // Update this if you want to remove instead
-        res.status(200).json({ message: 'Lesson room archived successfully.' });
-    } catch (error) {
-        console.error('Error archiving lesson room:', error);
-        res.status(500).json({ error: 'Failed to archive lesson room.' });
-    }
-});
-
-// Route to unarchive a specific lesson room
-router.post('/unarchive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (req, res) => {
-    const { lessonRoomId } = req.params;
-
-    try {
-        await LessonRoom.findByIdAndUpdate(lessonRoomId, { archived: false });
-        res.status(200).json({ message: 'Lesson room unarchived successfully.' });
-    } catch (error) {
-        console.error('Error unarchiving lesson room:', error);
-        res.status(500).json({ error: 'Failed to unarchive lesson room.' });
-    }
-});
-
-// Route to display archived lesson rooms and PDFs, passing roomId for "Go Back" link
-router.get('/lessonArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { roomId } = req.params;
-    try {
-        // Fetch archived lesson rooms
-        const archivedLessonRooms = await LessonRoom.find({ archived: true, roomId });
-
-        // Fetch archived PDFs from the Lesson collection
-        const lesson = await Lesson.findOne({ roomId });
-        const archivedPdfs = lesson ? lesson.pdfFiles.filter(pdf => pdf.archived) : [];
-        const archivedVideos = lesson ? lesson.videoFiles.filter(video => video.archived) : [];
-
-        res.render('admin/lessonArchive', { archivedLessonRooms, archivedPdfs, archivedVideos, roomId });
-    } catch (error) {
-        console.error('Error fetching archived lesson rooms or PDFs:', error);
-        req.flash('error', 'Failed to load archived lessons.');
-        res.redirect('/admin/homeAdmin');
-    }
-});
-
-
-
-// Route to archive a specific PDF
-router.post('/archive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) => {
-    const { pdfFileId } = req.params;
-
-    try {
-        // Update the `archived` status of the specific PDF file in the lesson
-        await Lesson.updateOne(
-            { "pdfFiles.pdfFileId": pdfFileId },
-            { $set: { "pdfFiles.$.archived": true } }
-        );
-
-        res.status(200).json({ message: 'PDF archived successfully.' });
-    } catch (error) {
-        console.error('Error archiving PDF:', error);
-        res.status(500).json({ error: 'Failed to archive PDF.' });
-    }
-});
-
-// Route to unarchive a specific PDF
-router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) => {
-    const { pdfFileId } = req.params;
-
-    try {
-        await Lesson.updateOne(
-            { "pdfFiles.pdfFileId": pdfFileId },
-            { $set: { "pdfFiles.$.archived": false } }
-        );
-
-        res.status(200).json({ message: 'PDF unarchived successfully.' });
-    } catch (error) {
-        console.error('Error unarchiving PDF:', error);
-        res.status(500).json({ error: 'Failed to unarchive PDF.' });
-    }
-});
-
-// Route to archive a specific video
-router.post('/archive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
-    const { videoFileId } = req.params;
-
-    try {
-        // Update the `archived` status of the specific video file in the lesson
-        await Lesson.updateOne(
-            { "videoFiles.videoFileId": videoFileId },
-            { $set: { "videoFiles.$.archived": true } }
-        );
-
-        res.status(200).json({ message: 'Video archived successfully.' });
-    } catch (error) {
-        console.error('Error archiving video:', error);
-        res.status(500).json({ error: 'Failed to archive video.' });
-    }
-});
-
-// Route to unarchive a specific video
-router.post('/unarchive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
-    const { videoFileId } = req.params;
-
-    try {
-        // Update the `archived` status of the specific video file in the lesson
-        await Lesson.updateOne(
-            { "videoFiles.videoFileId": videoFileId },
-            { $set: { "videoFiles.$.archived": false } }
-        );
-
-        res.status(200).json({ message: 'Video unarchived successfully.' });
-    } catch (error) {
-        console.error('Error unarchiving video:', error);
-        res.status(500).json({ error: 'Failed to unarchive video.' });
-    }
-});
 
 //end of lesson ------------------------------------------------------------------------------------------
 

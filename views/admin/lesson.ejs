@@ -9,7 +9,6 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script> <!-- Include PDF.js -->
 </head>
 <body>
     <div class="container-fluid p-0">
@@ -23,9 +22,10 @@
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu" style="display: none; top: 50px; right: 10px;">
                     <a href="/admin/homeAdmin">Go back</a>
-                    <a href="/admin/lessonArchive/<%= room._id %>">Lesson Archive</a>
+                    <a href="/admin/lessonRoomArchive/<%= room._id %>">Lesson Room  Archive</a>
+                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>">Pdf and Video Archive</a>
                     <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
-                    <a href="/login">Logout</a>
+                    <a href="/logout">Logout</a>
                 </div>
             </aside>
             <main class="col-md-8 bg-main section">
@@ -283,7 +283,7 @@
                 .catch(error => console.error('Error archiving PDF:', error));
             }
         
-            async function loadLessonFiles(roomId, userId) {
+async function loadLessonFiles(roomId, userId) {
     const pdfList = document.getElementById('uploadedPdfs');
     const videoList = document.getElementById('uploadedVideos');
     pdfList.innerHTML = ''; // Clear previous PDFs
@@ -296,25 +296,26 @@
 
         // Load PDFs from server response
         if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
+            console.log('PDF Files:', lessonData.pdfFiles);
             lessonData.pdfFiles.forEach(pdf => {
                 const pdfFileId = pdf.pdfFileId;
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
                     <div style="position: relative;">
+                        <strong>${pdf.pdfFileName}</strong>
+                        <button class="btn btn-link" onclick="openPdfModal('/admin/pdf/${pdfFileId}', '${pdfFileId}', '${userId}')">
+                            Preview PDF
+                        </button>
+                        <span id="progress_${pdfFileId}">Loading progress...</span>
                         <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer;">
                             &#x22EE;
                         </div>
                         <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
                             <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
                         </div>
-                        <canvas id="thumbnail_${pdfFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
-                        <span id="progress_${pdfFileId}">Loading progress...</span>
                     </div>
                 `;
                 pdfList.appendChild(listItem);
-
-                // Call the function to render the PDF thumbnail
-                renderPdfThumbnail(`/admin/pdf/${pdfFileId}`, pdfFileId, pdf.pdfFileName);
 
                 // Fetch and display initial progress for each PDF
                 fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`)
@@ -326,10 +327,11 @@
             });
         } else {
             pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+            console.log('No PDFs found');
         }
 
-        // Verify Videos are populated correctly
-        if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
+          // Verify Videos are populated correctly
+          if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
             console.log('Videos found:', lessonData.videoFiles); // Debug log
 
             lessonData.videoFiles.forEach(video => {
@@ -340,85 +342,27 @@
                 const videoUrl = `/admin/video/${videoFileId}`;
                 const listItem = document.createElement('li');
                 listItem.innerHTML = `
-                    <div style="position: relative;">
-                        <strong>${videoFileName}</strong>
-                        <video id="video_${videoFileId}" style="display:none;" src="${videoUrl}" preload="metadata"></video>
-                        <canvas id="thumbnail_${videoFileId}" style="width: 300px; height: 200px; cursor: pointer;"></canvas>
+                   <div style="position: relative;">
+                        <a href="/admin/video/${videoFileId}" target="_blank">${videoFileName}</a>
+                        <div class="kebab-menu" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();" style="cursor: pointer;">
+                            &#x22EE;
+                        </div>
+                        <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                            <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+                        </div>
                     </div>
                 `;
                 videoList.appendChild(listItem);
             });
         } else {
             videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
+            console.log('No videos found');
         }
 
     } catch (error) {
         console.error('Error loading lesson files:', error);
     }
 }
-
-async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
-        try {
-            const canvas = document.getElementById(`thumbnail_${pdfFileId}`);
-            const context = canvas.getContext('2d');
-
-            // Load the PDF
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
-            const pdf = await loadingTask.promise;
-
-            // Get the first page
-            const page = await pdf.getPage(1);
-
-            // Set the desired width and height for the thumbnail
-            const desiredWidth = 300; // Width for the thumbnail
-            const desiredHeight = 200; // Height for the thumbnail
-
-            // Get the viewport and calculate the scale based on the desired dimensions
-            const viewport = page.getViewport({ scale: 1 });
-            const widthScale = desiredWidth / viewport.width;
-            const heightScale = desiredHeight / viewport.height;
-            const scale = Math.min(widthScale, heightScale); // Use the smaller scale to maintain aspect ratio
-            const scaledViewport = page.getViewport({ scale });
-
-            // Set the canvas dimensions
-            canvas.width = desiredWidth;
-            canvas.height = desiredHeight;
-
-            // Ensure canvas style matches the new size
-            canvas.style.width = `${desiredWidth}px`;
-            canvas.style.height = `${desiredHeight}px`;
-
-            // Clear the canvas before rendering
-            context.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Render the page into the canvas context
-            const renderContext = {
-                canvasContext: context,
-                viewport: scaledViewport
-            };
-            await page.render(renderContext).promise;
-
-            // Add border directly after rendering
-            canvas.style.border = '7px solid #FFDF9F';
-
-            // Add click event listener to open the PDF modal
-            canvas.addEventListener('click', () => {
-                openPdfModal(pdfUrl, pdfFileId, '<%= currentUser ._id %>'); // Pass userId as needed
-            });
-
-            // Create a title element for the PDF
-            const titleElement = document.createElement('div');
-            titleElement.textContent = pdfFileName; // Set the title of the PDF
-            titleElement.style.textAlign = 'center'; // Center the title
-            titleElement.style.marginTop = '5px'; // Add some space above the title
-
-            // Append the title element after the canvas
-            canvas.parentElement.appendChild(titleElement);
-        } catch (error) {
-            console.error('Error rendering PDF thumbnail:', error);
-        }
-    }
-
              // Function to open the PDF modal and track progress by scrolling
              function openPdfModal(pdfUrl, pdfFileId, userId) {
                 // Display the modal with the PDF content
