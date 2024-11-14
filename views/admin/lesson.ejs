@@ -86,25 +86,6 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
-                <!-- Lesson Room Creation Form -->
-                <div class="layered-container">
-                    <div class="background-image"></div>
-                    <div class="form-overlay">
-                        <h5>Create a New Lesson Room</h5>
-                        <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
-                            <div class="form-group">
-                                <label for="subject">Subject</label>
-                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="topic">Topic</label>
-                                <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Room</button>
-                        </form>
-                    </div>
-                </div>
-
                 <!-- Display existing lesson rooms dynamically -->
                 <div id="lessonRoomList" class="mb-4">
                     <h5>Existing Lesson Rooms</h5>
@@ -131,12 +112,12 @@
                                     <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
                                     <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
                                 </div>
-                    
+                
                                 <!-- Kebab Menu Icon and Dropdown for Archiving -->
                                 <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= lessonRoom._id %>');">
                                     &#x22EE;
                                 </div>
-                    
+                
                                 <!-- Dropdown Menu for each room -->
                                 <div class="dropdown-menu" id="menu-<%= lessonRoom._id %>" style="display: none;">
                                     <a href="#" onclick="archiveLessonRoom('<%= lessonRoom._id %>'); event.stopPropagation();">Archive</a>
@@ -147,61 +128,84 @@
                     </ul>
                 </div>
 
-                <!-- Hidden content section that will be shown upon clicking a lesson room -->
-                <div id="lessonRoomContent" class="big-box" style="display: none;">
-                    <div class="content-wrapper">
-                        <div class="left-content"> 
-                            <h5 class="text-dark">Upload PDF</h5>
-                            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
-                                <input type="hidden" name="roomId" id="pdfRoomId" value="">
+                <!-- New big box section -->
+<div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
+    <div class="d-flex justify-content-center mt-3">
+        <button id="moduleButton" class="btn custom-btn">Module</button>
+        <button id="videoButton" class="btn custom-btn">Video</button>
+    </div>
+</div>
+
+<!-- Hidden content section for PDF and Video uploads -->
+<div id="lessonRoomContent" class="big-box" style="display: none;">
+    <div class="content-wrapper">
+        
+        <!-- Module (PDF Upload and Modal) Section -->
+        <div id="uploadPdfSection" class="left-content" style="display: none;">
+            <h5 class="text-dark">Upload PDF</h5>
+            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="roomId" id="pdfRoomId" value="">
+                <div class="form-group">
+                    <label for="pdfFile">Choose PDF file:</label>
+                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload PDF</button>
+            </form>
+            
+            <div class="lesson-content">
+                <h3>Uploaded PDFs</h3>
+                <ul id="uploadedPdfs"></ul>
+            </div>
+
+            <!-- PDF Preview Modal -->
+            <div id="pdfModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <span class="close" onclick="closePdfModal()">&times;</span>
+                    <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
+                </div>
+                <div class="arrow-box-container">
+                    <a href="/admin/activities/<%= room._id %>" class="arrow-text">Would you like to take a Quiz?</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video (Upload Video) Section -->
+        <div id="uploadVideoSection" class="right-content" style="display: none;">
+            <h5 class="text-dark">Upload Video</h5>
+            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="roomId" id="videoRoomId" value="">
+                <div class="form-group">
+                    <label for="videoFile">Choose MP4 video:</label>
+                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload Video</button>
+            </form>
+            
+            <div class="lesson-content">
+                <h3>Uploaded Videos</h3>
+                <ul id="uploadedVideos"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+                 <!-- Lesson Room Creation Form -->
+                 <div class="layered-container">
+                    <div class="background-image">
+                        <div class="form-overlay">
+                            <h5>Create a New Lesson Room</h5>
+                            <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
                                 <div class="form-group">
-                                    <label for="pdfFile">Choose PDF file:</label>
-                                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+                                    <label for="subject">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Upload PDF</button>
-                            </form>
-                            
-                            <div class="lesson-content">
-                                <!-- Placeholder for dynamically loaded PDFs -->
-                                <h3>Uploaded PDFs</h3>
-                                <ul id="uploadedPdfs"></ul>
-                            </div>
-                        </div>
-
-                         <!-- PDF Preview Modal -->
-                         <div id="pdfModal" class="modal">
-                            <div class="modal-content">
-                                <span class="close" onclick="closePdfModal()">&times;</span>
-                                <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
-                              
-                            </div>
-                            <div class="arrow-box-container">
-                                
-                                <a href="/admin/activities/<%= room._id %>" class="arrow-text">would you like to take a Quiz </a>
-                            </div>
-                        </div>
-                        
-                        <div class="right-content">
-                            <h5 class="text-dark">Upload Video</h5>
-                            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
-                                <input type="hidden" name="roomId" id="videoRoomId" value="">
                                 <div class="form-group">
-                                    <label for="videoFile">Choose MP4 video:</label>
-                                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+                                    <label for="topic">Topic</label>
+                                    <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Upload Video</button>
+                                <button type="submit" class="btn btn-primary">Create Room</button>
                             </form>
-                            
-                            <div class="lesson-content">
-                                <!-- Placeholder for dynamically loaded videos -->
-                                <h3>Uploaded Videos</h3>
-                                <ul id="uploadedVideos"></ul>
-                               
-
-                            </div>
                         </div>
-
-
                     </div>
                 </div>
             </main>
@@ -460,11 +464,6 @@ async function loadLessonFiles(roomId, userId) {
             });
         
         </script>
-        
-
-
-
-
 
         <script>
             // Event listener to handle room clicks and load PDFs and Videos for the room
@@ -539,11 +538,44 @@ async function loadLessonFiles(roomId, userId) {
             }
         });
     });
-
-    
         </script>
 
-
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const lessonRoomItems = document.querySelectorAll('.list-group-item');
+        const layeredContainer = document.querySelector('.layered-container'); // Create lesson room section
+        const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
+        const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload section
+        const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload section
+    
+        lessonRoomItems.forEach(item => {
+            item.addEventListener('click', function () {
+                layeredContainer.style.display = 'none'; // Hide the create lesson room section
+                newBigBox.style.display = 'block'; // Show main button container
+                uploadPdfSection.style.display = 'none'; // Initially hide PDF section
+                uploadVideoSection.style.display = 'none'; // Initially hide video section
+    
+                const roomId = item.getAttribute('data-room-id'); // Get room ID
+                document.getElementById('pdfRoomId').value = roomId;
+                document.getElementById('videoRoomId').value = roomId;
+            });
+        });
+    
+        // Show PDF section on Module button click
+        document.getElementById('moduleButton').addEventListener('click', function () {
+            newBigBox.style.display = 'none';
+            uploadPdfSection.style.display = 'block';
+            uploadVideoSection.style.display = 'none';
+        });
+    
+        // Show Video section on Video button click
+        document.getElementById('videoButton').addEventListener('click', function () {
+            newBigBox.style.display = 'none';
+            uploadPdfSection.style.display = 'none';
+            uploadVideoSection.style.display = 'block';
+        });
+    });
+    </script>
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
