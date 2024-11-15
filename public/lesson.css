@@ -365,53 +365,87 @@ body {
             display: block;
         }
       /* Styling for the video inside the modal */
-video {
-    display: block;
-    width: 100%; /* Make video fill the width of the modal */
-    max-width: 90%; /* Prevent video from being too large */
-    max-height: 80vh; /* Limit the height to 80% of the viewport height */
-    border: 7px solid #FFDF9F;
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    padding: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    object-fit: contain; /* Maintain aspect ratio */
-    cursor: pointer;
-}
+      video {
+        display: block;
+        width: 100%; /* Make video fill the width of the modal */
+        max-width: 90%; /* Prevent video from being too large */
+        max-height: 80vh; /* Limit the height to 80% of the viewport height */
+        border: 7px solid #FFDF9F; /* Border with soft yellow color */
+        background-color: #f9f9f9;
+        border-radius: 5px;
+        padding: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        object-fit: contain; /* Maintain aspect ratio */
+        cursor: pointer;
+    }
+    
+    /* Video thumbnail styling */
+    #uploadedVideos video {
+        border: 7px solid #FFDF9F; /* Soft yellow border for thumbnails */
+        border-radius: 5px; /* Rounded corners for consistency */
+        padding: 5px; /* Padding between content and border */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    }
+    
 
 /* Styling for the modal container */
 #videoModal {
     display: none; /* Initially hidden */
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Adjust for centering */
+    width: 90%; /* Adjust width to prevent it from being too large */
+    height: auto; /* Automatically adjust height based on content */
     background: rgba(0, 0, 0, 0.8); /* Semi-transparent background */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* Center content horizontally */
+    align-items: center; /* Center content vertically */
     z-index: 1000;
+    border-radius: 10px; /* Optional: Add rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); /* Optional: Add shadow for a popup effect */
+    padding: 20px; /* Optional: Add some padding inside the modal */
 }
+
+
+#videoModal button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 2rem; /* Large font size for visibility */
+    color: white;
+    cursor: pointer;
+    z-index: 1010;
+}
+
+#videoModal button:hover {
+    color: #ffdf9f; /* Add hover color for effect */
+}
+
 
 /* Ensure video container respects maximum size */
 #videoViewer {
     position: relative;
+    display: flex; /* Flexbox for alignment */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
     width: 100%;
     max-width: 90%; /* Limit the width of the video viewer */
     max-height: 80vh; /* Ensure the video does not exceed 80% of the viewport height */
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 /* Ensure modal content is centered */
 #videoViewer video {
+    margin: auto; /* Center the video */
     max-width: 100%;
     max-height: 100%;
     width: auto;
     height: auto;
+    display: block; /* Ensure proper block-level centering */
 }
+
 
 /* Optional: Controls container for positioning buttons */
 .video-controls {
@@ -513,20 +547,18 @@ canvas {
     padding: 5px; /* Add some padding for spacing */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
 }
-/* Modal Close Button Styles */
-.close-btn {
-    position: absolute;
-    top: 10px;
-    right: 20px;
-    font-size: 30px;
-    font-weight: bold;
-    color: white;
-    background: none;
-    border: none;
+/* Add border and styles to the video thumbnail image */
+.video-thumbnail {
+    border: 7px solid #FFDF9F; /* Soft yellow border */
+    background-color: #f9f9f9; /* Background color for contrast */
+    border-radius: 5px; /* Rounded corners */
+    padding: 5px; /* Padding for space between image and border */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Slight shadow for depth */
     cursor: pointer;
-    z-index: 10;
 }
-
-.close-btn:hover {
-    color: #1FC3E0;
+.video-file-name {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
 }
