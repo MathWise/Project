@@ -832,23 +832,34 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     }
 
     try {
-        // Retrieve lesson and video documents
+        // Find lesson and video documents by roomId
         const lesson = await Lesson.findOne({ roomId: roomObjectId });
+        if (!lesson) {
+            console.error(`Lesson not found for roomId: ${roomObjectId}`);
+        }
         const videoLesson = await Video.findOne({ roomId: roomObjectId });
+
+        // Log the entire lesson and videoLesson documents for debugging
+        console.log('Lesson Document:', lesson);
+        console.log('Video Document:', videoLesson);
 
         // Filter out archived items
         const pdfFiles = lesson ? lesson.pdfFiles.filter(pdf => !pdf.archived) : [];
         const videoFiles = videoLesson ? videoLesson.videoFiles.filter(video => !video.archived) : [];
 
-        console.log('Non-archived PDFs:', pdfFiles);
-        console.log('Non-archived Videos:', videoFiles);
+        // Log filtered results for debugging
+        console.log('Filtered PDFs:', pdfFiles);
+        console.log('Filtered Videos:', videoFiles);
 
+        // Send response with filtered files
         res.json({ pdfFiles, videoFiles });
     } catch (error) {
         console.error('Error fetching lessons:', error);
         res.status(500).json({ message: 'Error fetching lessons' });
     }
 });
+
+
 
 
 

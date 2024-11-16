@@ -279,22 +279,33 @@
             });
         
             // Archive function to send an AJAX request for archiving a PDF
-            function archivePdf(pdfFileId) {
-                fetch(`/admin/archive-pdf/${pdfFileId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+            // Archive function to send an AJAX request for archiving a PDF
+function archivePdf(pdfFileId) {
+    // Show a confirmation dialog
+    const userConfirmed = confirm('Are you sure you want to archive this PDF?');
+
+    // Proceed only if the user confirms
+    if (userConfirmed) {
+        console.log('Archiving PDF with ID:', pdfFileId);
+
+        fetch(`/admin/archive-pdf/${pdfFileId}`, { method: 'POST' })
+        .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
                 })
-                .then(response => {
-                    if (response.ok) {
-                        alert('PDF archived successfully.');
-                        document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none';
-                        loadLessonFiles(roomId, userId); // Reload list to reflect archived PDF
-                    } else {
-                        alert('Failed to archive PDF.');
-                    }
-                })
-                .catch(error => console.error('Error archiving PDF:', error));
-            }
+        .catch(error => {
+            console.error('Error archiving PDF:', error);
+        });
+    } else {
+        console.log('User canceled the archive action.');
+    }
+}
+
+
+
+
+
         
             async function loadLessonFiles(roomId, userId) {
     const pdfList = document.getElementById('uploadedPdfs');
@@ -303,14 +314,15 @@
     videoList.innerHTML = ''; // Clear previous Videos
 
     try {
-        const response = await fetch(`/admin/get-lessons/${roomId}`);
+        const timestamp = new Date().getTime(); 
+        const response = await fetch(`/admin/get-lessons/${roomId}?t=${timestamp}`);
         const lessonData = await response.json();
         console.log('Filtered lesson data:', lessonData);
 
         // Load PDFs from server response
         if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
             console.log('PDF Files:', lessonData.pdfFiles);
-            lessonData.pdfFiles.forEach(pdf => {
+            lessonData.pdfFiles.forEach(async (pdf) => {
                 const pdfFileId = pdf.pdfFileId;
                 const pdfUrl = `/admin/pdf/${pdfFileId}`; // URL to the PDF file
                 const listItem = document.createElement('li');
@@ -331,16 +343,26 @@
                 `;
                 pdfList.appendChild(listItem);
 
-                // Call the renderPdfThumbnail function to create the thumbnail
-                renderPdfThumbnail(pdfUrl, pdfFileId);
+                try {
+                    // Render thumbnail asynchronously
+                    await renderPdfThumbnail(pdfUrl, pdfFileId);
+                } catch (thumbnailError) {
+                    console.error(`Failed to render thumbnail for PDF ${pdfFileId}:`, thumbnailError);
+                }
 
-                // Fetch and display initial progress for each PDF
-                fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`)
-                    .then(progressResponse => progressResponse.json())
-                    .then(progressData => {
-                        const progress = progressData.progress || 0;
-                        document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
-                    });
+                // Fetch progress and update UI
+                try {
+                    const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
+                    if (!progressResponse.ok) {
+                        throw new Error(`Failed to fetch progress: ${progressResponse.statusText}`);
+                    }
+
+                    const progressData = await progressResponse.json();
+                    const progress = progressData.progress || 0;
+                    document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
+                } catch (progressError) {
+                    console.error(`Failed to fetch progress for PDF ${pdfFileId}:`, progressError);
+                }
             });
         } else {
             pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
@@ -402,10 +424,10 @@
 }
 
 
-
-
     } catch (error) {
         console.error('Error loading lesson files:', error);
+        pdfList.innerHTML = '<p>Error loading PDFs. Please try again.</p>';
+        videoList.innerHTML = '<p>Error loading videos. Please try again.</p>';
     }
 }
 async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
@@ -594,6 +616,8 @@ function closeVideoModal() {
         </script>
 
         <script>
+
+            
             // Event listener to handle room clicks and load PDFs and Videos for the room
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.clickable').forEach(function (roomElement) {
