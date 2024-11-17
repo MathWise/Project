@@ -1418,12 +1418,27 @@ router.post('/unarchive-activity-room/:activityRoomId', ensureAdminLoggedIn, asy
 
 
 
+
 // Ensure archived quizzes are fetched correctly in the activitiesArchive route
 router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     try {
-        const archivedActivityRooms = await ActivityRoom.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: true });
-      const archivedQuizzes = await Quiz.find({ archived: true });
+        const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
+        if (!roomObjectId) {
+            req.flash('error', 'Invalid Room ID.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const archivedActivityRooms = await ActivityRoom.find({ roomId: roomObjectId });
+
+        // Extract all lessonRoom IDs
+        const activityRoomIds = archivedActivityRooms.map(room => room._id);
+
+        const archivedQuizzes = await Quiz.find({ roomId: { $in: activityRoomIds }, archived: true });
+
+      
+
+        // Render the view with the archived data
         res.render('admin/activitiesArchive', { 
             archivedActivityRooms, 
             archivedQuizzes, 
@@ -1435,6 +1450,7 @@ router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) =
         res.redirect(`/admin/activities/${roomId}`);
     }
 });
+
 
 
 
@@ -1463,6 +1479,35 @@ router.post('/archive-quiz/:quizId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
+// Route to unarchive a quiz
+router.post('/unarchive-quiz/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Validate quizId
+        if (!mongoose.Types.ObjectId.isValid(quizId)) {
+            return res.status(400).json({ error: 'Invalid quiz ID.' });
+        }
+
+        // Update the quiz's archived status
+        const updatedQuiz = await Quiz.findByIdAndUpdate(
+            quizId,
+            { archived: false, archivedAt: null },
+            { new: true } // Return the updated document
+        );
+
+        // Check if the quiz was found and updated
+        if (!updatedQuiz) {
+            return res.status(404).json({ error: 'Quiz not found.' });
+        }
+
+        // Send success response
+        res.status(200).json({ message: 'Quiz unarchived successfully.', quiz: updatedQuiz });
+    } catch (error) {
+        console.error('Error unarchiving quiz:', error);
+        res.status(500).json({ error: 'Failed to unarchive quiz.' });
+    }
+});
 
 
 

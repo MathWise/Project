@@ -251,6 +251,9 @@
         
             // Archive function for a video
             function archiveVideo(videoFileId) {
+                const userConfirmed = confirm('Are you sure you want to archive this video?');
+                if (!userConfirmed) return;
+                
                 fetch(`/admin/archive-video/${videoFileId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
@@ -569,9 +572,14 @@ function closeVideoModal() {
              document.getElementById('uploadPdfForm').addEventListener('submit', async function(event) {
                 event.preventDefault(); // Prevent default form submission
 
+                const submitButton = this.querySelector('button[type="submit"]');
                 const formData = new FormData(this);
                 const roomId = document.getElementById('pdfRoomId').value;
                 const userId = '<%= currentUser._id %>'; // User ID for progress tracking
+
+                 // Disable the button to prevent double submissions
+                submitButton.disabled = true;
+                submitButton.textContent = "Uploading...";
 
                 try {
                     // Upload the PDF via AJAX
@@ -591,15 +599,24 @@ function closeVideoModal() {
                 } catch (error) {
                     console.error('Error uploading PDF:', error);
                     alert('Error uploading PDF.');
-                }
+                }finally {
+            // Re-enable the button after upload completes or fails
+            submitButton.disabled = false;
+            submitButton.textContent = "Upload PDF";
+        }
             });
         
             // Event listener for Video upload form submission
             document.getElementById('uploadVideoForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
+                const submitButton = this.querySelector('button[type="submit"]');
                 const formData = new FormData(this);
                 const roomId = document.getElementById('videoRoomId').value;
-                 const userId = '<%= currentUser._id %>'; // For dynamic reloading
+                const userId = '<%= currentUser._id %>'; // For dynamic reloading
+
+                 // Disable the button to prevent double submissions
+                submitButton.disabled = true;
+                submitButton.textContent = "Uploading...";
 
                 try {
                     const response = await fetch(`/admin/upload-video/${roomId}`, { method: 'POST', body: formData });
@@ -610,7 +627,11 @@ function closeVideoModal() {
                 } catch (error) {
                     console.error('Error uploading video:', error);
                     alert('Error uploading video.');
-                }
+                }finally {
+            // Re-enable the button after upload completes or fails
+            submitButton.disabled = false;
+            submitButton.textContent = "Upload Video";
+        }
             });
         
         </script>

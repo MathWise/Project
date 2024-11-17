@@ -8,10 +8,19 @@
 <body>
     <h1>Archived PDFs and Videos</h1>
     <a href="/admin/lesson/<%= roomId %>">Go Back</a>
+    <div class="form-group">
+        <label for="archiveSelect">Archived Option</label>
+        <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="loadArchivedContent()">
+         
+            <option value="pdfs">Archived PDF Lessons</option>
+            <option value="videos">Archived Video Lessons</option>
+        </select>
+    </div>
 
-    <h2>Archived PDFs</h2>
-    <ul class="list-group">
-        <% if (archivedPdfs.length > 0) { %>
+    <main class="col-md-11" id="archivedPdfs" style="display: none;">
+        <h2>Archived PDFs</h2>
+        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+             <% if (archivedPdfs.length > 0) { %>
             <% archivedPdfs.forEach(function(pdf) { %>
                 <li class="list-group-item">
                     <strong>PDF Name:</strong> <%= pdf.pdfFileName %>
@@ -21,11 +30,13 @@
         <% } else { %>
             <p>No archived PDFs available.</p>
         <% } %>
-    </ul>
+        </ul>
+    </main>
 
-    <h2>Archived Videos</h2>
-    <ul class="list-group">
-        <% if (archivedVideos.length > 0) { %>
+    <main class="col-md-11" id="archivedVideos" style="display: none;">
+        <h2>Archived Videos</h2>
+        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+            <% if (archivedVideos.length > 0) { %>
             <% archivedVideos.forEach(function(video) { %>
                 <li class="list-group-item">
                     <strong>Video Name:</strong> <%= video.videoFileName %>
@@ -35,7 +46,8 @@
         <% } else { %>
             <p>No archived videos available.</p>
         <% } %>
-    </ul>
+        </ul>
+    </main>
 
     <script>
         function confirmUnarchive(type, id) {
@@ -51,5 +63,20 @@
             }
         }
     </script>
+
+<script>
+    function loadArchivedContent() {
+        const selectedOption = document.getElementById('archiveSelect').value;
+        document.getElementById('archivedPdfs').style.display = selectedOption === 'pdfs' ? 'block' : 'none';
+        document.getElementById('archivedVideos').style.display = selectedOption === 'videos' ? 'block' : 'none';
+    }
+
+    // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
+    document.addEventListener('DOMContentLoaded', () => {
+        loadArchivedContent();
+    });
+
+    
+</script>
 </body>
 </html>

@@ -6,6 +6,7 @@ const LessonRoom = require('../models/lessonRoom');
 const Lesson = require('../models/lesson');
 const Video = require('../models/video');
 const { ensureAdminLoggedIn } = require('../middleware');
+const { ObjectId } = require('mongodb'); 
 
 const router = express.Router();
 
@@ -91,5 +92,37 @@ router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) =
         res.status(500).json({ error: 'Failed to unarchive PDF.' });
     }
 });
+
+// Route to archive a specific video
+router.post('/archive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
+    const { videoFileId } = req.params;
+    try {
+        const result = await Video.updateOne(
+            { "videoFiles.videoFileId": new ObjectId(videoFileId) },
+            { $set: { "videoFiles.$.archived": true } }
+        );
+        res.status(200).json({ message: result.nModified ? 'Video archived successfully.' : 'Video not found.' });
+    } catch (error) {
+        console.error('Error archiving video:', error);
+        res.status(500).json({ error: 'Failed to archive video.' });
+    }
+});
+
+// Route to unarchive a specific video
+router.post('/unarchive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
+    const { videoFileId } = req.params;
+    try {
+       await Video.updateOne(
+            { "videoFiles.videoFileId": videoFileId },
+            { $set: { "videoFiles.$.archived": false } }
+        );
+        res.status(200).json({ message: 'Video unarchived successfully.' });
+    } catch (error) {
+        console.error('Error unarchiving video:', error);
+        res.status(500).json({ error: 'Failed to unarchive video.' });
+    }
+});
+
+
 
 module.exports = router;
