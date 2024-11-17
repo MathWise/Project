@@ -96,12 +96,24 @@ router.post('/unarchive-pdf/:pdfFileId', ensureAdminLoggedIn, async (req, res) =
 // Route to archive a specific video
 router.post('/archive-video/:videoFileId', ensureAdminLoggedIn, async (req, res) => {
     const { videoFileId } = req.params;
+    const pdfObjectId = mongoose.Types.ObjectId.isValid(videoFileId) ? new mongoose.Types.ObjectId(videoFileId) : null;
+
+    if (!pdfObjectId) {
+        console.error('Invalid PDF file ID:', videoFileId);
+        return res.status(400).json({ error: 'Invalid PDF file ID.' });
+    }
+
     try {
         const result = await Video.updateOne(
-            { "videoFiles.videoFileId": new ObjectId(videoFileId) },
+            { "videoFiles.videoFileId": videoFileId },
             { $set: { "videoFiles.$.archived": true } }
         );
-        res.status(200).json({ message: result.nModified ? 'Video archived successfully.' : 'Video not found.' });
+
+        if (result.modifiedCount > 0) {
+            res.status(200).json({ message: 'Video archived successfully.' });
+        } else {
+            res.status(404).json({ error: 'Video not found.' });
+        }
     } catch (error) {
         console.error('Error archiving video:', error);
         res.status(500).json({ error: 'Failed to archive video.' });

@@ -252,23 +252,23 @@
             // Archive function for a video
             function archiveVideo(videoFileId) {
                 const userConfirmed = confirm('Are you sure you want to archive this video?');
-                if (!userConfirmed) return;
+                if (userConfirmed)  {
                 
                 fetch(`/admin/archive-video/${videoFileId}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
+                    method: 'POST'
                 })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Video archived successfully.');
-                        document.getElementById(`videoMenu-${videoFileId}`).style.display = 'none';
-                        loadLessonFiles(roomId, userId); // Refresh list
-                    } else {
-                        throw new Error('Failed to archive video');
-                    }
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    window.location.reload();
                 })
-                .catch(error => console.error('Error archiving video:', error));
-            }
+        .catch(error => {
+            console.error('Error archiving PDF:', error);
+        });
+    } else {
+        console.log('User canceled the archive action.');
+    }
+}
         
             // Close dropdowns if clicked outside
             document.addEventListener('click', function(event) {
