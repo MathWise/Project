@@ -3,15 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <title>Archived PDFs and Videos</title>
-    <link rel="stylesheet" href="/lesson.css">
+    <style>
+        /* Global font style */
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #E0F4F9; /* Set background color */
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px;
+        }
+
+        .form-group {
+            margin: 20px;
+            text-align: center;
+        }
+
+        select.form-control {
+            padding: 5px;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        /* Flexbox to align image and content side by side */
+        .archive-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .archive-item img {
+            margin-right: 15px;
+            width: 50px; /* Default image size */
+            height: auto;
+        }
+
+        .archive-item div {
+            max-width: 80%;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Make the list items more responsive */
+        .list-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .list-group-item {
+            width: 100%;
+            max-width: 500px;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Center the 'Archived PDFs' heading */
+        h2 {
+            text-align: center;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        /* Archived PDFs and Videos containers background */
+        main#archivedPdfs, main#archivedVideos {
+            background-image: url('/assets/bg.png');
+            background-size: cover; /* Ensure it covers the entire container */
+            background-position: center; /* Center the background image */
+            padding: 20px; /* Add padding around the content */
+            border-radius: 10px; /* Optional: round the corners of the container */
+        }
+
+        /* Media Queries for small screens */
+        @media (max-width: 768px) {
+            .archive-item img {
+                width: 40px; /* Smaller image size on small screens */
+                margin-right: 10px;
+            }
+
+            .archive-item div {
+                font-size: 14px;
+            }
+
+            .list-group-item {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 5px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .archive-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .archive-item img {
+                margin-bottom: 10px;
+            }
+
+            .list-group-item {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 5px 8px;
+            }
+        }
+
+        .go-back-btn {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 30px;  /* Reduced horizontal padding */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            width: auto;
+            max-width: 250px; /* Limit max width */
+        }
+
+        .go-back-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
 <body>
     <h1>Archived PDFs and Videos</h1>
-    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
     <div class="form-group">
         <label for="archiveSelect">Archived Option</label>
         <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="loadArchivedContent()">
-         
             <option value="pdfs">Archived PDF Lessons</option>
             <option value="videos">Archived Video Lessons</option>
         </select>
@@ -20,17 +172,23 @@
     <main class="col-md-11" id="archivedPdfs" style="display: none;">
         <h2>Archived PDFs</h2>
         <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
-             <% if (archivedPdfs.length > 0) { %>
+            <% if (archivedPdfs.length > 0) { %>
             <% archivedPdfs.forEach(function(pdf) { %>
                 <li class="list-group-item">
-                    <strong>PDF Name:</strong> <%= pdf.pdfFileName %>
-                    <button onclick="confirmUnarchive('pdf', '<%= pdf.pdfFileId %>')">Unarchive</button>
+                    <div class="archive-item">
+                        <img src="/assets/ypdf.png" alt="PDF Icon">
+                        <div>
+                            <strong>PDF Name:</strong> <%= pdf.pdfFileName %>
+                            <button onclick="confirmUnarchive('pdf', '<%= pdf.pdfFileId %>')">Unarchive</button>
+                        </div>
+                    </div>
                 </li>
             <% }) %>
-        <% } else { %>
-            <p>No archived PDFs available.</p>
-        <% } %>
+            <% } else { %>
+                <p>No archived PDFs available.</p>
+            <% } %>
         </ul>
+        <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
     </main>
 
     <main class="col-md-11" id="archivedVideos" style="display: none;">
@@ -39,14 +197,20 @@
             <% if (archivedVideos.length > 0) { %>
             <% archivedVideos.forEach(function(video) { %>
                 <li class="list-group-item">
-                    <strong>Video Name:</strong> <%= video.videoFileName %>
-                    <button onclick="confirmUnarchive('video', '<%= video.videoFileId %>')">Unarchive</button>
+                    <div class="archive-item">
+                        <img src="/assets/yvidb.png" alt="Video Icon">
+                        <div>
+                            <strong>Video Name:</strong> <%= video.videoFileName %>
+                            <button onclick="confirmUnarchive('video', '<%= video.videoFileId %>')">Unarchive</button>
+                        </div>
+                    </div>
                 </li>
             <% }) %>
-        <% } else { %>
-            <p>No archived videos available.</p>
-        <% } %>
+            <% } else { %>
+                <p>No archived videos available.</p>
+            <% } %>
         </ul>
+        <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
     </main>
 
     <script>
@@ -62,21 +226,17 @@
                 .catch(error => console.error(`Error unarchiving ${type}:`, error));
             }
         }
+
+        function loadArchivedContent() {
+            const selectedOption = document.getElementById('archiveSelect').value;
+            document.getElementById('archivedPdfs').style.display = selectedOption === 'pdfs' ? 'block' : 'none';
+            document.getElementById('archivedVideos').style.display = selectedOption === 'videos' ? 'block' : 'none';
+        }
+
+        // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
+        document.addEventListener('DOMContentLoaded', () => {
+            loadArchivedContent();
+        });
     </script>
-
-<script>
-    function loadArchivedContent() {
-        const selectedOption = document.getElementById('archiveSelect').value;
-        document.getElementById('archivedPdfs').style.display = selectedOption === 'pdfs' ? 'block' : 'none';
-        document.getElementById('archivedVideos').style.display = selectedOption === 'videos' ? 'block' : 'none';
-    }
-
-    // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
-    document.addEventListener('DOMContentLoaded', () => {
-        loadArchivedContent();
-    });
-
-    
-</script>
 </body>
 </html>

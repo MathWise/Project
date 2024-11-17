@@ -3,23 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <title>Archived Lesson Rooms</title>
-    <link rel="stylesheet" href="/lesson.css">
+    <style>
+        /* Global font style */
+        body {
+            font-family: 'Baloo 2', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #E0F4F9;
+        }
+
+        h1 {
+            text-align: center;
+            margin: 20px;
+        }
+
+        /* Go Back button styling */
+        .go-back-btn {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 30px;  /* Reduced horizontal padding */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            width: auto;
+            max-width: 250px; /* Limit max width */
+        }
+
+        .go-back-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Flexbox to align image and content side by side */
+        .archive-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .archive-item img {
+            margin-right: 15px;
+            width: 50px; /* Image size */
+            height: auto;
+        }
+
+        .archive-item div {
+            max-width: 80%;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .list-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .list-group-item {
+            width: 100%;
+            max-width: 500px;
+            margin: 10px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Archived Lesson Rooms container background */
+        main#archivedLessonRooms {
+            background-image: url('/assets/bg.png');
+            background-size: cover; /* Ensure it covers the entire container */
+            background-position: center; /* Center the background image */
+            padding: 20px; /* Add padding around the content */
+            border-radius: 10px; /* Optional: round the corners of the container */
+        }
+
+        /* Make the list items more responsive */
+        @media (max-width: 768px) {
+            .archive-item img {
+                width: 40px; /* Smaller image size on small screens */
+                margin-right: 10px;
+            }
+
+            .archive-item div {
+                font-size: 14px;
+            }
+
+            .list-group-item {
+                width: 100%;
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 5px 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .archive-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .archive-item img {
+                margin-bottom: 10px;
+            }
+
+            .list-group-item {
+                padding: 10px;
+                font-size: 12px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 5px 8px;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>Archived Lesson Rooms</h1>
-    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
-    <ul class="list-group d-flex flex-row flex-wrap">
-        <% if (archivedLessonRooms.length > 0) { %>
-            <% archivedLessonRooms.forEach(function(lessonRoom) { %>
-                <li class="list-group-item lesson-room">
-                    <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
-                    <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
-                </li>
-            <% }) %>
-        <% } else { %>
-            <p>No archived lesson rooms available.</p>
-        <% } %>
-    </ul>
+
+    <main id="archivedLessonRooms">
+        <ul class="list-group d-flex flex-row flex-wrap">
+            <% if (archivedLessonRooms.length > 0) { %>
+                <% archivedLessonRooms.forEach(function(lessonRoom) { %>
+                    <li class="list-group-item">
+                        <div class="archive-item">
+                            <img src="/assets/lessonroom.png" alt="Lesson Room Icon">
+                            <div>
+                                <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
+                                <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
+                            </div>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived lesson rooms available.</p>
+            <% } %>
+        </ul>
+    </main>
+
+    <!-- Go Back Button below the content -->
+    <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
 
     <script>
         function confirmUnarchive(lessonRoomId) {
