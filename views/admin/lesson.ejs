@@ -13,7 +13,7 @@
 </head>
 <body>
     <div class="container-fluid p-0">
-        <div class="upper-side row no-gutters p-3 align-items-center fixed-header" style="background-color: #E0F4F9;">
+        <div class="upper-side row no-gutters p-3 align-items-center fixed-header">
             <!-- Logo on the Top Left -->
             <div class="col-md-4 col-4 d-flex align-items-center">
                 <img src="/assets/logo.png" alt="Logo" class="img-fluid" style="width: 100px;">
@@ -22,7 +22,7 @@
             <!-- Greetings in the Center -->
             <div class="col-md-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    Hello <%= room.name %>
+                    Hello Teacher <%= room.teacherName %> <br> Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -30,7 +30,7 @@
             <div class="col-md-4 col-4 d-flex justify-content-end align-items-center position-relative">
                 <img src="/assets/settings-1.svg" alt="Settings" 
                      class="img-fluid settings-icon dropdown-toggle" 
-                     style="width: 30px; cursor: pointer;" 
+                     style="width: 50px; cursor: pointer;" 
                      onclick="toggleDropdownMenu()">
                 
                 <!-- Dropdown Menu Content -->
@@ -45,11 +45,9 @@
             </div>
         </div>
     </div>
-    
-    
 
         <div class="containers row">
-            <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
+            <aside class="col-xl-1 bg-info text-center p-3 rounded-sidebar">
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
@@ -88,7 +86,7 @@
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
                 <!-- Display existing lesson rooms dynamically -->
-                <div id="lessonRoomList" class="mb-4">
+                <div id="lessonRoomList" class="mb-2">
                     <h4 class="center-text">Existing Lesson Rooms</h4>
                     <ul class="list-group d-flex flex-row flex-wrap">
                         <% 
@@ -130,75 +128,73 @@
                 </div>
 
                 <!-- New big box section -->
-<div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
-    <div class="d-flex justify-content-center mt-3">
-        <button id="moduleButton" class="btn custom-btn">Module</button>
-        <button id="videoButton" class="btn custom-btn">Video</button>
-    </div>
-</div>
+                <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
+                    <div class="d-flex justify-content-center mt-3">
+                        <button id="moduleButton" class="btn custom-btn">Module</button>
+                        <button id="videoButton" class="btn custom-btn">Video</button>
+                    </div>
+                </div>
 
-<!-- Hidden content section for PDF and Video uploads -->
-<div id="lessonRoomContent" class="big-box" style="display: none;">
-    <div class="content-wrapper">
+                <!-- Hidden content section for PDF and Video uploads -->
+                <div id="lessonRoomContent" class="big-box" style="display: none;">
+                    <div class="content-wrapper">
         
-        <!-- Module (PDF Upload and Modal) Section -->
-        <div id="uploadPdfSection" class="left-content" style="display: none;">
-            <h5 class="text-dark">Upload PDF</h5>
-            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="roomId" id="pdfRoomId" value="">
-                <div class="form-group">
-                    <label for="pdfFile">Choose PDF file:</label>
-                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Upload PDF</button>
-            </form>
+                        <!-- Module (PDF Upload and Modal) Section -->
+                        <div id="uploadPdfSection" class="left-content" style="display: none;">
+                            <h5 class="text-dark">Upload PDF</h5>
+                            <form id="uploadPdfForm" action="/admin/upload-pdf/<%= room._id %>" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="roomId" id="pdfRoomId" value="">
+                                <div class="form-group">
+                                    <label for="pdfFile">Choose PDF file:</label>
+                                    <input type="file" name="pdfFile" class="form-control-file" id="pdfFile" accept=".pdf" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload PDF</button>
+                            </form>
             
-            <div class="lesson-content">
-                <h3>Uploaded PDFs</h3>
-                <ul id="uploadedPdfs"></ul>
-            </div>
+                            <div class="lesson-content">
+                                <h3>Uploaded PDFs</h3>
+                                <ul id="uploadedPdfs"></ul>
+                            </div>
 
-            <!-- PDF Preview Modal -->
-            <div id="pdfModal" class="modal" style="display: none;">
-                <div class="modal-content">
-                    <span class="close" onclick="closePdfModal()">&times;</span>
-                    <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
-                </div>
-                <div class="arrow-box-container">
-                    <a href="/admin/activities/<%= room._id %>" class="arrow-text">Would you like to take a Quiz?</a>
-                </div>
-            </div>
-        </div>
+                            <!-- PDF Preview Modal -->
+                            <div id="pdfModal" class="modal" style="display: none;">
+                                <div class="modal-content">
+                                    <span class="close" onclick="closePdfModal()">&times;</span>
+                                        <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
+                                </div>
+                                <div class="arrow-box-container">
+                                    <a href="/admin/activities/<%= room._id %>" class="arrow-text">Would you like to take a Quiz?</a>
+                                </div>
+                            </div>
+                        </div>
 
-        <!-- Video (Upload Video) Section -->
-        <div id="uploadVideoSection" class="right-content" style="display: none;">
-            <h5 class="text-dark">Upload Video</h5>
-            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
-                <input type="hidden" name="roomId" id="videoRoomId" value="">
-                <div class="form-group">
-                    <label for="videoFile">Choose MP4 video:</label>
-                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Upload Video</button>
-            </form>
+                         <!-- Video (Upload Video) Section -->
+                        <div id="uploadVideoSection" class="right-content" style="display: none;">
+                            <h5 class="text-dark">Upload Video</h5>
+                            <form id="uploadVideoForm" action="" method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="roomId" id="videoRoomId" value="">
+                                <div class="form-group">
+                                    <label for="videoFile">Choose MP4 video:</label>
+                                    <input type="file" name="videoFile" class="form-control-file" id="videoFile" accept=".mp4" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload Video</button>
+                            </form>
 
-            <div id="videoModal" style="display: none;">
-                <button onclick="closeVideoModal()" id="closeButton">&times;</button>
-                <video id="modalVideo" controls>
-                    <source id="videoSource" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
+                            <div id="videoModal" style="display: none;">
+                                <button onclick="closeVideoModal()" id="closeButton">&times;</button>
+                                <video id="modalVideo" controls>
+                                    <source id="videoSource" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
             
-            
-            
-            <div class="lesson-content">
-                <h3>Uploaded Videos</h3>
-                <ul id="uploadedVideos"></ul>
-            </div>
-        </div>
-    </div>
-</div>
+                            <div class="lesson-content">
+                                <h3>Uploaded Videos</h3>
+                                <ul id="uploadedVideos"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                  <!-- Lesson Room Creation Form -->
                  <div class="layered-container">
@@ -305,12 +301,6 @@
                             });
                     }
                 }
-
-
-
-
-
-        
             async function loadLessonFiles(roomId, userId) {
     const pdfList = document.getElementById('uploadedPdfs');
     const videoList = document.getElementById('uploadedVideos');
@@ -330,55 +320,57 @@
         const lessonData = await response.json();
         console.log('Filtered lesson data:', lessonData);
 
-        // Load PDFs from server response
-        if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
-            console.log('PDF Files:', lessonData.pdfFiles);
-            lessonData.pdfFiles.forEach(async (pdf) => {
-                const pdfFileId = pdf.pdfFileId;
-                const pdfUrl = `/admin/pdf/${pdfFileId}`; // URL to the PDF file
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <div style="position: relative;">
-                        <canvas id="thumbnail_${pdfFileId}" style="cursor: pointer;"></canvas> <!-- Canvas for the thumbnail -->
-                        <div style="text-align: center;">
-                            <strong>${pdf.pdfFileName}</strong>
-                            <span id="progress_${pdfFileId}" style="display: block;">Loading progress...</span> <!-- Progress below the file name -->
-                        </div>
-                        <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer;">
-                            &#x22EE;
-                        </div>
-                        <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                            <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
-                        </div>
+// Load PDFs from server response
+if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
+    console.log('PDF Files:', lessonData.pdfFiles);
+    lessonData.pdfFiles.forEach(async (pdf) => {
+        const pdfFileId = pdf.pdfFileId;
+        const pdfUrl = `/admin/pdf/${pdfFileId}`; // URL to the PDF file
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <canvas id="thumbnail_${pdfFileId}" style="cursor: pointer; width: 50px; height: 50px;"></canvas> <!-- Canvas for the thumbnail -->
+                    <div>
+                        <strong>${pdf.pdfFileName}</strong>
+                        <span id="progress_${pdfFileId}" style="display: block; font-size: 0.9em; color: #666;">Loading progress...</span>
                     </div>
-                `;
-                pdfList.appendChild(listItem);
+                </div>
+                <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer; margin-left: 10px;">
+                    &#x22EE;
+                </div>
+                <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                    <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
+                </div>
+            </div>
+        `;
+        pdfList.appendChild(listItem);
 
-                try {
-                    // Render thumbnail asynchronously
-                    await renderPdfThumbnail(pdfUrl, pdfFileId);
-                } catch (thumbnailError) {
-                    console.error(`Failed to render thumbnail for PDF ${pdfFileId}:`, thumbnailError);
-                }
-
-                // Fetch progress and update UI
-                try {
-                    const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
-                    if (!progressResponse.ok) {
-                        throw new Error(`Failed to fetch progress: ${progressResponse.statusText}`);
-                    }
-
-                    const progressData = await progressResponse.json();
-                    const progress = progressData.progress || 0;
-                    document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
-                } catch (progressError) {
-                    console.error(`Failed to fetch progress for PDF ${pdfFileId}:`, progressError);
-                }
-            });
-        } else {
-            pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
-            console.log('No PDFs found');
+        try {
+            // Render thumbnail asynchronously
+            await renderPdfThumbnail(pdfUrl, pdfFileId);
+        } catch (thumbnailError) {
+            console.error(`Failed to render thumbnail for PDF ${pdfFileId}:`, thumbnailError);
         }
+
+        // Fetch progress and update UI
+        try {
+            const progressResponse = await fetch(`/admin/lesson/get-pdf-progress/${userId}/${pdfFileId}`);
+            if (!progressResponse.ok) {
+                throw new Error(`Failed to fetch progress: ${progressResponse.statusText}`);
+            }
+
+            const progressData = await progressResponse.json();
+            const progress = progressData.progress || 0;
+            document.getElementById(`progress_${pdfFileId}`).textContent = `Progress: ${progress}%`;
+        } catch (progressError) {
+            console.error(`Failed to fetch progress for PDF ${pdfFileId}:`, progressError);
+        }
+    });
+} else {
+    pdfList.innerHTML = '<p>No PDFs uploaded for this lesson.</p>';
+    console.log('No PDFs found');
+}
 
         // Verify Videos are populated correctly
         if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
@@ -433,7 +425,6 @@
     videoList.innerHTML = '<p>No videos uploaded for this lesson.</p>';
     console.log('No videos found');
 }
-
 
     } catch (error) {
         console.error('Error loading lesson files:', error);
@@ -502,7 +493,6 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
         console.error('Error rendering PDF thumbnail:', error);
     }
 }
-
 
              // Function to open the PDF modal and track progress by scrolling
              function openPdfModal(pdfUrl, pdfFileId, userId) {
@@ -644,9 +634,7 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
         
         </script>
 
-        <script>
-
-            
+        <script>    
             // Event listener to handle room clicks and load PDFs and Videos for the room
             document.addEventListener('DOMContentLoaded', function () {
                 document.querySelectorAll('.clickable').forEach(function (roomElement) {
@@ -687,7 +675,6 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     }
 
-    
      // Archive function to send an AJAX request for archiving a lesson room
     function archiveLessonRoom(lessonRoomId) {
         fetch(`/admin/archive-lesson-room/${lessonRoomId}`, {
@@ -723,44 +710,59 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const lessonRoomItems = document.querySelectorAll('.list-group-item');
-        const layeredContainer = document.querySelector('.layered-container'); // Create lesson room section
-        const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
-        const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload section
-        const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload section
-    
-        lessonRoomItems.forEach(item => {
-            item.addEventListener('click', function () {
-                layeredContainer.style.display = 'none'; // Hide the create lesson room section
-                newBigBox.style.display = 'block'; // Show main button container
-                uploadPdfSection.style.display = 'none'; // Initially hide PDF section
-                uploadVideoSection.style.display = 'none'; // Initially hide video section
-    
-                const roomId = item.getAttribute('data-room-id'); // Get room ID
-                document.getElementById('pdfRoomId').value = roomId;
-                document.getElementById('videoRoomId').value = roomId;
-            });
-        });
-    
-        // Show PDF section on Module button click
-        document.getElementById('moduleButton').addEventListener('click', function () {
-            newBigBox.style.display = 'none';
-            uploadPdfSection.style.display = 'block';
-            uploadVideoSection.style.display = 'none';
-        });
-    
-        // Show Video section on Video button click
-        document.getElementById('videoButton').addEventListener('click', function () {
-            newBigBox.style.display = 'none';
-            uploadPdfSection.style.display = 'none';
-            uploadVideoSection.style.display = 'block';
+    const lessonRoomItems = document.querySelectorAll('.list-group-item');
+    const layeredContainer = document.querySelector('.layered-container'); // Create lesson room section
+    const newBigBox = document.querySelector('.newbigbox'); // Main container with buttons
+    const uploadPdfSection = document.getElementById('uploadPdfSection'); // PDF upload section
+    const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload section
+    const lessonElement = document.querySelector('.lesson'); // Lesson container to hide background
+
+    // Hide the lesson background image
+    function hideLessonBg() {
+        lessonElement.style.backgroundImage = 'none'; // Removes the background image
+    }
+
+    // Show the lesson background image again
+    function showLessonBg() {
+        lessonElement.style.backgroundImage = 'url("/assets/classroom.png")'; // Replace with your original image URL
+    }
+
+    lessonRoomItems.forEach(item => {
+        item.addEventListener('click', function () {
+            layeredContainer.style.display = 'none'; // Hide the create lesson room section
+            newBigBox.style.display = 'block'; // Show main button container
+            uploadPdfSection.style.display = 'none'; // Initially hide PDF section
+            uploadVideoSection.style.display = 'none'; // Initially hide video section
+
+            const roomId = item.getAttribute('data-room-id'); // Get room ID
+            document.getElementById('pdfRoomId').value = roomId;
+            document.getElementById('videoRoomId').value = roomId;
+
+            // When an existing room is clicked, show the background again
+            showLessonBg(); 
         });
     });
-    </script>
+
+    // Show PDF section on Module button click
+    document.getElementById('moduleButton').addEventListener('click', function () {
+        newBigBox.style.display = 'none';
+        uploadPdfSection.style.display = 'block';
+        uploadVideoSection.style.display = 'none';
+        hideLessonBg(); // Hide the lesson background
+    });
+
+    // Show Video section on Video button click
+    document.getElementById('videoButton').addEventListener('click', function () {
+        newBigBox.style.display = 'none';
+        uploadPdfSection.style.display = 'none';
+        uploadVideoSection.style.display = 'block';
+        hideLessonBg(); // Hide the lesson background
+    });
+});
+</script>
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
-            <img src="/assets/logo.png" alt="Logo" class="img-fluid text-left mt-2" style="width: 80px;">
             <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
         </div>
     </div>

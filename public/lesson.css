@@ -1,6 +1,5 @@
 body {
     margin: 0;
-    padding: 0;
     background-color: #E0F4F9; /* Set body background color */
     padding-top: 150px; /* Adjust this value based on header height */
     
@@ -8,17 +7,16 @@ body {
 
 .lesson {
     background-image: url('/assets/classroom.png');
-    background-size: cover;
-    height: auto;
-
-
+    background-size: contain; /* Ensures the image fits within the container without stretching */
+    background-repeat: no-repeat; /* Prevents tiling of the image */
+    background-position: center; /* Centers the image within the container */
+    height: auto; /* Adjusts height automatically */
 }
 
 .center-text {
     font-weight: bold;
     font-size: 20px;
 }
-
 
 .fixed-header {
     position: fixed; /* Makes the header stay at the top */
@@ -27,6 +25,7 @@ body {
     width: 100%; /* Ensures it spans the full width */
     z-index: 1000; /* Keeps the header on top of other elements */
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better distinction */
+    background-color: white;
 }
 
 .big-box {
@@ -77,6 +76,7 @@ body {
 /* Sidebar */
 .sidebar {
     background-color: #17A2B8; /* Sidebar color */
+    
 }
 
 .sidebar a {
@@ -137,18 +137,9 @@ body {
     position: relative;
     max-width: 550px; /* Adjust the width as needed */
     height: auto; /* Set the height as needed */
-    margin: 50px auto; /* Center the container horizontally */
+    margin:  auto; /* Center the container horizontally */
     overflow: hidden; /* Ensures any overflow is hidden */
     border-radius: 8px; /* Optional: add rounded corners */
-}
-
-
-
-.form-overlay {
-    position: relative;
-    padding: 20px; /* Add padding for the form */
-    z-index: 1; /* Ensure form is above the background */
-    color: white; /* Change text color for visibility */
 }
 
 /* Existing CSS */
@@ -159,12 +150,9 @@ body {
     color: white; /* Change text color for visibility */
 }
 
-
 .form-overlay h5, .form-overlay label {
     font-weight: bold;
 }
-
-
 
 .custom-btn {
     display: flex; /* Use flexbox for centering */
@@ -188,7 +176,6 @@ body {
     background-color: #0056b3;
 }
 
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .newbigbox {
@@ -211,7 +198,6 @@ body {
         font-size: 12px;
     }
 }
-
 
 .upload-box {
     padding: 20px;
@@ -301,9 +287,7 @@ body {
             background-color: rgba(0, 0, 0, 0.8);
             
         }
-        
-        
-    
+
         #pdfModal .modal-content {
             position: relative;
             width: 90%;
@@ -354,8 +338,6 @@ body {
         
         .lesson-button {
             background-color: #FFDF9F; /* Set background color for the Lesson button */
-            padding: 10px; /* Add padding for better appearance */
-            border-radius: 5px; /* Round the corners of the Lesson button */
             display: block;
         }
       /* Styling for the video inside the modal */
@@ -380,7 +362,6 @@ body {
         padding: 5px; /* Padding between content and border */
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
     }
-    
 
 /* Styling for the modal container */
 #videoModal {
@@ -401,7 +382,6 @@ body {
     padding: 20px; /* Optional: Add some padding inside the modal */
 }
 
-
 #videoModal button {
     position: absolute;
     top: 20px;
@@ -417,7 +397,6 @@ body {
 #videoModal button:hover {
     color: #ffdf9f; /* Add hover color for effect */
 }
-
 
 /* Ensure video container respects maximum size */
 #videoViewer {
@@ -440,7 +419,6 @@ body {
     display: block; /* Ensure proper block-level centering */
 }
 
-
 /* Optional: Controls container for positioning buttons */
 .video-controls {
     position: absolute;
@@ -461,7 +439,6 @@ body {
         max-height: 70vh;
     }
 }
-
         
 /* Adjust dropdown menu styling to align with existing layout */
 .dropdown-content {
@@ -490,7 +467,6 @@ body {
     cursor: pointer;
     color: #333;
     position: relative;
-   
     padding: 5px;
     font-weight: bold;
     z-index: 10;
