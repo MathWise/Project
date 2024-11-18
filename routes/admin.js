@@ -6,18 +6,19 @@ const Lesson = require('../models/lesson.js');
 const Video = require('../models/video'); 
 const mongoose = require('mongoose');
 const router = express.Router();
-// Import the `initBuckets` function and buckets
+const fs = require('fs');
+const path = require('path');
 const { getPdfBucket, getVideoBucket, initBuckets } = require('../config/gridFS');
 const Room = require('../models/room');
 const LessonRoom = require('../models/lessonRoom');
-const middleware = require('../middleware'); // Ensure this import is correct
+const middleware = require('../middleware');
 const { ensureLoggedIn, ensureAdminLoggedIn } = middleware;
-const User = require('../models/user'); // Use your existing User model
+const User = require('../models/user'); 
 const connectDB = require('../config/dbConnection');
 const mongoURI = process.env.MONGODB_URI;
 const { DateTime } = require('luxon');
-const Quiz = require('../models/QuizActivityRoom'); // Matches the export in QuizActivityRoom.js
-const ActivityRoom = require('../models/activityRoom'); // Correct model for activity rooms
+const Quiz = require('../models/QuizActivityRoom'); 
+const ActivityRoom = require('../models/activityRoom'); 
 const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
 const { ObjectId } = require('mongodb'); 
@@ -69,12 +70,98 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
             roomId: newRoom._id,
             subject: "Default Subject",
             activityType: "Quiz",
-            createdAt: new Date()
+            createdAt: new Date(),
         });
         await defaultActivityRoom.save();
         console.log('Default ActivityRoom created successfully:', defaultActivityRoom);
 
-        // Step 3: Define default quizzes by difficulty level
+        // Step 3: Create a default LessonRoom
+        const defaultLessonRoom = new LessonRoom({
+            roomId: newRoom._id,
+            subject: "Default Subject",
+            topic: "Sample Topic",
+            archived: false,
+        });
+        await defaultLessonRoom.save();
+        console.log('Default LessonRoom created successfully:', defaultLessonRoom);
+
+        // Step 4: Upload default PDF to GridFS
+        const pdfPath = path.join(__dirname, '../public/defaults/sample.pdf'); // Path to default PDF
+        const pdfBucket = getPdfBucket();
+        const pdfStream = fs.createReadStream(pdfPath);
+
+        const pdfUpload = new Promise((resolve, reject) => {
+            const uploadPdfStream = pdfBucket.openUploadStream('sample.pdf', {
+                metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom._id },
+            });
+
+            pdfStream.pipe(uploadPdfStream)
+                .on('finish', resolve)
+                .on('error', reject);
+        });
+
+        await pdfUpload;
+
+        const pdfFile = await pdfBucket.find({ filename: 'sample.pdf' }).toArray();
+        if (!pdfFile.length) throw new Error('PDF upload failed');
+
+        console.log('Default PDF uploaded successfully:', pdfFile[0]);
+
+        // Step 5: Create a Lesson associated with the default LessonRoom
+        const defaultLesson = new Lesson({
+            roomId: defaultLessonRoom._id,
+            pdfFiles: [
+                {
+                    pdfFileId: pdfFile[0]._id,
+                    pdfFileName: 'sample.pdf',
+                    archived: false,
+                },
+            ],
+        });
+
+        await defaultLesson.save();
+        console.log('Default Lesson created successfully:', defaultLesson);
+
+        // Step 6: Upload default video to GridFS
+        const videoPath = path.join(__dirname, '../public/defaults/sampleVideo.mp4');
+        const videoBucket = getVideoBucket();
+        const videoStream = fs.createReadStream(videoPath);
+
+        const videoUpload = new Promise((resolve, reject) => {
+            const uploadVideoStream = videoBucket.openUploadStream('sampleVideo.mp4', {
+                metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom._id },
+            });
+
+            videoStream.pipe(uploadVideoStream)
+                .on('finish', resolve)
+                .on('error', reject);
+        });
+
+        await videoUpload;
+
+        // Fetch the uploaded video file from GridFS
+        const videoFile = await videoBucket.find({ filename: 'sampleVideo.mp4' }).toArray();
+        if (!videoFile.length) throw new Error('Video upload failed');
+
+        console.log('Default video uploaded successfully:', videoFile[0]);
+
+        // Step 7: Create a Video document for the LessonRoom
+        const defaultVideo = new Video({
+            roomId: defaultLessonRoom._id,
+            videoFiles: [
+                {
+                    videoFileId: videoFile[0]._id,
+                    videoFileName: 'sampleVideo.mp4',
+                    archived: false,
+                },
+            ],
+        });
+
+        await defaultVideo.save();
+        console.log('Default Video created successfully:', defaultVideo);
+
+
+        // Step 7: Define default quizzes by difficulty level
         const quizzes = [
             {
                 title: "Sample Quiz - Easy",
@@ -150,24 +237,22 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
             }
         ];
 
-        // Step 4: Save each quiz to the database
+       
         for (const quizData of quizzes) {
             const newQuiz = new Quiz(quizData);
             await newQuiz.save();
             console.log(`Default Quiz - ${quizData.difficultyLevel} created successfully:`, newQuiz);
         }
 
-        // Flash a success message and redirect to the admin home page
-        req.flash('success', 'Room and default quizzes created successfully!');
+        // Step 8: Flash success message and redirect
+        req.flash('success', 'Room, default quizzes, and default lesson room with media created successfully!');
         res.redirect('/admin/homeAdmin');
     } catch (err) {
-        console.error(err);
-        req.flash('error', 'Error creating room and quizzes. Please ensure all fields are filled in correctly.');
+        console.error('Error creating room and associated resources:', err);
+        req.flash('error', 'Error creating room and associated resources. Please try again.');
         res.redirect('/admin/homeAdmin');
     }
 });
-
-
 
 // end of home Admin-----------------------------------------------------------------------------------------------------------------
 
@@ -312,6 +397,17 @@ router.get('/Archive', ensureLoggedIn, async (req, res) => {
         const roomDetails = await Promise.all(
             rooms.map(async (room) => {
                 const lessons = await Lesson.find({ roomId: room._id, "pdfFiles.archived": true });
+                const videos = await Video.find({ roomId: room._id, "videoFiles.archived": true });
+
+                  // Add `videoFiles` to each lesson based on roomId or lessonId
+                const lessonsWithVideos = lessons.map(lesson => {
+                    const relatedVideos = videos.find(video => video.roomId.equals(lesson.roomId));
+                    return {
+                        ...lesson.toObject(),
+                        videoFiles: relatedVideos ? relatedVideos.videoFiles : [],
+                    };
+                });
+
                 const quizzes = await Quiz.find({ roomId: room._id, archived: true });
                 const activities = await ActivityRoom.find({ roomId: room._id, archived: true });
                 
@@ -763,7 +859,6 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, 
     const { roomId } = req.params;
     console.log('Received roomId:', roomId);
 
-    // Convert roomId to ObjectId, if valid
     const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
     if (!roomObjectId) {
         console.error('Invalid roomId format');
@@ -772,25 +867,38 @@ router.get('/lesson/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, 
     }
 
     try {
-        // Fetch room information to ensure room exists
+        // Fetch room to ensure it exists
         const room = await Room.findById(roomObjectId);
         if (!room) {
             req.flash('error', 'Room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Retrieve associated documents using roomObjectId
-        const lesson = await Lesson.findOne({ roomId: roomObjectId });
-        const video = await Video.findOne({ roomId: roomObjectId });
+        // Find associated LessonRooms
         const lessonRooms = await LessonRoom.find({ roomId: roomObjectId, archived: false });
+        if (!lessonRooms || lessonRooms.length === 0) {
+            console.warn('No LessonRooms found for the room.');
+        }
 
-        // Logging retrieved documents for debugging
-        console.log('Lesson found:', lesson);
-        console.log('Video found:', video);
-        console.log('Lesson Rooms:', lessonRooms);
+        // Extract LessonRoom IDs
+        const lessonRoomIds = lessonRooms.map((lr) => lr._id);
 
-        // Render the lesson page with the retrieved data
-        res.render('admin/lesson', { room, lesson, video, lessonRooms, currentUser: req.user });
+        // Find Lessons and Videos associated with LessonRooms
+        const lessons = await Lesson.find({ roomId: { $in: lessonRoomIds } });
+        const videos = await Video.find({ roomId: { $in: lessonRoomIds } });
+
+        console.log('LessonRooms:', lessonRooms);
+        console.log('Lessons found:', lessons);
+        console.log('Videos found:', videos);
+
+        // Render the lesson page with the data
+        res.render('admin/lesson', {
+            room,
+            lessonRooms,
+            lessons,
+            videos,
+            currentUser: req.user,
+        });
     } catch (err) {
         console.error('Error accessing the room:', err);
         req.flash('error', 'Error accessing the room.');
@@ -824,7 +932,7 @@ router.post('/create-lesson-room/:roomId', ensureAdminLoggedIn, middleware.ensur
 
 router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new ObjectId(roomId) : null;
+    const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
 
     if (!roomObjectId) {
         console.error('Invalid roomId format in get-lessons');
@@ -832,26 +940,55 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
     }
 
     try {
-        // Find lesson and video documents by roomId
-        const lesson = await Lesson.findOne({ roomId: roomObjectId });
-        if (!lesson) {
-            console.error(`Lesson not found for roomId: ${roomObjectId}`);
+        // Check if roomId is a Room
+        const room = await Room.findById(roomObjectId);
+        if (room) {
+            // Query LessonRooms for the Room
+            const lessonRooms = await LessonRoom.find({ roomId: roomObjectId, archived: false });
+            if (!lessonRooms || lessonRooms.length === 0) {
+                console.warn('No LessonRooms found for the room.');
+                return res.json({ pdfFiles: [], videoFiles: [] });
+            }
+
+            // Collect LessonRoom IDs and query associated Lessons and Videos
+            const lessonRoomIds = lessonRooms.map((lr) => lr._id);
+            const lessons = await Lesson.find({ roomId: { $in: lessonRoomIds } });
+            const videos = await Video.find({ roomId: { $in: lessonRoomIds } });
+
+            const pdfFiles = lessons.flatMap((lesson) => 
+                lesson.pdfFiles.filter((pdf) => !pdf.archived)
+            );
+            const videoFiles = videos.flatMap((video) => 
+                video.videoFiles.filter((vid) => !vid.archived)
+            );
+
+            console.log('Filtered PDFs:', pdfFiles);
+            console.log('Filtered Videos:', videoFiles);
+
+            return res.json({ pdfFiles, videoFiles });
         }
-        const videoLesson = await Video.findOne({ roomId: roomObjectId });
 
-        // Log the entire lesson and videoLesson documents for debugging
-        console.log('Lesson Document:', lesson);
-        console.log('Video Document:', videoLesson);
+        // If roomId is not a Room, check if it's a LessonRoom
+        const lessonRoom = await LessonRoom.findById(roomObjectId);
+        if (!lessonRoom) {
+            console.error('No Room or LessonRoom found for ID:', roomObjectId);
+            return res.status(404).send('Room or LessonRoom not found.');
+        }
 
-        // Filter out archived items
-        const pdfFiles = lesson ? lesson.pdfFiles.filter(pdf => !pdf.archived) : [];
-        const videoFiles = videoLesson ? videoLesson.videoFiles.filter(video => !video.archived) : [];
+        // Query Lessons and Videos for the specific LessonRoom
+        const lessons = await Lesson.find({ roomId: lessonRoom._id });
+        const videos = await Video.find({ roomId: lessonRoom._id });
 
-        // Log filtered results for debugging
-        console.log('Filtered PDFs:', pdfFiles);
-        console.log('Filtered Videos:', videoFiles);
+        const pdfFiles = lessons.flatMap((lesson) =>
+            lesson.pdfFiles.filter((pdf) => !pdf.archived)
+        );
+        const videoFiles = videos.flatMap((video) =>
+            video.videoFiles.filter((vid) => !vid.archived)
+        );
 
-        // Send response with filtered files
+        console.log('Filtered PDFs for LessonRoom:', pdfFiles);
+        console.log('Filtered Videos for LessonRoom:', videoFiles);
+
         res.json({ pdfFiles, videoFiles });
     } catch (error) {
         console.error('Error fetching lessons:', error);

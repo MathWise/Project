@@ -161,6 +161,10 @@
 </head>
 <body>
     <h1>Archived PDFs and Videos</h1>
+     <!-- Hidden fields to store roomId and userId -->
+     <input type="hidden" id="roomId" value="<%= roomId %>">
+     <input type="hidden" id="userId" value="<%= currentUser._id %>">
+
     <div class="form-group">
         <label for="archiveSelect">Archived Option</label>
         <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="loadArchivedContent()">
@@ -170,70 +174,101 @@
     </div>
 
     <main class="col-md-11" id="archivedPdfs" style="display: none;">
-        <h2>Archived PDFs</h2>
-        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
-            <% if (archivedPdfs.length > 0) { %>
-            <% archivedPdfs.forEach(function(pdf) { %>
-                <li class="list-group-item">
-                    <div class="archive-item">
-                        <img src="/assets/ypdf.png" alt="PDF Icon">
-                        <div>
-                            <strong>PDF Name:</strong> <%= pdf.pdfFileName %>
-                            <button onclick="confirmUnarchive('pdf', '<%= pdf.pdfFileId %>')">Unarchive</button>
-                        </div>
-                    </div>
-                </li>
-            <% }) %>
-            <% } else { %>
-                <p>No archived PDFs available.</p>
-            <% } %>
+         <h2>Archived PDFs</h2>
+        <ul id="archivedPdfsList" class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+            <!-- Archived PDFs will be loaded dynamically here -->
         </ul>
         <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
     </main>
 
     <main class="col-md-11" id="archivedVideos" style="display: none;">
         <h2>Archived Videos</h2>
-        <ul class="list-group d-flex flex-row flex-wrap lesson-archive-list">
-            <% if (archivedVideos.length > 0) { %>
-            <% archivedVideos.forEach(function(video) { %>
-                <li class="list-group-item">
-                    <div class="archive-item">
-                        <img src="/assets/yvidb.png" alt="Video Icon">
-                        <div>
-                            <strong>Video Name:</strong> <%= video.videoFileName %>
-                            <button onclick="confirmUnarchive('video', '<%= video.videoFileId %>')">Unarchive</button>
-                        </div>
-                    </div>
-                </li>
-            <% }) %>
-            <% } else { %>
-                <p>No archived videos available.</p>
-            <% } %>
+        <ul id="archivedVideosList" class="list-group d-flex flex-row flex-wrap lesson-archive-list">
+            <!-- Archived Videos will be loaded dynamically here -->
         </ul>
         <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
     </main>
-
     <script>
-        function confirmUnarchive(type, id) {
+        async function loadArchivedContent() {
+        const roomId = document.getElementById('roomId').value;
+        const selectedOption = document.getElementById('archiveSelect').value;
+
+        try {
+            // Fetch updated archived content from the server
+            const response = await fetch(`/admin/pdfAndVideoArchive/${roomId}`, {
+                headers: { 'Accept': 'application/json' }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch archived content. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            // Clear existing lists
+            const pdfList = document.getElementById('archivedPdfsList');
+            const videoList = document.getElementById('archivedVideosList');
+            pdfList.innerHTML = '';
+            videoList.innerHTML = '';
+
+            // Populate PDFs if selected
+            if (selectedOption === 'pdfs') {
+                if (data.archivedPdfs.length > 0) {
+                    data.archivedPdfs.forEach(pdf => {
+                        pdfList.innerHTML += `
+                            <li class="list-group-item">
+                                <strong>PDF Name:</strong> ${pdf.pdfFileName}
+                                <button onclick="confirmUnarchive('pdf', '${pdf.pdfFileId}')">Unarchive</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    pdfList.innerHTML = '<p>No archived PDFs available.</p>';
+                }
+                document.getElementById('archivedPdfs').style.display = 'block';
+                document.getElementById('archivedVideos').style.display = 'none';
+            }
+
+            // Populate Videos if selected
+            if (selectedOption === 'videos') {
+                if (data.archivedVideos.length > 0) {
+                    data.archivedVideos.forEach(video => {
+                        videoList.innerHTML += `
+                            <li class="list-group-item">
+                                <strong>Video Name:</strong> ${video.videoFileName}
+                                <button onclick="confirmUnarchive('video', '${video.videoFileId}')">Unarchive</button>
+                            </li>
+                        `;
+                    });
+                } else {
+                    videoList.innerHTML = '<p>No archived videos available.</p>';
+                }
+                document.getElementById('archivedPdfs').style.display = 'none';
+                document.getElementById('archivedVideos').style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error loading archived content:', error);
+            alert('Failed to load archived content. Please try again.');
+        }
+    }
+
+        // Function to confirm and send unarchive request
+        async function confirmUnarchive(type, id) {
             if (confirm(`Are you sure you want to unarchive this ${type}?`)) {
                 const url = type === 'pdf' ? `/admin/unarchive-pdf/${id}` : `/admin/unarchive-video/${id}`;
-                fetch(url, { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
+                try {
+                    const response = await fetch(url, { method: 'POST' });
+                    const data = await response.json();
                     alert(data.message);
-                    window.location.reload();
-                })
-                .catch(error => console.error(`Error unarchiving ${type}:`, error));
+                    // Reload the archived content after unarchiving
+                    loadArchivedContent();
+                } catch (error) {
+                    console.error(`Error unarchiving ${type}:`, error);
+                }
             }
         }
 
-        function loadArchivedContent() {
-            const selectedOption = document.getElementById('archiveSelect').value;
-            document.getElementById('archivedPdfs').style.display = selectedOption === 'pdfs' ? 'block' : 'none';
-            document.getElementById('archivedVideos').style.display = selectedOption === 'videos' ? 'block' : 'none';
-        }
-
-        // Trigger loadArchivedContent on page load to default to "Archived Lesson Rooms"
+        // Trigger loadArchivedContent on page load to default to "Archived PDFs"
         document.addEventListener('DOMContentLoaded', () => {
             loadArchivedContent();
         });

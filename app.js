@@ -16,10 +16,22 @@ const archiveMediaRoutes = require('./routes/archiveMediaRoutes');
 const adRoutes = require("./routes/admin.js");
 const appRoutes = require("./routes/user.js");
 const passport = require('passport');
+const mongoose = require('mongoose');
 require('./config/passport')(passport);
 
 console.log('MongoDB URI:', process.env.MONGODB_URI);
-connectDB();
+connectDB()
+.then(() => {
+  console.log('Database connected successfully');
+  return initBuckets(); // Ensure buckets are initialized after DB connection
+})
+.then(() => {
+  console.log('GridFS Buckets initialized successfully');
+})
+.catch((error) => {
+  console.error('Error during app initialization:', error);
+  process.exit(1); // Exit the app if DB connection or bucket initialization fails
+});
 
 const app = express();
 app.set('view engine', 'ejs');

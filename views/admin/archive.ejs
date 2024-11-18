@@ -45,9 +45,13 @@
                         <ul>
                             <% room.lessons.forEach(lesson => { %>
                                 <li><%= lesson.pdfFileName %> (PDF)</li>
-                                <% lesson.videoFiles.forEach(video => { %>
-                                    <li><%= video.videoFileName %> (Video)</li>
-                                <% }); %>
+                                <% if (lesson.videoFiles && lesson.videoFiles.length > 0) { %>
+                                    <% lesson.videoFiles.forEach(video => { %>
+                                        <li><%= video.videoFileName %> (Video)</li>
+                                    <% }); %>
+                                <% } else { %>
+                                    <li>No videos available for this lesson</li>
+                                <% } %>
                             <% }) %>
                         </ul>
                         

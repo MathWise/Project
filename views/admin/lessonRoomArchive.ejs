@@ -143,29 +143,19 @@
 </head>
 <body>
     <h1>Archived Lesson Rooms</h1>
-
-    <main id="archivedLessonRooms">
-        <ul class="list-group d-flex flex-row flex-wrap">
-            <% if (archivedLessonRooms.length > 0) { %>
-                <% archivedLessonRooms.forEach(function(lessonRoom) { %>
-                    <li class="list-group-item">
-                        <div class="archive-item">
-                            <img src="/assets/lessonroom.png" alt="Lesson Room Icon">
-                            <div>
-                                <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
-                                <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
-                            </div>
-                        </div>
-                    </li>
-                <% }) %>
-            <% } else { %>
-                <p>No archived lesson rooms available.</p>
-            <% } %>
-        </ul>
-    </main>
-
-    <!-- Go Back Button below the content -->
-    <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
+    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
+    <ul class="list-group d-flex flex-row flex-wrap">
+        <% if (archivedLessonRooms.length > 0) { %>
+            <% archivedLessonRooms.forEach(function(lessonRoom) { %>
+                <li class="list-group-item lesson-room">
+                    <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
+                    <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <p>No archived lesson rooms available.</p>
+        <% } %>
+    </ul>
 
     <script>
         function confirmUnarchive(lessonRoomId) {

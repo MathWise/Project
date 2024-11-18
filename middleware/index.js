@@ -26,14 +26,15 @@ const middleware = {
         
         if (!req.isAuthenticated()) {
             console.log("User is not authenticated, redirecting to login");
-            req.session.returnTo = req.originalUrl;
+            req.session.returnTo = req.originalUrl; // Store original URL for post-login redirect
             req.flash("warning", "Please log in first to continue");
-            return res.redirect("/login"); // Redirect to the login page
+            return res.redirect("/login"); // Redirect to login
         }
+    
         if (req.user.role !== "admin") {
             console.log("User is not an admin, redirecting to homeUser");
             req.flash("warning", "This route is allowed for admin only!");
-            return res.redirect("/user/homeUser"); // Redirect to the student home page
+            return res.redirect("/user/homeUser"); // Redirect non-admin users
         }
         console.log("User is authenticated and is an admin");
         next();

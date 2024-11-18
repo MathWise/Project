@@ -18,8 +18,12 @@ router.get('/pdfAndVideoArchive/:roomId', ensureAdminLoggedIn, async (req, res) 
         // Validate and convert roomId to ObjectId
         const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
         if (!roomObjectId) {
-            req.flash('error', 'Invalid Room ID.');
-            return res.redirect('/admin/homeAdmin');
+            if (req.xhr || req.headers.accept.includes('application/json')) {
+                return res.status(400).json({ error: 'Invalid Room ID.' });
+            } else {
+                req.flash('error', 'Invalid Room ID.');
+                return res.redirect('/admin/homeAdmin');
+            }
         }
 
         // Find all LessonRooms within the Room
@@ -36,10 +40,20 @@ router.get('/pdfAndVideoArchive/:roomId', ensureAdminLoggedIn, async (req, res) 
         const archivedPdfs = lessons.flatMap(lesson => lesson.pdfFiles.filter(pdf => pdf.archived));
         const archivedVideos = videoLessons.flatMap(video => video.videoFiles.filter(video => video.archived));
 
+        if (req.xhr || req.headers.accept.includes('application/json')) {
+            return res.json({ archivedPdfs, archivedVideos });
+        }
+
+        
         // Render the archive page with roomId and archived media
-        res.render('admin/pdfAndVideoArchive', { roomId, archivedPdfs, archivedVideos });
+        res.render('admin/pdfAndVideoArchive', { roomId, archivedPdfs, archivedVideos,  currentUser: req.user });
     } catch (error) {
         console.error('Error fetching archived media:', error);
+
+        if (req.xhr || req.headers.accept.includes('application/json')) {
+            return res.status(500).json({ error: 'Failed to load archived media.' });
+        }
+
         req.flash('error', 'Failed to load archived media.');
         res.redirect('/admin/homeAdmin');
     }

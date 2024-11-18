@@ -224,8 +224,8 @@
 
 
         <script>
-            // Set global roomId and userId variables for all functions to use
-            const roomId = '<%= room._id %>';
+            // // Set global roomId and userId variables for all functions to use
+            // const roomId = '<%= room._id %>';
             const userId = '<%= currentUser._id %>';
         
             // Function to toggle the PDF kebab menu display
@@ -248,25 +248,25 @@
         
             // Archive function for a video
             function archiveVideo(videoFileId) {
-                const userConfirmed = confirm('Are you sure you want to archive this video?');
-                if (userConfirmed)  {
+
+                    // Retrieve the current roomId dynamically
+                const roomId = document.getElementById('videoRoomId').value;
+
+                if (confirm('Are you sure you want to archive this video?')) {
+                        fetch(`/admin/archive-video/${videoFileId}`, { method: 'POST' })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(data.message);
+                                document.getElementById(`videoMenu-${videoFileId}`).style.display = 'none';
+                                loadLessonFiles(roomId, userId);
+                            })
+                            .catch(error => {
+                                console.error('Error archiving video:', error);
+                                alert('Failed to archive video.');
+                            });
+                    }
+                }
                 
-                fetch(`/admin/archive-video/${videoFileId}`, {
-                    method: 'POST'
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    window.location.reload();
-                })
-        .catch(error => {
-            console.error('Error archiving PDF:', error);
-        });
-    } else {
-        console.log('User canceled the archive action.');
-    }
-}
-        
             // Close dropdowns if clicked outside
             document.addEventListener('click', function(event) {
                 const isKebab = event.target.classList.contains('kebab-menu');
@@ -278,29 +278,33 @@
                 }
             });
         
-            // Archive function to send an AJAX request for archiving a PDF
-            // Archive function to send an AJAX request for archiving a PDF
-function archivePdf(pdfFileId) {
-    // Show a confirmation dialog
-    const userConfirmed = confirm('Are you sure you want to archive this PDF?');
 
-    // Proceed only if the user confirms
-    if (userConfirmed) {
-        console.log('Archiving PDF with ID:', pdfFileId);
+            // Archive function to send an AJAX request for archiving a PDF
+            function archivePdf(pdfFileId) {
 
-        fetch(`/admin/archive-pdf/${pdfFileId}`, { method: 'POST' })
-        .then(response => response.json())
-                .then(data => {
-                    alert(data.message);
-                    window.location.reload();
-                })
-        .catch(error => {
-            console.error('Error archiving PDF:', error);
-        });
-    } else {
-        console.log('User canceled the archive action.');
-    }
-}
+                const roomId = document.getElementById('pdfRoomId').value;
+
+
+                // Show a confirmation dialog
+                if (!roomId) {
+                        alert('Room ID not found. Unable to archive PDF.');
+                        return;
+                    }
+
+                    if (confirm('Are you sure you want to archive this PDF?')) {
+                        fetch(`/admin/archive-pdf/${pdfFileId}`, { method: 'POST' })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert(data.message);
+                                document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none';
+                                loadLessonFiles(roomId, userId);
+                            })
+                            .catch(error => {
+                                console.error('Error archiving PDF:', error);
+                                alert('Failed to archive PDF.');
+                            });
+                    }
+                }
 
 
 
@@ -310,6 +314,13 @@ function archivePdf(pdfFileId) {
             async function loadLessonFiles(roomId, userId) {
     const pdfList = document.getElementById('uploadedPdfs');
     const videoList = document.getElementById('uploadedVideos');
+
+
+    if (!pdfList || !videoList) {
+            console.error('PDF or Video list container not found.');
+            return;
+        }
+        
     pdfList.innerHTML = ''; // Clear previous PDFs
     videoList.innerHTML = ''; // Clear previous Videos
 
@@ -549,19 +560,19 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
                 .catch(error => console.error('Error saving progress:', error));
             }
             function openVideoModal(videoUrl) {
-    const modalVideo = document.getElementById("modalVideo");
-    const videoSource = document.getElementById("videoSource");
-    videoSource.src = videoUrl; // Set the video source
-    modalVideo.load(); // Load the new video
-    document.getElementById("videoModal").style.display = "block"; // Show the modal
-}
+            const modalVideo = document.getElementById("modalVideo");
+            const videoSource = document.getElementById("videoSource");
+            videoSource.src = videoUrl; // Set the video source
+            modalVideo.load(); // Load the new video
+            document.getElementById("videoModal").style.display = "block"; // Show the modal
+        }
 
-function closeVideoModal() {
-    document.getElementById("videoModal").style.display = "none"; // Hide the modal
-    const modalVideo = document.getElementById("modalVideo");
-    modalVideo.pause(); // Stop the video when modal is closed
-    modalVideo.currentTime = 0; // Reset video to start
-}
+        function closeVideoModal() {
+            document.getElementById("videoModal").style.display = "none"; // Hide the modal
+            const modalVideo = document.getElementById("modalVideo");
+            modalVideo.pause(); // Stop the video when modal is closed
+            modalVideo.currentTime = 0; // Reset video to start
+        }
         
             // Other functions remain unchanged (e.g., openPdfModal, closePdfModal, savePdfProgress)
         
@@ -658,7 +669,7 @@ function closeVideoModal() {
             function toggleDropdownMenu() {
         const menu = document.getElementById("dropdownMenu");
         menu.style.display = menu.style.display === "block" ? "none" : "block";
-    }
+          }
 
     // Close dropdown when clicking outside
     document.addEventListener("click", function(event) {
@@ -746,8 +757,6 @@ function closeVideoModal() {
         });
     });
     </script>
-
-
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
