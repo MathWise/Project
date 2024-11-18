@@ -25,12 +25,12 @@
             text-align: center;
             background-color: #007bff;
             color: white;
-            padding: 8px 30px;  /* Reduced horizontal padding */
+            padding: 8px 30px;
             text-decoration: none;
             border-radius: 5px;
             font-size: 14px;
             width: auto;
-            max-width: 250px; /* Limit max width */
+            max-width: 250px;
         }
 
         .go-back-btn:hover {
@@ -90,16 +90,16 @@
         /* Archived Lesson Rooms container background */
         main#archivedLessonRooms {
             background-image: url('/assets/bg.png');
-            background-size: cover; /* Ensure it covers the entire container */
-            background-position: center; /* Center the background image */
-            padding: 20px; /* Add padding around the content */
-            border-radius: 10px; /* Optional: round the corners of the container */
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 10px;
         }
 
         /* Make the list items more responsive */
         @media (max-width: 768px) {
             .archive-item img {
-                width: 40px; /* Smaller image size on small screens */
+                width: 40px;
                 margin-right: 10px;
             }
 
@@ -143,19 +143,26 @@
 </head>
 <body>
     <h1>Archived Lesson Rooms</h1>
-    <a href="/admin/lesson/<%= roomId %>">Go Back</a>
-    <ul class="list-group d-flex flex-row flex-wrap">
-        <% if (archivedLessonRooms.length > 0) { %>
-            <% archivedLessonRooms.forEach(function(lessonRoom) { %>
-                <li class="list-group-item lesson-room">
-                    <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
-                    <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
-                </li>
-            <% }) %>
-        <% } else { %>
-            <p>No archived lesson rooms available.</p>
-        <% } %>
-    </ul>
+    <main id="archivedLessonRooms">
+        <ul class="list-group d-flex flex-row flex-wrap">
+            <% if (archivedLessonRooms.length > 0) { %>
+                <% archivedLessonRooms.forEach(function(lessonRoom) { %>
+                    <li class="list-group-item lesson-room">
+                        <div class="archive-item">
+                            <img src="/assets/lessonroom.png" alt="Lesson Room Icon">
+                            <div>
+                                <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
+                                <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
+                            </div>
+                        </div>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived lesson rooms available.</p>
+            <% } %>
+        </ul>
+        <a href="/admin/lesson/<%= roomId %>" class="go-back-btn">Go Back</a>
+    </main>
 
     <script>
         function confirmUnarchive(lessonRoomId) {
