@@ -10,13 +10,12 @@
     <h1>Archived Content</h1>
     <div class="dropdown-content">
         <a href="/admin/activities/<%= roomId %>">Go Back</a>
-      
     </div>
 
     <!-- Select between archived activity rooms and quizzes -->
     <div class="form-group">
         <label for="archiveSelect">Archived Option</label>
-        <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="loadArchivedContent()">
+        <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="toggleArchiveSections()">
             <option value="activityRooms">Archived Activity Rooms</option>
             <option value="tests">Archived Tests</option>
         </select>
@@ -40,53 +39,93 @@
     </div>
 
     <!-- Display Archived Tests -->
-  <!-- Display Archived Tests -->
-<div id="archivedTests" style="display: none;">
-   
-
-    <h2>Archived Tests</h2>
-    <% if (archivedQuizzes && archivedQuizzes.length > 0) { %>
-        <ul class="list-group">
-            <% archivedQuizzes.forEach(quiz => { %>
-                <li class="list-group-item">
-                    <strong><%= quiz.title %></strong>
-                    <p>Archived on: <%= new Date(quiz.archivedAt).toLocaleString() %></p>
-                    <button onclick="unarchiveQuiz('<%= quiz._id %>')">Unarchive</button>
-                </li>
-            <% }) %>
+    <div id="archivedTests" style="display: none;">
+        <h2>Archived Tests</h2>
+        <ul id="archivedQuizzesList" class="list-group">
+            <% if (archivedQuizzes && archivedQuizzes.length > 0) { %>
+                <% archivedQuizzes.forEach(quiz => { %>
+                    <li class="list-group-item archive-item" id="quiz-item-<%= quiz._id %>">
+                        <strong><%= quiz.title %></strong>
+                        <p>Archived on: <%= new Date(quiz.archivedAt).toLocaleString() %></p>
+                        <button class="btn btn-warning" onclick="unarchiveQuiz('<%= quiz._id %>')">Unarchive</button>
+                    </li>
+                <% }) %>
+            <% } else { %>
+                <p>No archived quizzes available.</p>
+            <% } %>
         </ul>
-    <% } else { %>
-        <p>No archived quizzes available.</p>
-    <% } %>
-</div>
-
+    </div>
 
 <script>
-  function loadArchivedContent() {
-    const selectedOption = document.getElementById("archiveSelect").value;
-    document.getElementById("archivedActivityRooms").style.display = selectedOption === "activityRooms" ? "block" : "none";
-    document.getElementById("archivedTests").style.display = selectedOption === "tests" ? "block" : "none";
-}
+    // Toggle between archived activity rooms and tests
+    function toggleArchiveSections() {
+        const selectedOption = document.getElementById("archiveSelect").value;
+        document.getElementById("archivedActivityRooms").style.display = selectedOption === "activityRooms" ? "block" : "none";
+        document.getElementById("archivedTests").style.display = selectedOption === "tests" ? "block" : "none";
+    }
 
-
+    // Function to unarchive an activity room
     function unarchiveActivityRoom(activityRoomId) {
         fetch(`/admin/unarchive-activity-room/${activityRoomId}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 alert(data.message);
-                window.location.reload();
+                window.location.reload(); // Reload to update the list
             })
             .catch(error => console.error('Error unarchiving activity room:', error));
     }
 
+    // Function to unarchive a quiz with confirmation
     function unarchiveQuiz(quizId) {
-        fetch(`/admin/unarchive-quiz/${quizId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                window.location.reload();
-            })
-            .catch(error => console.error('Error unarchiving quiz:', error));
+        const confirmUnarchive = confirm("Are you sure you want to unarchive this quiz?");
+        if (confirmUnarchive) {
+            fetch(`/admin/unarchive-quiz/${quizId}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message) {
+                        alert(data.message);
+                        loadArchivedQuizzes(); // Dynamically reload quizzes
+                    } else {
+                        alert("Error: Unable to unarchive quiz.");
+                    }
+                })
+                .catch(error => console.error('Error unarchiving quiz:', error));
+        } else {
+            console.log("Quiz unarchiving canceled.");
+        }
+    }
+
+    // Function to dynamically load archived quizzes
+    async function loadArchivedQuizzes() {
+        const roomId = '<%= roomId %>'; // Use server-provided room ID
+        try {
+            const response = await fetch(`/admin/activitiesArchive/${roomId}`, { headers: { 'Accept': 'application/json' } });
+
+            if (!response.ok) {
+                throw new Error(`Failed to fetch archived quizzes. Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const quizList = document.getElementById('archivedQuizzesList');
+            quizList.innerHTML = ''; // Clear the list
+
+            if (data.archivedQuizzes && data.archivedQuizzes.length > 0) {
+                data.archivedQuizzes.forEach(quiz => {
+                    quizList.innerHTML += `
+                        <li class="list-group-item archive-item" id="quiz-item-${quiz._id}">
+                            <strong>${quiz.title}</strong>
+                            <p>Archived on: ${new Date(quiz.archivedAt).toLocaleString()}</p>
+                            <button class="btn btn-warning" onclick="unarchiveQuiz('${quiz._id}')">Unarchive</button>
+                        </li>
+                    `;
+                });
+            } else {
+                quizList.innerHTML = '<p>No archived quizzes available.</p>';
+            }
+        } catch (error) {
+            console.error('Error loading archived quizzes:', error);
+            alert('Failed to load archived quizzes. Please try again.');
+        }
     }
 </script>
 </body>

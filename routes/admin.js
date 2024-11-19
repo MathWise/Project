@@ -1595,14 +1595,17 @@ router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) =
             return res.redirect('/admin/homeAdmin');
         }
 
-        const archivedActivityRooms = await ActivityRoom.find({ roomId: roomObjectId });
+        const archivedActivityRooms = await ActivityRoom.find({ roomId: roomObjectId, archived: true  });
 
         // Extract all lessonRoom IDs
         const activityRoomIds = archivedActivityRooms.map(room => room._id);
 
         const archivedQuizzes = await Quiz.find({ roomId: { $in: activityRoomIds }, archived: true });
 
-      
+         // Check if the client expects JSON
+         if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.status(200).json({ archivedActivityRooms, archivedQuizzes });
+        }
 
         // Render the view with the archived data
         res.render('admin/activitiesArchive', { 

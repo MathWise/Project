@@ -62,21 +62,21 @@ function toggleQuizMenu(quizId) {
 
 // Function to archive a quiz
 function archiveQuiz(quizId) {
-    fetch(`/admin/archive-quiz/${quizId}`, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            if (data.message) {
+    const confirmArchive = confirm("Are you sure you want to archive this quiz? This action cannot be undone.");
+    if (confirmArchive) {
+        fetch(`/admin/archive-quiz/${quizId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
                 alert(data.message);
-                // Remove the archived quiz from the DOM
                 const quizElement = document.getElementById(`quiz-item-${quizId}`);
                 if (quizElement) {
-                    quizElement.remove();
+                    quizElement.remove(); // Remove the quiz from the DOM
                 }
-            } else {
-                alert('Error archiving quiz.');
-            }
-        })
-        .catch(error => console.error('Error archiving quiz:', error));
+            })
+            .catch(error => console.error('Error archiving quiz:', error));
+    } else {
+        console.log("Archiving canceled.");
+    }
 }
 
 
@@ -256,15 +256,20 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// Function to archive an activity room
+// Function to archive an activity room with confirmation
 function archiveActivityRoom(activityRoomId) {
-    fetch(`/admin/archive-activity-room/${activityRoomId}`, { method: 'POST' })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            window.location.reload();
-        })
-        .catch(error => console.error('Error archiving activity room:', error));
+    const confirmArchive = confirm("Are you sure you want to archive this activity room? This action cannot be undone.");
+    if (confirmArchive) {
+        fetch(`/admin/archive-activity-room/${activityRoomId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                window.location.reload(); // Reload the page to reflect changes
+            })
+            .catch(error => console.error('Error archiving activity room:', error));
+    } else {
+        console.log("Archiving canceled.");
+    }
 }
 
 // Toggle the individual kebab menu for each room
