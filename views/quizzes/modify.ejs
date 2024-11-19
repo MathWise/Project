@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Modify Quiz</title>
+    <!-- <link rel="stylesheet" href="/styles.css"> -->
+</head>
+<body>
+    <div class="container">
+        <h1>Modify Quiz</h1>
+        <form action="/admin/quiz/modify/<%= quiz._id %>" method="POST">
+            <div>
+                <label for="title">Quiz Title:</label>
+                <input type="text" name="title" id="title" value="<%= quiz.title %>" required>
+            </div>
+            <div id="questions">
+                <% quiz.questions.forEach((question, index) => { %>
+                    <div class="question">
+                        <label>Question <%= index + 1 %>:</label>
+                        <input type="text" name="questions[<%= index %>][questionText]" value="<%= question.questionText %>" required>
+                        <select name="questions[<%= index %>][type]" required>
+                            <option value="multiple-choice" <% if (question.type === 'multiple-choice') { %> selected <% } %>>Multiple Choice</option>
+                            <option value="fill-in-the-blank" <% if (question.type === 'fill-in-the-blank') { %> selected <% } %>>Fill in the Blank</option>
+                        </select>
+                        <% if (question.type === 'multiple-choice') { %>
+                            <div class="choices">
+                                <% question.choices.forEach((choice, choiceIndex) => { %>
+                                    <div>
+                                        <input type="text" name="questions[<%= index %>][choices][<%= choiceIndex %>][text]" value="<%= choice.text %>" required>
+                                        <label>Correct?</label>
+                                        <input type="checkbox" name="questions[<%= index %>][choices][<%= choiceIndex %>][isCorrect]" <% if (choice.isCorrect) { %> checked <% } %>>
+                                    </div>
+                                <% }) %>
+                            </div>
+                        <% } else if (question.type === 'fill-in-the-blank') { %>
+                            <label>Correct Answer:</label>
+                            <input type="text" name="questions[<%= index %>][correctAnswer]" value="<%= question.correctAnswer %>" required>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+            <button type="submit">Save Changes</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -36,6 +36,7 @@ async function loadQuizzesForRoom(activityRoomId) {
                         <div class="kebab-menu" onclick="toggleQuizMenu('${quiz._id}')">&#x22EE;</div>
                         <div class="dropdown-menu quiz-menu" id="quiz-menu-${quiz._id}" style="display: none;">
                             <a href="#" onclick="archiveQuiz('${quiz._id}'); return false;">Archive</a>
+                            <a href="/admin/quiz/modify/${quiz._id}">Modify</a>
                         </div>
                     </li>`;
                 quizList.insertAdjacentHTML('beforeend', quizHtml);

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Modified Quiz Details</title>
+    <style>
+        /* Set background and font style */
+        body {
+            background-color: #E0F4F9;
+            font-family: 'Baloo 2', cursive;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, p, strong, ul, li {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        .container {
+            margin-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Modified Quiz Details</h1>
+        <h2><%= quiz.title %></h2>
+
+        <ul class="list-group">
+            <li class="list-group-item">
+                <strong>Created on:</strong> <%= new Date(quiz.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %><br>
+                <strong>Deadline:</strong> <%= quiz.deadline ? new Date(quiz.deadline).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : "No deadline" %><br>
+                <strong>Max Attempts:</strong> <%= quiz.maxAttempts %>
+            </li>
+        </ul>
+
+        <h3 class="mt-4">Questions</h3>
+        <ul class="list-group">
+            <% quiz.questions.forEach((question, index) => { %>
+                <li class="list-group-item">
+                    <strong>Question <%= index + 1 %>:</strong> <%= question.questionText %><br>
+                    <strong>Type:</strong> <%= question.type %><br>
+
+                    <% if (question.type === 'multiple-choice') { %>
+                        <strong>Choices:</strong>
+                        <ul>
+                            <% question.choices.forEach(choice => { %>
+                                <li>
+                                    <%= choice.text %> 
+                                    <% if (choice.isCorrect) { %>
+                                        <span class="text-success">(Correct)</span>
+                                    <% } %>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    <% } else if (question.type === 'fill-in-the-blank') { %>
+                        <strong>Correct Answer:</strong> <%= question.correctAnswer %>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+
+        <div class="mt-4">
+            <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>
+    </div>
+</body>
+</html>

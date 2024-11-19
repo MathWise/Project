@@ -156,7 +156,7 @@
                                 <% if (latestPdf) { %>
                                     <div class="update-item">
                                         <img src="/assets/pdf-icon.svg" alt="PDF Icon" style="width: 40px;">
-                                        <span>Latest Lesson: <a href="/admin/pdf/<%= latestPdf.pdfFileId %>" target="_blank"><%= latestPdf.pdfFileName %></a></span>
+                                        <span>Latest Lesson: <br><a href="/admin/pdf/<%= latestPdf.pdfFileId %>" target="_blank"><%= latestPdf.pdfFileName %></a></span>
                                         <hr>
                                     </div>
                                 <% } else { %>
@@ -169,6 +169,7 @@
                                 <div class="update-item">
                                     <img src="/assets/hand.png" style="width: 40px;">
                                     <span>Lessons completed:</span>
+                                    <br>
                                     <% if (latestCompletedPdf) { %>
                                         <a href="/admin/pdf/<%= latestCompletedPdf.pdfFileId %>" target="_blank">
                                             <%= latestCompletedPdf.pdfFileName %>
@@ -182,7 +183,15 @@
                                 
                                 <div class="update-item">
                                     <img src="/assets/man.png" style="width: 40px;">
-                                    <span>Activity completed:</span>
+                                    <span>Latest Quiz:</span>
+                                    <br>
+                                    <% if (latestQuiz) { %>
+                                        <a href="/admin/quiz/<%= latestQuiz._id %>" target="_blank">
+                                            <%= latestQuiz.title %>
+                                        </a>
+                                    <% } else { %>
+                                        <span>No quizzes uploaded yet.</span>
+                                    <% } %>
                                     <hr>
                                 </div>
                             </div>

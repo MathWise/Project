@@ -506,7 +506,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
             return res.redirect('/admin/homeAdmin');
         }
 
-        console.log("Room ID type:", typeof roomId, "Room ID value:", roomId);
+        console.log("Room ID:", roomId);
 
         // Fetch the latest PDF completion progress
         const latestCompletedPdfProgress = await PdfProgress.findOne({ userId, progress: 100 })
@@ -530,26 +530,61 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
 
         console.log("Latest Completed PDF:", latestCompletedPdf);
 
-        // Fetch the Lesson document by roomId as either ObjectId or string
-        const lesson = await Lesson.findOne({
-            $or: [
-                { roomId: new ObjectId(roomId) },
-                { roomId: roomId }
-            ]
+
+        const lessonRooms = await LessonRoom.find({ roomId });
+        if (!lessonRooms || lessonRooms.length === 0) {
+            req.flash('error', 'No lesson rooms found for this room.');
+            return res.render('admin/dashboard', { room, quizAnalytics: [], latestPdf: null, latestVideo: null, latestCompletedPdf: null });
+        }
+
+        // Fetch lessons associated with lesson rooms
+        const lessonRoomIds = lessonRooms.map(lr => lr._id);
+        const lessons = await Lesson.find({ roomId: { $in: lessonRoomIds } });
+
+        // Find the latest PDF
+        let latestPdf = null;
+
+        lessons.forEach(lesson => {
+            if (lesson.pdfFiles && lesson.pdfFiles.length > 0) {
+                lesson.pdfFiles.forEach(pdf => {
+                    const pdfTimestamp = pdf.updatedAt || pdf._id.getTimestamp();
+                    if (!latestPdf || pdfTimestamp > (latestPdf.updatedAt || latestPdf._id.getTimestamp())) {
+                        latestPdf = pdf; // Update to the most recent PDF
+                    }
+                });
+            }
         });
 
-        const latestPdf = lesson && lesson.pdfFiles && lesson.pdfFiles.length > 0
-            ? lesson.pdfFiles[lesson.pdfFiles.length - 1]
-            : null;
+        console.log("Latest PDF:", latestPdf);
 
-        const latestVideo = lesson && lesson.videoFiles && lesson.videoFiles.length > 0
-            ? lesson.videoFiles[lesson.videoFiles.length - 1]
-            : null;
+        const videoDocuments = await Video.find({ roomId: { $in: lessonRoomIds } });
+
+        let latestVideo = null;
+        
+        if (videoDocuments && videoDocuments.length > 0) {
+            // Flatten all videoFiles across videoDocuments
+            const allVideos = videoDocuments.flatMap(doc => doc.videoFiles);
+        
+            if (allVideos.length > 0) {
+                // Sort all videos by updatedAt or _id timestamp
+                const sortedVideos = allVideos.sort((a, b) => 
+                    (b.updatedAt || b._id.getTimestamp()) - (a.updatedAt || a._id.getTimestamp())
+                );
+                latestVideo = sortedVideos[0]; // Pick the most recent video
+            }
+        }
+        
+        console.log("Latest Video:", latestVideo);
+
 
         const activityRooms = await ActivityRoom.find({ roomId });
         const activityRoomIds = activityRooms.map(ar => ar._id);
 
         const quizzes = await Quiz.find({ roomId: { $in: activityRoomIds } });
+
+        const latestQuiz = quizzes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null;
+
+        console.log("Latest Quiz:", latestQuiz);
 
         const quizAnalytics = await Promise.all(
             quizzes.map(async (quiz) => {
@@ -586,7 +621,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
 
         quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        res.render('admin/dashboard', { room, quizAnalytics, latestPdf, latestVideo, latestCompletedPdf });
+        res.render('admin/dashboard', { room, quizAnalytics, latestPdf, latestVideo, latestCompletedPdf, latestQuiz });
         
     } catch (err) {
         console.error('Error accessing dashboard:', err);
@@ -995,12 +1030,6 @@ router.get('/get-lessons/:roomId', ensureAdminLoggedIn, async (req, res) => {
         res.status(500).json({ message: 'Error fetching lessons' });
     }
 });
-
-
-
-
-
-
 
 
 initBuckets();
@@ -1646,7 +1675,81 @@ router.post('/unarchive-quiz/:quizId', ensureAdminLoggedIn, async (req, res) => 
     }
 });
 
+router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+    try {
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+        const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+        res.render('quizzes/modify', { quiz });
+    } catch (err) {
+        console.error('Error fetching quiz for modification:', err);
+        req.flash('error', 'Error fetching quiz for modification.');
+        res.redirect('/admin/homeAdmin');
+    }
+});
 
+router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+    const { title, questions } = req.body;
+    try {
+
+        const quiz = await Quiz.findById(quizId).lean();
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        if (!questions || questions.length === 0) {
+            throw new Error('At least one question is required.');
+        }
+
+        // Validate and process questions
+        questions.forEach((question, index) => {
+            if (question.type === 'multiple-choice') {
+                question.choices.forEach(choice => {
+                    choice.isCorrect = !!choice.isCorrect; // Convert checkbox value to boolean
+                });
+            } else if (question.type === 'fill-in-the-blank') {
+                if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+                    throw new Error(`Question ${index + 1} must have a correct answer.`);
+                }
+            }
+        });
+
+        // Update the quiz and get the updated document
+        const updatedQuiz = await Quiz.findByIdAndUpdate(
+            quizId,
+            { title, questions },
+            { new: true } // Return the updated document
+        );
+
+        if (!updatedQuiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Render the modified quiz details page
+        res.render('quizzes/modify-result', { quiz: updatedQuiz, roomId: activityRoom.roomId  });
+    } catch (err) {
+        console.error('Error updating quiz:', err);
+        req.flash('error', `Error updating quiz: ${err.message}`);
+        res.redirect(`/admin/quiz/modify/${quizId}`);
+    }
+});
 
 //end of  activities -------------------------------------------------------------------------------------------
 
