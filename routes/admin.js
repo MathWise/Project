@@ -41,6 +41,8 @@ router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
 
 // Render the homeAdmin page with room creation and existing rooms
 router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
+   
+
     try {
         const rooms = await Room.find({ isArchived: false }); // Only fetch non-archived rooms
         res.render('admin/homeAdmin', {
@@ -269,12 +271,14 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 // Route to manage user access
 router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
+    const successMessage = req.flash('success') || [];
+    const errorMessage = req.flash('error');
     try {
         const users = await User.find();
         res.render('admin/manageAccess', {
             users,
-            successMessage: req.flash('success'),
-            errorMessage: req.flash('error')
+            successMessage,
+            errorMessage
         });
     } catch (err) {
         console.error(err);
@@ -338,7 +342,7 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
 router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     const { roomPassword } = req.body; // Password entered by the user
-
+    
     try {
         // Find the room by ID
         const room = await Room.findById(roomId);

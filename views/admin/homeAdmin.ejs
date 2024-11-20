@@ -23,38 +23,59 @@
     <div class="container">
       
         <h1>Rooms</h1>
-            <!-- Success and Error Messages -->
-            <% if (successMessage && successMessage.length > 0) { %>
-                <div id="success-alert" class="alert alert-success"><%= successMessage[0] %></div>
-            <% } %>
-            <% if (errorMessage && errorMessage.length > 0) { %>
-                <div id="error-alert" class="alert alert-danger"><%= errorMessage[0] %></div>
-            <% } %>
-            <% if (warningMessage && warningMessage.length > 0) { %>
-                <div id="warning-alert" class="alert alert-warning"><%= warningMessage[0] %></div>
-            <% } %>
-            
+        <% if (successMessage.length > 0) { %>
+            <div class="alert alert-success">
+                <%= successMessage[0] %>
+            </div>
+        <% } %>
+        <% if (errorMessage.length > 0) { %>
+            <div class="alert alert-danger">
+                <%= errorMessage[0] %>
+            </div>
+        <% } %>
+        
+        
 
         <!-- Rooms grid display -->
-<div class="room-grid">
-    <% rooms.forEach(function(room) { %>
-        <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
-            <p><%= room.name %></p>
-            <p>Grade: <%= room.gradeLevel %></p>
-            <p>Teacher: <%= room.teacherName %></p>
+        <div class="room-grid">
+            <% rooms.forEach(function(room) { %>
+                <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
+                    <p><%= room.name %></p>
+                    <p>Grade: <%= room.gradeLevel %></p>
+                    <p>Teacher: <%= room.teacherName %></p>
 
-            <!-- Kebab Menu Icon -->
-            <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= room._id %>');">
-                &#x22EE; <!-- Vertical ellipsis symbol for kebab menu -->
-            </div>
+                    <!-- Kebab Menu Icon -->
+                    <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= room._id %>');">
+                        &#x22EE; <!-- Vertical ellipsis symbol for kebab menu -->
+                    </div>
 
-            <!-- Dropdown Menu for each room -->
-            <div class="dropdown-menu" id="menu-<%= room._id %>" style="display: none;">
-                <a href="#" onclick="archiveRoom('<%= room._id %>'); event.stopPropagation();">Archive</a>
+                    <!-- Dropdown Menu for each room -->
+                    <div class="dropdown-menu" id="menu-<%= room._id %>" style="display: none;">
+                        <a href="#" onclick="archiveRoom('<%= room._id %>'); event.stopPropagation();">Archive</a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+
+        <!-- Add a modal to your HTML -->
+        <div id="passwordModal" style="display: none;">
+            <div class="modal-content">
+                <label for="roomPassword">Enter the room password:</label>
+                <input type="password" id="roomPassword" onkeydown="checkEnterKey(event)" />
+                <button onclick="submitPassword()">Submit</button>
+                <button onclick="closeModal()">Cancel</button>
             </div>
         </div>
-    <% }) %>
-</div>
+
+        <div id="passwordModal1" style="display: none;">
+            <div class="modal-content1">
+                <label for="roomPassword1">Enter the room password to archive:</label>
+                <input type="password" id="roomPassword1" onkeydown="checkEnterKey1(event)" />
+                <button onclick="submitPassword1()">Submit</button>
+                <button onclick="closeModal1()">Cancel</button>
+            </div>
+        </div>
+        
 
         <!-- Button to show Create Room form -->
         <br>
@@ -74,38 +95,92 @@
     </div>
 
     <script>
-        // Archive room function with password verification
-        function archiveRoom(roomId) {
-            const userPassword = prompt('Enter the room password to archive:');
-            
-            if (userPassword) {
-                // Create a form to submit the room ID and password to the server
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = `/admin/archive-room/${roomId}`;
-    
-                // Create hidden input for the password
-                const passwordInput = document.createElement('input');
-                passwordInput.type = 'hidden';
-                passwordInput.name = 'roomPassword';
-                passwordInput.value = userPassword;
-                form.appendChild(passwordInput);
-    
-                document.body.appendChild(form);
-                form.submit();
-            }
+     // Global variables to store the context for the modal
+let modalAction = null;
+let roomIdForModal = null;
+let correctPasswordForModal = null;
+
+// Function to open the modal for archiving a room
+function archiveRoom(roomId) {
+    modalAction = 'archive';
+    roomIdForModal = roomId;
+
+    // Update the modal message
+    document.getElementById('passwordModal1').style.display = 'flex';
+
+    // Focus on the password input
+    document.getElementById('roomPassword1').focus();
+}
+
+// Function to open the modal for entering a room
+function promptPassword(correctPassword, roomId) {
+    modalAction = 'enter';
+    roomIdForModal = roomId;
+    correctPasswordForModal = correctPassword;
+
+    // Update the modal message
+    document.getElementById('passwordModal1').style.display = 'flex';
+
+    // Focus on the password input
+    document.getElementById('roomPassword1').focus();
+}
+
+// Function to submit the password from the modal
+function submitPassword1() {
+    const userPassword = document.getElementById('roomPassword1').value;
+
+    if (modalAction === 'archive') {
+        // Handle archive functionality
+        if (userPassword) {
+            // Create a form to submit the room ID and password to the server
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/archive-room/${roomIdForModal}`;
+
+            // Add the password as a hidden input
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'roomPassword';
+            passwordInput.value = userPassword;
+            form.appendChild(passwordInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            alert('Password is required to archive the room.');
         }
-        
-           // Function to check room password and access dashboard
-    function promptPassword(correctPassword, roomId) {
-        const userPassword = prompt('Enter the room password:');
-        if (userPassword === correctPassword) {
-            // Redirect to the dashboard with the room ID if password matches
-            window.location.href = `/admin/dashboard/${roomId}`;
+    } else if (modalAction === 'enter') {
+        // Handle entering a room
+        if (userPassword === correctPasswordForModal) {
+            // Redirect to the room's dashboard
+            window.location.href = `/admin/dashboard/${roomIdForModal}`;
         } else {
             alert('Incorrect password. Please try again.');
         }
     }
+
+    // Close the modal
+    closeModal1();
+}
+
+// Function to close the modal
+function closeModal1() {
+    document.getElementById('passwordModal1').style.display = 'none';
+    document.getElementById('roomPassword1').value = ''; // Clear the input field
+
+    // Reset modal variables
+    modalAction = null;
+    roomIdForModal = null;
+    correctPasswordForModal = null;
+}
+
+// Handle Enter key submission
+function checkEnterKey1(event) {
+    if (event.key === 'Enter') {
+        submitPassword1();
+    }
+}
+
         // Function to toggle the kebab menu dropdown display
         function toggleMenu(roomId) {
             const menu = document.getElementById(`menu-${roomId}`);
@@ -126,23 +201,23 @@
                 menu.style.display = 'none';
             });
         });
-          // Auto-Dismiss Notifications after 3 seconds
-          setTimeout(() => {
-            const successAlert = document.getElementById("success-alert");
-            const errorAlert = document.getElementById("error-alert");
+        setTimeout(() => {
+    const successAlert = document.getElementById("success-alert");
+    const errorAlert = document.getElementById("error-alert");
 
-            if (successAlert) {
-                successAlert.style.transition = "opacity 0.5s ease";
-                successAlert.style.opacity = "0";
-                setTimeout(() => successAlert.remove(), 500);
-            }
+    if (successAlert) {
+        successAlert.style.transition = "opacity 0.5s ease";
+        successAlert.style.opacity = "0";
+        setTimeout(() => successAlert.remove(), 500);
+    }
 
-            if (errorAlert) {
-                errorAlert.style.transition = "opacity 0.5s ease";
-                errorAlert.style.opacity = "0";
-                setTimeout(() => errorAlert.remove(), 500);
-            }
-        }, 3000);
+    if (errorAlert) {
+        errorAlert.style.transition = "opacity 0.5s ease";
+        errorAlert.style.opacity = "0";
+        setTimeout(() => errorAlert.remove(), 500);
+    }
+}, 3000);
+
         console.log("Success Message:", "<%= successMessage %>");
         console.log("Error Message:", "<%= errorMessage %>");
     </script>
@@ -158,13 +233,26 @@
 
 <script>
     function promptPassword(correctPassword, roomId) {
-        const userPassword = prompt('Enter the room password:');
-        if (userPassword === correctPassword) {
+        // Show the modal
+        document.getElementById('passwordModal').style.display = 'flex';
+
+        // Store the correct password and roomId in variables
+        window.correctPassword = correctPassword;
+        window.roomId = roomId;
+
+        // Focus on the password input field
+        document.getElementById('roomPassword').focus();
+    }
+
+    function submitPassword() {
+        const userPassword = document.getElementById('roomPassword').value;
+
+        if (userPassword === window.correctPassword) {
             // Store room access in the session via an AJAX request
-            fetch(`/admin/grant-access/${roomId}`, { method: 'POST' })
+            fetch(`/admin/grant-access/${window.roomId}`, { method: 'POST' })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = `/admin/dashboard/${roomId}`;
+                        window.location.href = `/admin/dashboard/${window.roomId}`;
                     } else {
                         alert('Failed to grant access. Please try again.');
                     }
@@ -172,6 +260,20 @@
                 .catch(error => console.error('Error:', error));
         } else {
             alert('Incorrect password. Please try again.');
+        }
+
+        // Close the modal
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('passwordModal').style.display = 'none';
+        document.getElementById('roomPassword').value = ''; // Clear the password input
+    }
+
+    function checkEnterKey(event) {
+        if (event.key === 'Enter') {
+            submitPassword();
         }
     }
 </script>
@@ -241,6 +343,89 @@
         }
 
     </style>
+
+<style>
+    /* Modal background overlay */
+    #passwordModal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    /* Modal content box */
+    .modal-content {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    /* Button styles */
+    .modal-content button {
+        margin: 10px 5px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .modal-content button:hover {
+        background-color: #f0f0f0;
+    }
+
+       /* Modal background overlay */
+    #passwordModal1 {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    /* Modal content box */
+    .modal-content1 {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+    }
+
+    .alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    opacity: 1; /* Ensure it's fully visible initially */
+}
+
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    opacity: 1; /* Ensure it's fully visible initially */
+}
+
+
+</style>
 
 
 </body>

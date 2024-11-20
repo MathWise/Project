@@ -28,7 +28,7 @@
             <div class="card-body p-4">
                 <form action="/signup" method="post" id="registerForm">
                     <% if (errorMessage.length > 0) { %>
-                        <div class="alert alert-danger">
+                        <div class="alert alert-danger"  id="error-alert">
                             <%= errorMessage[0] %>
                         </div>
                     <% } %>
@@ -123,6 +123,16 @@
                 input.setCustomValidity("");
             }
         }
+
+          // Auto-dismiss the error alert after 5 seconds
+    setTimeout(() => {
+        const errorAlert = document.getElementById('error-alert');
+        if (errorAlert) {
+            errorAlert.style.transition = 'opacity 0.5s ease';
+            errorAlert.style.opacity = '0'; // Fade out
+            setTimeout(() => errorAlert.remove(), 500); // Remove after fade-out
+        }
+    }, 3000); // 3 seconds delay
     </script>
 </body>
 </html>

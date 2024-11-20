@@ -32,7 +32,7 @@
                 <!-- Right Side Content: Login Form -->
                 <div class="d-flex flex-column justify-content-center" style="max-width: 40%; margin-top: 120px;"> <!-- Adjusted margin-top -->
                     <form action="/login" method="post">
-                        <% if (typeof successMessage !== 'undefined' && successMessage.length > 0) { %>
+                        <% if (successMessage && successMessage.length > 0) { %>
                             <div class="alert alert-success" id="success-alert">
                                 <%= successMessage[0] %>
                             </div>

@@ -69,9 +69,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use((req, res, next) => {
+  console.log('Success Messages:', req.flash('success'));
+  console.log('Error Messages:', req.flash('error'));
   res.locals.successMessage = req.flash('success');
   res.locals.errorMessage = req.flash('error');
-  res.locals.warningMessage = req.flash('warning');
+
   next();
 });
 

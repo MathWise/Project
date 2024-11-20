@@ -86,7 +86,6 @@
 </head>
 <body>
 
-       
   
 
     <div class="container">
@@ -97,18 +96,23 @@
         </div>
         <h2>User Access Management</h2>
 
-        <% if (errorMessage && errorMessage.length > 0) { %>
-            <div class="alert alert-danger">
-                <%= errorMessage %>
-            </div>
-        <% } %>
+       
+
         
-        <% if (successMessage && successMessage.length > 0) { %>
-            <div class="alert alert-success">
-                <%= successMessage %>
-            </div>
-        <% } %>
         
+           <!-- Success Message -->
+<% if (successMessage.length > 0) { %>
+    <div class="alert alert-success" id="success-alert">
+        <%= successMessage[0] %>
+    </div>
+<% } %>
+
+<!-- Error Message -->
+<% if (errorMessage.length > 0) { %>
+    <div class="alert alert-danger" id="error-alert">
+        <%= errorMessage[0] %>
+    </div>
+<% } %>
         
 
         <table>
