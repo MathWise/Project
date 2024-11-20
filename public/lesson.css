@@ -1,5 +1,6 @@
 body {
-    margin: 0;
+    height: 100%;
+    font-family: 'Baloo 2', sans-serif;
     background-color: #E0F4F9; /* Set body background color */
     padding-top: 150px; /* Adjust this value based on header height */
     
