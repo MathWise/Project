@@ -13,6 +13,7 @@
             font-family: 'Baloo 2', cursive;
             margin: 0;
             padding: 0;
+            position: relative; /* Needed to position logos */
         }
 
         .status-on-time {
@@ -47,9 +48,30 @@
             padding: 20px;
             border-radius: 8px;
         }
+
+        /* Position the logos */
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px; 
+        }
     </style>
 </head>
 <body>
+    <!-- Top-left logo -->
+    <img src="/assets/logo.png" id="logo" alt="Logo">
+
+    <!-- Bottom-left logo -->
+    <img src="/assets/mw.png" id="mw" alt="MW Logo">
+
     <div class="container">
         <h1>Quiz Results</h1>
         <h2><%= quiz.title %></h2>

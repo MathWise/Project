@@ -10,73 +10,128 @@
 
     <style>
         body {
-            background-color: #E0F4F9;
-            font-family: 'Baloo 2', cursive; 
-            margin: 0;
-            padding: 0;
-        }
+    background-color: #E0F4F9;
+    font-family: 'Baloo 2', cursive; 
+    margin: 0;
+    padding: 0;
+}
 
-        .big-box {
-            width: 90%;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #E0F4F9;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            background-image: url('/assets/bg.png');
-            background-size: cover;
-            background-position: center;
-        }
+.big-box {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #E0F4F9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-image: url('/assets/bg.png');
+    background-size: cover;
+    background-position: center;
+    position: relative; /* Positioning context for the gl.png and other images */
+}
 
-        .question p {
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
+/* Positioning the images */
+.big-box img {
+    position: absolute;
+    height: auto;
+}
 
-        form {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+.big-box img.top-right {
+    top: 10px;
+    right: 10px;
+    width: 90px; /* Adjust size as needed */
+}
 
-        button {
-            font-family: 'Baloo 2', cursive;
-            background-color: #6773FF;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            border-radius: 4px;
-        }
+.big-box img.top-left {
+    top: 10px;
+    left: 10px;
+    width: 90px; /* Adjust size as needed */
+}
 
-        button:hover {
-            background-color: #45a049;
-        }
+.big-box img.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    width: 90px; /* Adjust size as needed */
+}
 
-        @media only screen and (max-width: 768px) {
-            .big-box {
-                padding: 15px;
-            }
+.question p {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
 
-            form {
-                max-width: 100%;
-                padding: 10px;
-            }
+form {
+    max-width: 800px;
+    margin: 0 auto;
+}
 
-            .question {
-                font-size: 16px;
-            }
+button {
+    font-family: 'Baloo 2', cursive;
+    background-color: #6773FF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 18px;
+}
 
-            button {
-                width: 100%;
-                font-size: 18px;
-            }
-        }
+button:hover {
+    background-color: #45a049;
+}
+
+/* Media Queries for small screens */
+@media only screen and (max-width: 768px) {
+    .big-box {
+        padding: 15px;
+    }
+
+    form {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .question p {
+        font-size: 16px;
+    }
+
+    button {
+        font-size: 16px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+/* Adjust size of the fixed logos */
+#logo {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 120px; /* Adjust the size as needed */
+}
+
+#mw {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    width: 120px; /* Adjust the size as needed */
+}
+
     </style>
 </head>
 <body>
 
+    <!-- Fixed logo on the left -->
+    <img src="/assets/logo.png" alt="Logo" id="logo">
+    
     <div class="big-box">
+        <!-- GL image positioned inside the container -->
+        <img src="/assets/gl.png" alt="GL Icon" class="top-right">
+        
         <h2><%= quiz.title %></h2>
         <p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>
 
@@ -117,6 +172,9 @@
             <button type="submit">Submit Quiz</button>
         </form>
     </div>
+
+    <!-- Fixed mw image at the bottom left -->
+    <img src="/assets/mw.png" alt="MW Icon" id="mw">
 
     <script src="/js/start.js"></script>
 

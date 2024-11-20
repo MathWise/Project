@@ -2,10 +2,126 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Modify Quiz</title>
-    <!-- <link rel="stylesheet" href="/styles.css"> -->
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Baloo 2', cursive; /* Set font to Baloo 2 */
+            background-color: #E0F4F9; /* Set background color */
+            margin: 0;
+            padding: 0;
+            position: relative; /* For positioning logos */
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-image: url('/assets/bg.png'); /* Set background image */
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"], select {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .choices input[type="text"], .choices label, .choices input[type="checkbox"] {
+            margin-bottom: 10px;
+        }
+
+        .choices {
+            margin-top: 10px;
+            padding-left: 20px;
+        }
+
+        button {
+            background-color: #6773FF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #5c64e8;
+        }
+
+        /* Logo positioning */
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px;
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px;
+        }
+
+        /* Responsive Styles */
+        @media only screen and (max-width: 768px) {
+            .container {
+                padding: 15px;
+                margin: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            input[type="text"], select {
+                padding: 8px;
+            }
+
+            button {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
+    <!-- Top-left logo -->
+    <img src="/assets/logo.png" id="logo" alt="Logo">
+
+    <!-- Bottom-left logo -->
+    <img src="/assets/mw.png" id="mw" alt="MW Logo">
+
     <div class="container">
         <h1>Modify Quiz</h1>
         <form action="/admin/quiz/modify/<%= quiz._id %>" method="POST">

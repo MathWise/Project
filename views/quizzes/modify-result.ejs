@@ -19,9 +19,27 @@
             font-family: 'Baloo 2', cursive;
         }
 
+        /* Logo positioning */
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+
         .container {
             margin-top: 20px;
             background-color: #fff;
+            background-image: url('/assets/bg.png');
+            background-size: cover;
+            background-position: center;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
@@ -30,9 +48,34 @@
         .btn {
             margin-right: 10px;
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.5em;
+            }
+
+            h2 {
+                font-size: 1.25em;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .list-group-item {
+                font-size: 0.9em;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Top-left logo -->
+    <img src="/assets/logo.png" id="logo" alt="Logo">
+
+    <!-- Bottom-left logo -->
+    <img src="/assets/mw.png" id="mw" alt="MW Logo">
+
     <div class="container">
         <h1>Modified Quiz Details</h1>
         <h2><%= quiz.title %></h2>
@@ -73,6 +116,7 @@
 
         <div class="mt-4">
             <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>
+        </div>
     </div>
 </body>
 </html>

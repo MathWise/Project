@@ -10,7 +10,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            background-color: #E0F4F9;
+            background-color: #E0F4F9; /* Set background color */
         }
 
         h1 {
@@ -18,36 +18,20 @@
             margin: 20px;
         }
 
-        /* Go Back button styling */
-        .go-back-btn {
-            display: block;
-            margin: 20px auto;
-            text-align: center;
-            background-color: #007bff;
-            color: white;
-            padding: 8px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-            width: auto;
-            max-width: 250px;
-        }
-
-        .go-back-btn:hover {
-            background-color: #0056b3;
-        }
-
         /* Flexbox to align image and content side by side */
         .archive-item {
             display: flex;
             align-items: center;
             margin-bottom: 15px;
-            flex-wrap: wrap;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7); /* Added transparency */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .archive-item img {
             margin-right: 15px;
-            width: 50px; /* Image size */
+            width: 50px; /* Default image size */
             height: auto;
         }
 
@@ -56,7 +40,7 @@
         }
 
         button {
-            margin-top: 10px;
+            margin-left: auto;
             padding: 5px 10px;
             background-color: #007bff;
             color: white;
@@ -69,47 +53,60 @@
             background-color: #0056b3;
         }
 
-        .list-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .list-group-item {
-            width: 100%;
-            max-width: 500px;
-            margin: 10px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
         /* Archived Lesson Rooms container background */
         main#archivedLessonRooms {
             background-image: url('/assets/bg.png');
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-            border-radius: 10px;
+            background-size: cover; /* Ensure it covers the entire container */
+            background-position: center; /* Center the background image */
+            padding: 20px; /* Add padding around the content */
+            border-radius: 10px; /* Optional: round the corners of the container */
+            max-width: 800px;
+            margin: 20px auto; /* Center the container */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
         }
 
-        /* Make the list items more responsive */
+        /* Go back button */
+        .go-back-btn {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 30px;  /* Reduced horizontal padding */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            width: auto;
+            max-width: 250px; /* Limit max width */
+        }
+
+        .go-back-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Positioning for fixed logos */
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px; /* Adjust size as needed */
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px; /* Adjust size as needed */
+        }
+
+        /* Media Queries for small screens */
         @media (max-width: 768px) {
             .archive-item img {
-                width: 40px;
+                width: 40px; /* Smaller image size on small screens */
                 margin-right: 10px;
             }
 
             .archive-item div {
-                font-size: 14px;
-            }
-
-            .list-group-item {
-                width: 100%;
-                padding: 10px;
                 font-size: 14px;
             }
 
@@ -129,11 +126,6 @@
                 margin-bottom: 10px;
             }
 
-            .list-group-item {
-                padding: 10px;
-                font-size: 12px;
-            }
-
             button {
                 font-size: 12px;
                 padding: 5px 8px;
@@ -142,19 +134,23 @@
     </style>
 </head>
 <body>
+    <!-- Top-left logo -->
+    <img src="/assets/logo.png" id="logo" alt="Logo">
+
+    <!-- Bottom-left MW logo -->
+    <img src="/assets/mw.png" id="mw" alt="MW Logo">
+
     <h1>Archived Lesson Rooms</h1>
     <main id="archivedLessonRooms">
         <ul class="list-group d-flex flex-row flex-wrap">
             <% if (archivedLessonRooms.length > 0) { %>
                 <% archivedLessonRooms.forEach(function(lessonRoom) { %>
-                    <li class="list-group-item lesson-room">
-                        <div class="archive-item">
-                            <img src="/assets/lessonroom.png" alt="Lesson Room Icon">
-                            <div>
-                                <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
-                                <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
-                            </div>
+                    <li class="list-group-item archive-item">
+                        <img src="/assets/lessonroom.png" alt="Lesson Room Icon">
+                        <div>
+                            <strong><%= lessonRoom.subject %></strong> - <%= lessonRoom.topic %>
                         </div>
+                        <button onclick="confirmUnarchive('<%= lessonRoom._id %>')">Unarchive</button>
                     </li>
                 <% }) %>
             <% } else { %>

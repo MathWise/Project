@@ -34,7 +34,10 @@
             display: flex;
             align-items: center;
             margin-bottom: 15px;
-            flex-wrap: wrap;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7); /* Added transparency */
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .archive-item img {
@@ -48,7 +51,7 @@
         }
 
         button {
-            margin-top: 10px;
+            margin-left: auto;
             padding: 5px 10px;
             background-color: #007bff;
             color: white;
@@ -61,32 +64,6 @@
             background-color: #0056b3;
         }
 
-        /* Make the list items more responsive */
-        .list-group {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .list-group-item {
-            width: 100%;
-            max-width: 500px;
-            margin: 10px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Center the 'Archived PDFs' heading */
-        h2 {
-            text-align: center;
-            width: 100%;
-            margin-top: 20px;
-        }
-
         /* Archived PDFs and Videos containers background */
         main#archivedPdfs, main#archivedVideos {
             background-image: url('/assets/bg.png');
@@ -94,6 +71,28 @@
             background-position: center; /* Center the background image */
             padding: 20px; /* Add padding around the content */
             border-radius: 10px; /* Optional: round the corners of the container */
+            max-width: 800px;
+            margin: 20px auto; /* Center the container */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
+        }
+
+        /* Go back button */
+        .go-back-btn {
+            display: block;
+            margin: 20px auto;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 30px;  /* Reduced horizontal padding */
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 14px;
+            width: auto;
+            max-width: 250px; /* Limit max width */
+        }
+
+        .go-back-btn:hover {
+            background-color: #0056b3;
         }
 
         /* Media Queries for small screens */
@@ -104,12 +103,6 @@
             }
 
             .archive-item div {
-                font-size: 14px;
-            }
-
-            .list-group-item {
-                width: 100%;
-                padding: 10px;
                 font-size: 14px;
             }
 
@@ -129,37 +122,30 @@
                 margin-bottom: 10px;
             }
 
-            .list-group-item {
-                padding: 10px;
-                font-size: 12px;
-            }
-
             button {
                 font-size: 12px;
                 padding: 5px 8px;
             }
         }
+        #logo {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 120px; /* Adjust size as needed */
+}
 
-        .go-back-btn {
-            display: block;
-            margin: 20px auto;
-            text-align: center;
-            background-color: #007bff;
-            color: white;
-            padding: 8px 30px;  /* Reduced horizontal padding */
-            text-decoration: none;
-            border-radius: 5px;
-            font-size: 14px;
-            width: auto;
-            max-width: 250px; /* Limit max width */
-        }
+#mw {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    width: 120px; /* Adjust size as needed */
+}
 
-        .go-back-btn:hover {
-            background-color: #0056b3;
-        }
     </style>
 </head>
 <body>
+        <img id="logo" src="/assets/logo.png" alt="Logo">
+        <img id="mw" src="/assets/mw.png" alt="MW Logo">
     <h1>Archived PDFs and Videos</h1>
     <input type="hidden" id="roomId" value="<%= roomId %>">
     <input type="hidden" id="userId" value="<%= currentUser._id %>">
