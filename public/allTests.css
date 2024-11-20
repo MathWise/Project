@@ -1,3 +1,9 @@
+body {
+    height: 100%;
+    font-family: 'Baloo 2', sans-serif;
+    background-color: #E0F4F9;
+}
+
 .container {
     background-image: url('assets/analytics.png');
     background-repeat: no-repeat;
