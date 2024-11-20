@@ -127,3 +127,22 @@ body, html {
 .dropdown-content a:hover {
     background-color: #f0f0f0;
 }
+
+.bg-main {
+    position: relative; /* Ensures proper positioning for the pseudo-element */
+    z-index: 0; /* Keeps content above the pseudo-element */
+}
+
+.bg-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('assets/analytics.png');
+    background-size: cover;
+    background-position: center;
+    
+    z-index: -1; /* Place pseudo-element behind the content */
+}

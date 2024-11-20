@@ -1,0 +1,9 @@
+.container {
+    background-image: url('assets/analytics.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.quiz-analytics {
+    color: white;
+}

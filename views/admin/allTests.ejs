@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="/allTests.css">
     <%- include('../partials/head'); %>
     <title>All Test Results</title>
     <script>
@@ -11,8 +12,7 @@
 </head>
 <body>
     <div class="container">
-        
-        <h1>All Test Results for <%= room.name %></h1>
+        <h1 style="color: white;">All Test Results for <%= room.name %></h1>
         <a href="/admin/dashboard/<%= room._id %>" class="btn btn-secondary mb-3">Back to Dashboard</a>
 
         
@@ -44,7 +44,7 @@
 
                 </div>
             <% } else { %>
-                <p>No data available for <%= quiz.quizTitle %></p>
+                <p style="color: white;">No data available for <%= quiz.quizTitle %></p>
             <% } %>
         <% }); %>
         

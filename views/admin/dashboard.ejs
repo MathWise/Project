@@ -33,7 +33,7 @@
             </aside>
                       
             <!-- Main Content -->
-            <main class="col-md-8 col-12 bg-main section">
+            <main class="col-md-8 col-12  section">
                 <select class="form-control mr-2">
                     <option value="">Select Level</option>
                     <script>
@@ -104,11 +104,11 @@
                             <!-- Display the latest quiz, which is now the first item in sorted quizAnalytics -->
                             <% const latestQuiz = quizAnalytics[0]; %>
                             <div class="quiz-analytics my-4">
-                                <h3><%= latestQuiz.quizTitle %>      
+                                <h3 style="color: white;"><%= latestQuiz.quizTitle %>      
                                     
                                </h3>
                                 
-                                <div class="d-flex">
+                                <div class="d-flex" style="color: white;">
                                     <div class="stat-box mr-5">
                                         <strong>Average</strong>
                                         <p><%= latestQuiz.averageScore %> / <%= latestQuiz.totalScore %> points</p>

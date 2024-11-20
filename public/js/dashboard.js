@@ -14,17 +14,45 @@ document.addEventListener("DOMContentLoaded", function () {
                     new Chart(ctx, {
                         type: "bar",
                         data: {
-                            labels: Array.from({  length: quiz.totalScore + 1 }, (_, i) => i),
+                            labels: Array.from({ length: quiz.totalScore + 1 }, (_, i) => i),
                             datasets: [{
                                 label: "# of respondents",
                                 data: quiz.scoreDistribution,
-                                backgroundColor: "rgba(75, 192, 192, 0.6)"
+                                backgroundColor: "rgb(159, 214, 244)"
                             }]
                         },
                         options: {
                             scales: {
-                                x: { title: { display: true, text: "Points scored" } },
-                                y: { title: { display: true, text: "# of respondents" }, beginAtZero: true }
+                                x: { 
+                                    title: { 
+                                        display: true, 
+                                        text: "Points scored",
+                                        color: 'white' // Change x-axis title color to white
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)' // Keep grid lines light but white
+                                    }
+                                },
+                                y: { 
+                                    title: { 
+                                        display: true, 
+                                        text: "# of respondents",
+                                        color: 'white' // Change y-axis title color to white
+                                    },
+                                    grid: {
+                                        color: 'rgba(255, 255, 255, 0.1)' // Keep grid lines light but white
+                                    },
+                                    ticks: {
+                                        color: 'white' // Change y-axis tick labels color to white
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: 'white' // Change legend text color to white
+                                    }
+                                }
                             }
                         }
                     });
