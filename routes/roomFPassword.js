@@ -93,7 +93,7 @@ router.post('/reset-room-password', async (req, res) => {
         room.resetTokenExpiration = undefined; // Clear the expiration
         await room.save();
 
-        res.json({ message: 'Room password has been reset successfully.' });
+        res.send('Password has been successfully reset.');
     } catch (error) {
         console.error('Error resetting room password:', error);
         res.status(500).json({ message: 'An error occurred while resetting the password.' });

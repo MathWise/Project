@@ -336,6 +336,7 @@ router.post('/delete-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
 
 
 router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
+    
     const { roomId } = req.params;
     const userId = req.user._id;
 

@@ -5,126 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Home</title>
-    <link rel="stylesheet" href="/homepage.css">
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f4f7f6;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            position: relative;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            width: 100%;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            text-align: center;
-            color: #333;
-        }
-
-        /* Hide form by default */
-        .create-room-form {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .room-button {
-            width: 100%;
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .room-button:hover {
-            background-color: #0056b3;
-        }
-
-        .room-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin-top: 20px;
-        }
-
-        .room {
-            padding: 20px;
-            background-color: #007bff;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .room:hover {
-            background-color: #0056b3;
-        }
-
-        /* Dropdown Button */
-        .dropdown {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-        }
-
-        .dropbtn {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            left: 0;
-            background-color: #f9f9f9;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1;
-        }
-
-        .dropdown-content a {
-            color: black;
-            padding: 12px 16px;
-            text-decoration: none;
-            display: block;
-        }
-
-        .dropdown-content a:hover {
-            background-color: #f1f1f1;
-        }
-
-        .dropdown:hover .dropdown-content {
-            display: block;
-        }
-
-        .dropdown:hover .dropbtn {
-            background-color: #0056b3;
-        }
-    </style>
+    <link rel="stylesheet" href="/homeAdmin.css">
 </head>
 <body>
 
@@ -132,55 +13,190 @@
     <div class="dropdown">
         <button class="dropbtn">Menu</button>
         <div class="dropdown-content">
-           
-           
-            <a href="/login">Logout</a>
+            <a href="/logout"  onclick="showLoadingOverlay()">Logout</a>
         </div>
     </div>
-    <form action="/user/homeUser" method="POST">
+ 
+
     <div class="container">
+      
         <h1>Rooms</h1>
+        <% if (successMessage.length > 0) { %>
+            <div class="alert alert-success">
+                <%= successMessage[0] %>
+            </div>
+        <% } %>
+        <% if (errorMessage.length > 0) { %>
+            <div class="alert alert-danger">
+                <%= errorMessage[0] %>
+            </div>
+        <% } %>
+
+        
+              <!-- Search Bar -->
+    <form action="/user/homeUser" method="GET" style="margin-bottom: 20px;">
+        <label for="search-input" style="margin-right: 10px;">Search Rooms:</label>
+        <input 
+            type="text" 
+            id="search-input" 
+            name="search" 
+            placeholder="Search by room name or teacher" 
+            value="<%= searchQuery || '' %>" 
+            style="padding: 5px; width: 300px; margin-right: 10px;"
+        >
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+        <!-- Loading Animation Overlay -->
+        <div id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+        </div>
 
         <!-- Rooms grid display -->
         <div class="room-grid">
+            <% if (rooms.length === 0) { %>
+                <p>Room not found.</p>
+            <% } else { %>
             <% rooms.forEach(function(room) { %>
                 <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
-                    <h2><%= room.roomName %></h2>
+                    <p><%= room.name %></p>
                     <p>Grade: <%= room.gradeLevel %></p>
                     <p>Teacher: <%= room.teacherName %></p>
+
+
                 </div>
             <% }) %>
+            <% } %>
         </div>
 
-        <!-- Button to show Create Room form -->
-        <br>
-       
 
-        
+        <!-- Add a modal to your HTML -->
+        <div id="passwordModal" style="display: none;">
+            <div class="modal-content">
+                <label for="roomPassword">Enter the room password:</label>
+                <input type="password" id="roomPassword" onkeydown="checkEnterKey(event)" />
+                <button  onclick="submitPassword()">Submit</button>
+                <button onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
 
-    </div>
-</form>
-    <script>
-        // JavaScript to toggle the display of the Create Room form
-        document.getElementById("showCreateRoomBtn").addEventListener("click", function() {
-            var form = document.getElementById("createRoomForm");
-            if (form.style.display === "none" || form.style.display === "") {
-                form.style.display = "block";
-            } else {
-                form.style.display = "none";
-            }
-        });
 
-        function promptPassword(correctPassword, roomId) {
-            const userPassword = prompt('Enter the room password:');
-            if (userPassword === correctPassword) {
-                // Redirect to the dashboard with the room ID
-                window.location.href = `/admin/dashboard/${roomId}`; // Adjust the route as needed
-            } else {
-                alert('Incorrect password. Please try again.');
-            }
+   
+
+
+
+ <script>
+    window.addEventListener("load", () => {
+        if (!sessionStorage.getItem("loggedIn")) {
+            sessionStorage.clear();
+            window.location.href = "/login";  // Redirect to login if sessionStorage is cleared
         }
-    </script>
+    });
+</script>
+
+<script>
+    function promptPassword(correctPassword, roomId) {
+        // Show the modal
+        document.getElementById('passwordModal').style.display = 'flex';
+
+        // Store the correct password and roomId in variables
+        window.correctPassword = correctPassword;
+        window.roomId = roomId;
+
+        // Focus on the password input field
+        document.getElementById('roomPassword').focus();
+    }
+
+    function submitPassword() {
+        const userPassword = document.getElementById('roomPassword').value;
+
+      
+
+        if (userPassword === window.correctPassword) {
+            // Store room access in the session via an AJAX request
+            fetch(`/user/grant-access/${window.roomId}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = `/user/dashboard/${window.roomId}`;
+                    } else {
+                        alert('Failed to grant access. Please try again.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            alert('Incorrect password. Please try again.');
+        }
+
+        // Close the modal
+        closeModal();
+    }
+
+    function closeModal() {
+        document.getElementById('passwordModal').style.display = 'none';
+        document.getElementById('roomPassword').value = ''; // Clear the password input
+    }
+
+    function checkEnterKey(event) {
+        if (event.key === 'Enter') {
+            submitPassword();
+        }
+    }
+</script>
+
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.querySelector('form');
+
+    // Automatically submit the form when the search input is cleared
+    searchInput.addEventListener('input', () => {
+        if (searchInput.value.trim() === '') {
+            searchForm.submit(); // Automatically submit the form
+        }
+    });
+</script>
+
+
+<script>
+    // Get elements
+    const openModalButton = document.getElementById('openCreateRoomModal');
+    const closeModalButton = document.getElementById('closeCreateRoomModal');
+    const modal = document.getElementById('createRoomModal');
+
+    // Open modal
+    openModalButton.addEventListener('click', () => {
+        modal.style.display = 'flex';
+    });
+
+    // Close modal
+    closeModalButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    // Close modal when clicking outside the modal content
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+</script>
+<script>
+    function showLoadingOverlay() {
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        loadingOverlay.style.display = 'flex';
+    }
+</script>
+
+
+
+    
+
+
+
+
+
+    
+
 
 </body>
 </html>
