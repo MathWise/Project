@@ -35,9 +35,30 @@
         <% } %>
         
         
+              <!-- Search Bar -->
+    <form action="/admin/homeAdmin" method="GET" style="margin-bottom: 20px;">
+        <label for="search-input" style="margin-right: 10px;">Search Rooms:</label>
+        <input 
+            type="text" 
+            id="search-input" 
+            name="search" 
+            placeholder="Search by room name or teacher" 
+            value="<%= searchQuery || '' %>" 
+            style="padding: 5px; width: 300px; margin-right: 10px;"
+        >
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+    
+        <!-- Loading Animation Overlay -->
+        <div id="loadingOverlay" style="display: none;">
+            <div class="spinner"></div>
+        </div>
 
         <!-- Rooms grid display -->
         <div class="room-grid">
+            <% if (rooms.length === 0) { %>
+                <p>Room not found.</p>
+            <% } else { %>
             <% rooms.forEach(function(room) { %>
                 <div class="room" onclick="promptPassword('<%= room.roomPassword %>', '<%= room._id %>')">
                     <p><%= room.name %></p>
@@ -55,6 +76,7 @@
                     </div>
                 </div>
             <% }) %>
+            <% } %>
         </div>
 
         <!-- Add a modal to your HTML -->
@@ -279,6 +301,29 @@ function checkEnterKey1(event) {
 </script>
 
 
+<script>
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.querySelector('form');
+
+    // Automatically submit the form when the search input is cleared
+    searchInput.addEventListener('input', () => {
+        if (searchInput.value.trim() === '') {
+            searchForm.submit(); // Automatically submit the form
+        }
+    });
+</script>
+
+<script>
+    // Select the Create Room form
+    const createRoomForm = document.getElementById("createRoomForm");
+
+    // Attach a submit event listener
+    createRoomForm.addEventListener("submit", function (event) {
+        // Show the loading overlay
+        document.getElementById("loadingOverlay").style.display = "flex";
+    });
+</script>
+
     
     <style>
         .room {
@@ -424,6 +469,39 @@ function checkEnterKey1(event) {
     opacity: 1; /* Ensure it's fully visible initially */
 }
 
+
+ /* Loading overlay */
+ #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000; /* Ensure it appears above everything else */
+    }
+
+    /* Spinner */
+    .spinner {
+        border: 8px solid #f3f3f3; /* Light gray */
+        border-top: 8px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 
 </style>
 

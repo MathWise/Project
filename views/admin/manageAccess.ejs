@@ -89,63 +89,104 @@
   
 
     <div class="container">
-        <div >
-         
+        <div>
             <a href="/admin/homeAdmin">Go Back</a>
-            
         </div>
         <h2>User Access Management</h2>
+    
+        <!-- Search Bar -->
+        <form id="search-form" action="/admin/manage-access" method="GET" style="margin-bottom: 20px;">
+            <label for="search-input" style="margin-right: 10px;">Search Users:</label>
+            <input 
+                type="text" 
+                id="search-input" 
+                name="search" 
+                placeholder="Search by name or email" 
+                value="<%= searchQuery || '' %>" 
+                style="padding: 5px; width: 300px; margin-right: 10px;"
+            >
+            <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+    
+        <!-- Success Message -->
+        <% if (successMessage.length > 0) { %>
+            <div class="alert alert-success" id="success-alert">
+                <%= successMessage[0] %>
+            </div>
+        <% } %>
+    
+        <!-- Error Message -->
+        <% if (errorMessage.length > 0) { %>
+            <div class="alert alert-danger" id="error-alert">
+                <%= errorMessage[0] %>
+            </div>
+        <% } %>
+    
+        <div class="table-responsive">
 
-       
-
-        
-        
-           <!-- Success Message -->
-<% if (successMessage.length > 0) { %>
-    <div class="alert alert-success" id="success-alert">
-        <%= successMessage[0] %>
-    </div>
-<% } %>
-
-<!-- Error Message -->
-<% if (errorMessage.length > 0) { %>
-    <div class="alert alert-danger" id="error-alert">
-        <%= errorMessage[0] %>
-    </div>
-<% } %>
-        
-
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% users.forEach(user => { %>
+            
+            <table class="table">
+                <thead>
                     <tr>
-                        <td><%= user.first_name %> <%= user.last_name %></td>
-                        <td><%= user.email %></td>
-                        <td><%= user.role %></td>
-                        <td>
-                            <% if (user.role === 'student') { %>
-                                <form action="/admin/give-access/<%= user._id %>" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-primary">Grant Access</button>
-                                </form>
-                            <% } else if (user.role === 'admin') { %>
-                                <form action="/admin/remove-access/<%= user._id %>" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-danger">Remove Access</button>
-                                </form>
-                            <% } %>
-                        </td>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% if (users.length === 0) { %>
+                        <tr>
+                            <td colspan="4" style="text-align: center;">No users found.</td>
+                        </tr>
+                    <% } else { %>
+                        <% users.forEach(user => { %>
+                            <tr>
+                                <td><%= user.first_name %> <%= user.last_name %></td>
+                                <td><%= user.email %></td>
+                                <td><%= user.role %></td>
+                                <td>
+                                    <% if (user.role === 'student') { %>
+                                        <form action="/admin/give-access/<%= user._id %>" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-primary">Grant Access</button>
+                                        </form>
+                                    <% } else if (user.role === 'admin') { %>
+                                        <form action="/admin/remove-access/<%= user._id %>" method="POST" style="display:inline;">
+                                            <button type="submit" class="btn btn-danger">Remove Access</button>
+                                        </form>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
     </div>
+    
+    <script>
+        // Auto-dismiss alerts after 3 seconds
+        setTimeout(() => {
+            const successAlert = document.getElementById('success-alert');
+            if (successAlert) successAlert.remove();
+            
+            const errorAlert = document.getElementById('error-alert');
+            if (errorAlert) errorAlert.remove();
+        }, 3000);
+    </script>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const searchForm = document.getElementById('search-form');
+
+    // Automatically submit the form when the input is cleared
+    searchInput.addEventListener('input', () => {
+        if (searchInput.value.trim() === '') {
+            searchForm.submit(); // Automatically submit the form when cleared
+        }
+    });
+</script>
+    
     
 </body>
 </html>

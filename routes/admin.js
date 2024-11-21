@@ -41,14 +41,26 @@ router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
 
 // Render the homeAdmin page with room creation and existing rooms
 router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
-   
-
+    const { search } = req.query; // Get the search query from the request
     try {
-        const rooms = await Room.find({ isArchived: false }); // Only fetch non-archived rooms
+        let query = { isArchived: false }; // Default: fetch non-archived rooms
+
+        // If search query exists, filter by room name or teacher
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search, 'i'); // Case-insensitive regex
+            query.$or = [
+                { name: searchRegex },
+                { teacherName: searchRegex }
+            ];
+        }
+
+        const rooms = await Room.find(query).sort({ gradeLevel: 1 });
+
         res.render('admin/homeAdmin', {
             rooms,
             successMessage: req.flash('success'),
-            errorMessage: req.flash('error')
+            errorMessage: req.flash('error'),
+            searchQuery: search || '' // Pass the search query to the view
         });
     } catch (err) {
         console.error(err);
@@ -56,6 +68,7 @@ router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
         res.redirect('/error'); // Redirect to error page if something goes wrong
     }
 });
+
 
 // Handle room creation form submission
 router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
@@ -270,15 +283,35 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 
 // Route to manage user access
+// Route to manage user access
 router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
+    const { search } = req.query; // Get the search query from the request
     const successMessage = req.flash('success') || [];
-    const errorMessage = req.flash('error');
+    const errorMessage = req.flash('error') || [];
     try {
-        const users = await User.find();
+        let query = {};
+
+        // If a search query exists, filter by name or email
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search, 'i'); // Case-insensitive regex
+            query = {
+                $or: [
+                    { first_name: searchRegex },
+                    { last_name: searchRegex },
+                    { email: searchRegex }
+                ]
+            };
+        }
+
+
+        // Fetch filtered or all users
+        const users = await User.find(query).sort({ role: 1 });
+
         res.render('admin/manageAccess', {
             users,
             successMessage,
-            errorMessage
+            errorMessage,
+            searchQuery: search || '' // Pass the search query to the view
         });
     } catch (err) {
         console.error(err);
@@ -286,6 +319,7 @@ router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
         res.redirect('/admin/homeAdmin');
     }
 });
+
 
 // Grant access to a user (changing role to admin)
 router.post('/give-access/:userId', ensureAdminLoggedIn, async (req, res) => {
