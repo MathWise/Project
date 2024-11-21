@@ -130,11 +130,15 @@
 
                 <!-- New big box section -->
                 <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
-                    <div class="d-flex justify-content-center mt-3">
-                        <button id="moduleButton" class="btn custom-btn">Module</button>
-                        <button id="videoButton" class="btn custom-btn">Video</button>
+                    <div class="d-flex justify-content-center align-items-center mt-3">
+                        <button id="moduleButton" class="btn custom-btn d-flex flex-column align-items-center" style="height: 200px;">
+                            <img src="/assets/module.png" alt="Module Icon" style="width: 150px; height: 150px;"> <!-- Adjust size as needed -->
+                            <span>Module</span>
+                        </button>
+                        <button id="videoButton" class="btn custom-btn ms-3" style="height: 200px;">Video</button>
                     </div>
                 </div>
+                
 
                 <!-- Hidden content section for PDF and Video uploads -->
                 <div id="lessonRoomContent" class="big-box" style="display: none;">

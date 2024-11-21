@@ -93,7 +93,7 @@
                 </nav>
             </aside>
 
-            <main class="col-md-11">
+            <main class="col-md-11 activity">
                 <div class="d-flex align-items-center mb-4">
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Activities</h4>
@@ -213,7 +213,7 @@
                 </div>
                 
                 <!-- Card for Create Activity/Quiz Room Form -->
-                <div class="card mb-4">
+                <div class="layered-container">
                     <div class="card-body">
                         <h5 class="card-title">Create a New Activity/Quiz Room</h5>
                         <form action="/admin/create-activity-room/<%= room._id %>" method="POST">
