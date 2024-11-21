@@ -11,8 +11,10 @@ const bodyParser = require('body-parser');
 const usersignup = require('./routes/usersignup.js'); 
 const userslogin = require('./routes/userslogin.js');
 const forgetPassRoutes = require('./routes/forgetpassword.js');
+const roomFPasswordRoutes = require('./routes/roomFPassword');
 const archiveLessonRoomRoutes = require('./routes/archiveLessonRoomRoutes');
 const archiveMediaRoutes = require('./routes/archiveMediaRoutes');
+const defaultRoomRoutes = require('./routes/defaultRoom');
 const adRoutes = require("./routes/admin.js");
 const appRoutes = require("./routes/user.js");
 const passport = require('passport');
@@ -95,6 +97,10 @@ app.use('/user', appRoutes);
 
 app.use('/admin', archiveLessonRoomRoutes);
 app.use('/admin', archiveMediaRoutes);
+
+app.use('/admin', defaultRoomRoutes);
+
+app.use(roomFPasswordRoutes);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
