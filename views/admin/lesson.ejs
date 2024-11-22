@@ -135,7 +135,10 @@
                             <img src="/assets/module.png" alt="Module Icon" style="width: 150px; height: 150px;"> <!-- Adjust size as needed -->
                             <span>Module</span>
                         </button>
-                        <button id="videoButton" class="btn custom-btn ms-3" style="height: 200px;">Video</button>
+                        <button id="videoButton" class="btn custom-btn d-flex flex-column align-items-center" style="height: 200px;">
+                            <img src="/assets/video.png" alt="Module Icon" style="width: 150px; height: 150px;"> <!-- Adjust size as needed -->
+                            <span>Video</span>
+                        </button>
                     </div>
                 </div>
                 
@@ -410,18 +413,27 @@ if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
 
             const listItem = document.createElement('li');
             listItem.innerHTML = `
-                <div class="video-item" style="position: relative; text-align: center;">
-                    <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" onclick="openVideoModal('${videoUrl}')" />
-                    <div class="video-file-name" style="margin-top: 10px; font-weight: bold; color: #333;">
-                        ${videoFileName}
-                    </div>
-                    <div class="kebab-menu" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();" style="cursor: pointer;">
-                        &#x22EE;
-                    </div>
-                    <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                        <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
-                    </div>
-                </div>
+                <div class="video-item" style="display: flex; align-items: center; position: relative; width: 100%; margin-bottom: 20px;">
+    <!-- Video Thumbnail -->
+    <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" onclick="openVideoModal('${videoUrl}')" style="cursor: pointer;" />
+
+    <!-- Video Info and Kebab Menu -->
+    <div class="video-info" style="display: flex; justify-content: space-between; align-items: center; margin-left: 20px; flex-grow: 1;">
+        <!-- Video Name -->
+        <div class="video-file-name" style="font-weight: bold; color: #333; flex-grow: 1; text-align: left;">
+            ${videoFileName}
+        </div>
+
+        <!-- Kebab Menu -->
+        <div class="kebab-menu" style="position: relative; cursor: pointer;" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();">
+            &#x22EE;
+            <!-- Dropdown Menu -->
+            <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+            </div>
+        </div>
+    </div>
+</div>
             `;
             videoList.appendChild(listItem);
         };
