@@ -9,12 +9,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap" rel="stylesheet">
 
     <style>
-        body {
+ body {
     background-color: #E0F4F9;
     font-family: 'Baloo 2', cursive; 
-    margin: 0;
-    padding: 0;
+    background-image: url('/assets/bg.png');
+    background-repeat: no-repeat;    
+    background-size: cover;         
+    background-position: center;   
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;                 
+    margin: 0;                     
+    position: relative;
+    color: #000000;
+    font-weight: bold;
 }
+
 
 .big-box {
     width: 90%;
@@ -22,12 +33,13 @@
     margin: 20px auto;
     padding: 20px;
     background-color: #E0F4F9;
+    background-image: url('/assets/qm.png');
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-image: url('/assets/bg.png');
     background-size: cover;
     background-position: center;
     position: relative; /* Positioning context for the gl.png and other images */
+    text-align: center;
 }
 
 /* Positioning the images */
@@ -57,11 +69,13 @@
 .question p {
     font-size: 1.2em;
     margin-bottom: 10px;
+    text-align: center;
 }
 
 form {
     max-width: 800px;
     margin: 0 auto;
+    align-items: center;
 }
 
 button {
@@ -74,6 +88,7 @@ button {
     border-radius: 4px;
     width: 100%;
     font-size: 18px;
+    margin-top: 20px;
 }
 
 button:hover {
@@ -93,6 +108,7 @@ button:hover {
 
     .question p {
         font-size: 16px;
+        color: #680A76;
     }
 
     button {
