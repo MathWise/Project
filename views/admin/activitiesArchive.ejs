@@ -177,7 +177,7 @@
                     <li class="archive-item">
                         <img src="/assets/activityarchive.png" alt="Quiz Icon">
                         <strong><%= quiz.title %></strong>
-                        <p>Archived on: <%= new Date(quiz.archivedAt).toLocaleString() %></p>
+                        <p>Archived on: <%= quiz.archivedAt ? new Date(quiz.archivedAt).toLocaleString() : 'N/A' %></p>
                         <button onclick="unarchiveQuiz('<%= quiz._id %>')">Restore</button>
                     </li>
                 <% }); %>
@@ -186,16 +186,17 @@
             <% } %>
         </ul>
     </div>
+    
 
     <div class="archive-container" id="archivedActivities" style="display: none;">
         <h2>Archived Activities</h2>
         <ul>
-            <% if (archivedActivities.length > 0) { %>
+            <% if (archivedActivities && archivedActivities.length > 0) { %>
                 <% archivedActivities.forEach(activity => { %>
                     <li class="archive-item">
                         <img src="/assets/activityarchive.png" alt="Activity Icon">
                         <strong><%= activity.title %></strong>
-                        <p>Description: <%= activity.description %></p>
+                        <p>Description: <%= activity.description || 'No description provided' %></p>
                         <p>Deadline: <%= activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline' %></p>
                         <button onclick="unarchiveActivity('<%= activity._id %>')">Restore</button>
                     </li>
@@ -205,6 +206,9 @@
             <% } %>
         </ul>
     </div>
+    
+    
+    
     
 
     <div class="dropdown-content">

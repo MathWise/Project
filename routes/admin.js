@@ -8,7 +8,8 @@ const mongoose = require('mongoose');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
-const { getPdfBucket, getVideoBucket, initBuckets } = require('../config/gridFS');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const { getPdfBucket, getVideoBucket, initBuckets,  getSubmissionBucket} = require('../config/gridFS');
 const Room = require('../models/room');
 const LessonRoom = require('../models/lessonRoom');
 const middleware = require('../middleware');
@@ -17,7 +18,7 @@ const User = require('../models/user');
 const connectDB = require('../config/dbConnection');
 const mongoURI = process.env.MONGODB_URI;
 const { DateTime } = require('luxon');
-
+const Activity = require('../models/activity.js');
 const Quiz = require('../models/QuizActivityRoom'); 
 const ActivityRoom = require('../models/activityRoom'); 
 const QuizResult = require('../models/QuizResult');
@@ -947,6 +948,7 @@ router.get('/pdf/:id', async (req, res) => {
         res.status(500).send('Error retrieving file.');
     }
 });
+
 // Separate Video upload route
 router.post('/upload-video/:roomId', upload.single('videoFile'), async (req, res) => {
     const { roomId } = req.params;
@@ -1074,7 +1076,7 @@ router.get('/lesson/get-pdf-progress/:userId/:pdfFileId', ensureLoggedIn, async 
 router.post('/create-activity-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { subject, activityType } = req.body;
     const { roomId } = req.params;
-    console.log('Received roomId for creating activity:', roomId);
+    console.log(`Creating ${activityType} room for roomId: ${roomId}`);
 
     try {
       
@@ -1130,13 +1132,20 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
         // Filter non-archived activity rooms to display
         const activityRooms = allActivityRooms.filter(room => !room.archived);
 
-        // Fetch quizzes related to non-archived activity rooms if needed
-        const quizzes = await Quiz.find({ roomId: { $in: activityRooms.map(ar => ar._id) } });
+
+        // Get IDs of all non-archived activity rooms
+        const activityRoomIds = activityRooms.map(ar => ar._id);
+        // Fetch quizzes and activities related to the activity rooms
+        const [quizzes, activities] = await Promise.all([
+            Quiz.find({ roomId: { $in: activityRoomIds }, archived: false }),
+            Activity.find({ roomId: { $in: activityRoomIds }, archived: false }),
+        ]);
 
         res.render('admin/activities', {
             room,
             activityRooms,
-            quizzes: quizzes || []
+            quizzes: quizzes || [],
+            activities: activities || []
         });
     } catch (err) {
         console.error('Error accessing activities:', err);
@@ -1155,16 +1164,16 @@ router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => 
 
     try {
         // Fetch only quizzes associated with the roomId and where archived is false
-        const quizzes = await Quiz.find({ 
-            roomId: new mongoose.Types.ObjectId(roomId),
-            archived: false // Only fetch quizzes that are not archived
-        });
+        const [quizzes, activities] = await Promise.all([
+            Quiz.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
+            Activity.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
+        ]);
 
         if (!quizzes || quizzes.length === 0) {
             console.log('No non-archived quizzes found for room:', roomId);
         }
 
-        res.json({ quizzes });
+        res.json({ quizzes, activities });
     } catch (err) {
         console.error('Error fetching quizzes:', err);
         res.status(500).json({ message: 'Error fetching quizzes.' });
@@ -1178,6 +1187,11 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
 
     const { activityRoomId, title, questions, timer, deadline, maxAttempts = 5 } = req.body;
     console.log('Creating quiz with received deadline:', deadline);  // Log the received deadline
+    if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
+        console.error('Invalid activityRoomId:', activityRoomId);
+        req.flash('error', 'Invalid activity room ID.');
+        return res.redirect('/admin/activities');
+    }
 
     try {
         // Validate timer
@@ -1281,88 +1295,79 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
 });
 
 // Submit quiz route with enhanced debug logging
-router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
-    const { quizId } = req.params;
-    const { answers = [] } = req.body;
-    const userId = new mongoose.Types.ObjectId(req.user._id);
-
+router.post('/activity/submit/:activityId', ensureLoggedIn, upload.single('submissionFile'), async (req, res) => {
     try {
-        const quiz = await Quiz.findById(quizId);
-        if (!quiz) {
-            req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin/homeAdmin');
+        const { activityId } = req.params;
+        const submissionBucket = getSubmissionBucket();
+
+        if (!req.file) {
+            req.flash('error', 'No file uploaded.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
         }
 
-        const attemptCount = await QuizResult.countDocuments({
-            quizId: new mongoose.Types.ObjectId(quizId),
-            userId,
-            isSubmitted: true
-        });
-        console.log(`Attempt count before submission for user ${userId} on quiz ${quizId}: ${attemptCount}`);
+        const filename = `${req.user._id}-${req.file.originalname}`;
+        const uploadStream = submissionBucket.openUploadStream(filename);
 
-        if (attemptCount >= quiz.maxAttempts) {
-            req.flash('error', 'You have reached the maximum allowed attempts.');
-            return res.redirect(`/admin/quizzes/result/${quizId}`);
-        }
+        // Upload file to GridFS
+        uploadStream.end(req.file.buffer);
 
-        let correctCount = 0;
-        const resultAnswers = quiz.questions.map((question, qIndex) => {
-            const userAnswer = answers[qIndex] || 'No answer provided';
-            let isCorrect = false;
+        uploadStream.on('finish', async () => {
+            const file = await submissionBucket.find({ filename }).toArray();
 
-            if (userAnswer !== 'No answer provided') {
-                if (question.type === 'multiple-choice') {
-                    isCorrect = question.choices.some(choice => choice.isCorrect && choice.text === userAnswer);
-                } else if (question.type === 'fill-in-the-blank') {
-                    isCorrect = question.correctAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
+            if (file.length > 0) {
+                const activity = await Activity.findById(activityId);
+                if (!activity) {
+                    req.flash('error', 'Activity not found.');
+                    return res.redirect(`/admin/activity/details/${activityId}`);
                 }
+
+                // Add submission details to the activity
+                activity.submissions.push({
+                    userId: req.user._id,
+                    userName: `${req.user.first_name} ${req.user.last_name}`,
+                    fileName: req.file.originalname,
+                    fileId: file[0]._id,
+                    submittedAt: new Date(),
+                });
+
+                await activity.save();
+                req.flash('success', 'Submission successful!');
+            } else {
+                req.flash('error', 'File upload failed.');
             }
-
-            if (isCorrect) correctCount++;
-
-            return {
-                questionId: question._id,
-                questionText: question.questionText,
-                userAnswer,
-                isCorrect
-            };
+            res.redirect(`/admin/activity/details/${activityId}`);
         });
-
-        const isLate = quiz.deadline && DateTime.now().toUTC() > DateTime.fromJSDate(quiz.deadline).toUTC();
-
-        const quizResult = new QuizResult({
-            userId,
-            quizId: new mongoose.Types.ObjectId(quizId),
-            answers: resultAnswers,
-            score: correctCount,
-            isSubmitted: true,
-            isLate,
-            submittedAt: DateTime.now().toUTC().toJSDate()
-        });
-
-        await quizResult.save();
-        console.log(`New QuizResult saved for user ${userId} on quiz ${quizId}.`);
-
-        const savedQuizResult = await QuizResult.findById(quizResult._id);
-        console.log(`Verified QuizResult for user ${userId} on quiz ${quizId}:`, {
-            isSubmitted: savedQuizResult.isSubmitted,
-            score: savedQuizResult.score,
-            submittedAt: savedQuizResult.submittedAt
-        });
-
-        // Clear quizStartTime and currentQuizId after submission
-        delete req.session.quizStartTime;
-        delete req.session.currentQuizId;
-
-        req.flash('success', `You got ${correctCount} out of ${quiz.questions.length} correct!`);
-        return res.redirect(`/admin/quizzes/result/${quizId}`);
-    } catch (err) {
-        console.error('Error submitting quiz:', err);
-        req.flash('error', 'Error submitting quiz. ' + err.message);
-        return res.redirect('/admin/homeAdmin');
+    } catch (error) {
+        console.error('Error during submission:', error);
+        req.flash('error', 'Submission failed.');
+        res.redirect(`/admin/activity/details/${activityId}`);
     }
 });
 
+
+router.get('/test-submission', async (req, res) => {
+    const submissionBucket = getSubmissionBucket();
+    const filename = 'test-file.txt';
+    const fs = require('fs');
+
+    try {
+        const uploadStream = submissionBucket.openUploadStream(filename);
+        fs.createReadStream('./test-file.txt').pipe(uploadStream);
+
+        uploadStream.on('finish', () => {
+            console.log('File uploaded successfully:', uploadStream.id);
+            res.send(`File uploaded with ID: ${uploadStream.id}`);
+        });
+
+        uploadStream.on('error', (error) => {
+            console.error('Error during file upload:', error);
+            res.status(500).send('File upload failed.');
+        });
+    } catch (error) {
+        console.error('Error testing submission upload:', error);
+        res.status(500).send('Error testing submission upload.');
+    }
+});
 
 
 
@@ -1443,32 +1448,46 @@ router.post('/unarchive-activity-room/:activityRoomId', ensureAdminLoggedIn, asy
 
 
 
-// Ensure archived quizzes are fetched correctly in the activitiesArchive route
 router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     try {
-        const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : null;
-        if (!roomObjectId) {
-            req.flash('error', 'Invalid Room ID.');
-            return res.redirect('/admin/homeAdmin');
+        const roomObjectId = mongoose.Types.ObjectId.isValid(roomId) ? new mongoose.Types.ObjectId(roomId) : roomId;
+
+        // Fetch all activity rooms for the specified roomId
+        const allActivityRooms = await ActivityRoom.find({
+            roomId: { $in: [roomObjectId, roomObjectId.toString()] } // Match ObjectId and string
+        });
+
+        // Filter archived activity rooms
+        const archivedActivityRooms = allActivityRooms.filter(room => room.archived === true);
+
+        // Get IDs for all activity rooms (archived and non-archived)
+        const allActivityRoomIds = allActivityRooms.map(room => room._id);
+
+        // Fetch archived quizzes and activities regardless of room's archive status
+        const archivedQuizzes = await Quiz.find({
+            roomId: { $in: allActivityRoomIds }, // Include all room IDs
+            archived: true
+        });
+
+        const archivedActivities = await Activity.find({
+            roomId: { $in: allActivityRoomIds }, // Include all room IDs
+            archived: true
+        });
+
+        console.log('All Activity Rooms:', allActivityRooms);
+        console.log('Archived Activity Rooms:', archivedActivityRooms);
+        console.log('Archived Quizzes:', archivedQuizzes);
+        console.log('Archived Activities:', archivedActivities);
+
+        if (req.headers.accept && req.headers.accept.includes('application/json')) {
+            return res.status(200).json({ archivedActivityRooms, archivedQuizzes, archivedActivities });
         }
 
-        const archivedActivityRooms = await ActivityRoom.find({ roomId: roomObjectId, archived: true  });
-
-        // Extract all lessonRoom IDs
-        const activityRoomIds = archivedActivityRooms.map(room => room._id);
-
-        const archivedQuizzes = await Quiz.find({ roomId: { $in: activityRoomIds }, archived: true });
-
-         // Check if the client expects JSON
-         if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            return res.status(200).json({ archivedActivityRooms, archivedQuizzes });
-        }
-
-        // Render the view with the archived data
         res.render('admin/activitiesArchive', { 
             archivedActivityRooms, 
             archivedQuizzes, 
+            archivedActivities,
             roomId 
         });
     } catch (error) {
@@ -1477,6 +1496,7 @@ router.get('/activitiesArchive/:roomId', ensureAdminLoggedIn, async (req, res) =
         res.redirect(`/admin/activities/${roomId}`);
     }
 });
+
 
 
 
@@ -1611,6 +1631,285 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
         res.redirect(`/admin/quiz/modify/${quizId}`);
     }
 });
+
+router.post('/activity/create', ensureAdminLoggedIn, upload.single('attachment'), async (req, res) => {
+    const { aactivityRoomId, title, description, points, deadline, videoLink } = req.body;
+
+    console.log('Creating activity with aactivityRoomId:', aactivityRoomId);
+    console.log('Form Data:', req.body);
+
+    // Validate `aactivityRoomId`
+    if (!mongoose.Types.ObjectId.isValid(aactivityRoomId)) {
+        req.flash('error', 'Invalid activity room ID.');
+        return res.redirect('/admin/homeAdmin');
+    }
+
+    try {
+        // Check for the corresponding activity room
+        const activityRoom = await ActivityRoom.findById(aactivityRoomId);
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/admin/activities');
+        }
+
+        // Validate points
+        if (!points || isNaN(points)) {
+            req.flash('error', 'Points must be a valid number.');
+            return res.redirect(`/admin/activities/${aactivityRoomId}`);
+        }
+
+        const deadlineUTC = deadline
+            ? DateTime.fromISO(deadline, { zone: 'Asia/Manila' }).toUTC().toJSDate()
+            : null;
+
+        if (deadline && isNaN(deadlineUTC)) {
+            req.flash('error', 'Invalid deadline format.');
+            return res.redirect(`/admin/activities/${aactivityRoomId}`);
+        }
+
+        // Handle file attachment (if provided)
+        const fileAttachment = req.file
+            ? { fileName: req.file.originalname, filePath: req.file.path }
+            : null;
+
+        // Create and save the activity
+        const newActivity = new Activity({
+            title,
+            description,
+            roomId: new mongoose.Types.ObjectId(aactivityRoomId),
+            fileAttachments: fileAttachment ? [fileAttachment] : [],
+            points: parseInt(points, 10),
+            deadline: deadlineUTC,
+            videoLink: videoLink || null, // Save the video link if provided
+        });
+
+        await newActivity.save();
+        req.flash('success', 'Activity created successfully!');
+        res.redirect('/admin/activities/' + activityRoom.roomId);
+    } catch (err) {
+        console.error('Error creating activity:', err);
+        req.flash('error', `Error creating activity: ${err.message}`);
+        return res.redirect(`/admin/activities/${aactivityRoomId || ''}`);
+    }
+});
+
+
+
+// API route to fetch non-archived activities for a specific activity room
+router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityRoomId } = req.params;
+
+    console.log('Received activityRoomId:', activityRoomId);
+
+    try {
+
+          // Validate the activityRoomId format
+          if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
+            console.error('Invalid activityRoomId:', activityRoomId);
+            return res.status(400).json({ message: 'Invalid activity room ID.' });
+        }
+
+        const activities = await Activity.find({
+            roomId: new mongoose.Types.ObjectId(activityRoomId),
+            archived: false,
+        });
+
+        res.json({ activities });
+    } catch (err) {
+        console.error('Error fetching activities:', err);
+        res.status(500).json({ message: 'Error fetching activities.' });
+    }
+});
+
+// Route to archive an activity
+router.post('/archive-activity/:activityId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityId } = req.params;
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(activityId)) {
+            return res.status(400).json({ error: 'Invalid activity ID.' });
+        }
+
+        const activity = await Activity.findByIdAndUpdate(
+            activityId,
+            { archived: true, archivedAt: new Date() }, // Mark as archived
+            { new: true }
+        );
+
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found.' });
+        }
+
+        res.status(200).json({ message: 'Activity archived successfully.' });
+    } catch (error) {
+        console.error('Error archiving activity:', error);
+        res.status(500).json({ message: 'Failed to archive activity.' });
+    }
+});
+
+// Route to unarchive an activity
+router.post('/unarchive-activity/:activityId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityId } = req.params;
+
+    try {
+        if (!mongoose.Types.ObjectId.isValid(activityId)) {
+            return res.status(400).json({ error: 'Invalid activity ID.' });
+        }
+
+        const activity = await Activity.findByIdAndUpdate(
+            activityId,
+            { archived: false, archivedAt: null }, // Mark as unarchived
+            { new: true }
+        );
+
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found.' });
+        }
+
+        res.status(200).json({ message: 'Activity unarchived successfully.' });
+    } catch (error) {
+        console.error('Error unarchiving activity:', error);
+        res.status(500).json({ message: 'Failed to unarchive activity.' });
+    }
+});
+
+router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
+    try {
+        const activity = await Activity.findById(req.params.id).populate('submissions.userId');
+        if (!activity) {
+            req.flash('error', 'Activity not found.');
+            return res.redirect('/admin/activities');
+        }
+
+        // Ensure fileAttachments is an array, even if empty
+        if (!activity.fileAttachments) {
+            activity.fileAttachments = [];
+        }
+
+        res.render('admin/activityDetails', { activity });
+    } catch (error) {
+        console.error('Error fetching activity details:', error);
+        req.flash('error', 'Unable to load activity details.');
+        res.redirect('/admin/activities');
+    }
+});
+
+
+
+// Configure Multer for GridFS storage
+const storages = new GridFsStorage({
+    url: process.env.MONGODB_URI,
+    file: (req, file) => {
+        return new Promise((resolve, reject) => {
+            const fileInfo = {
+                bucketName: 'submissions', // The name of the GridFS bucket
+                filename: `${Date.now()}-${file.originalname}`, // Generate a unique filename
+            };
+            resolve(fileInfo);
+        });
+    },
+});
+
+const uploads = multer({ storage: storages });
+
+router.post('/activity/submit/:activityId', ensureLoggedIn, uploads.single('submissionFile'), async (req, res) => {
+    try {
+        const { activityId } = req.params;
+
+        console.log("req.user:", req.user);
+        console.log("Uploaded file:", req.file);
+
+        if (!req.user) {
+            req.flash('error', 'User information not found. Please log in again.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        if (!req.file) {
+            req.flash('error', 'File upload failed. Please try again.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        const fullName = `${req.user.first_name} ${req.user.last_name}`;
+
+        // Find the activity
+        const activity = await Activity.findById(activityId);
+        if (!activity) {
+            req.flash('error', 'Activity not found.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        // Add the submission details to the activity
+        activity.submissions.push({
+            userId: req.user._id,
+            userName: fullName,
+            fileName: req.file.filename, // File name stored in GridFS
+            fileId: req.file.id, // File ID in GridFS
+            submittedAt: new Date(),
+        });
+
+        await activity.save();
+
+        req.flash('success', 'Submission successful!');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    } catch (error) {
+        console.error('Error submitting activity:', error);
+        req.flash('error', 'Failed to submit activity.');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    }
+});
+
+router.get('/file/:fileId', async (req, res) => {
+    const { fileId } = req.params;
+
+    try {
+        const submissionBucket = getSubmissionBucket(); // Get the submissions bucket
+
+        const fileStream = submissionBucket.openDownloadStream(new mongoose.Types.ObjectId(fileId));
+
+        // Pipe the file to the response
+        fileStream.on('error', (err) => {
+            console.error('File retrieval error:', err);
+            res.status(404).send('File not found.');
+        });
+
+        fileStream.pipe(res);
+    } catch (error) {
+        console.error('Error retrieving file:', error);
+        res.status(500).send('Error retrieving file.');
+    }
+});
+
+router.post('/activity/grade/:activityId/:submissionId', ensureAdminLoggedIn, async (req, res) => {
+    try {
+        const { activityId, submissionId } = req.params;
+        const { grade, feedback } = req.body;
+
+        const activity = await Activity.findById(activityId);
+        if (!activity) {
+            req.flash('error', 'Activity not found.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        const submission = activity.submissions.id(submissionId);
+        if (!submission) {
+            req.flash('error', 'Submission not found.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        submission.grade = grade;
+        submission.feedback = feedback;
+
+        await activity.save();
+
+        req.flash('success', 'Grade submitted successfully.');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    } catch (error) {
+        console.error('Error grading submission:', error);
+        req.flash('error', 'Failed to submit grade.');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    }
+});
+
 
 //end of  activities -------------------------------------------------------------------------------------------
 

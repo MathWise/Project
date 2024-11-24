@@ -209,6 +209,35 @@
                     </div>
                 </div>
 
+                            <!-- Activity Room Content -->
+            <div id="activityRoomContent" class="big-box" style="display: none;">
+                <div class="content-wrapper">
+                    <div class="left-content">
+                        <h1>Create an Activity</h1>
+                        <form id="activityForm" action="/admin/activity/create" method="POST" enctype="multipart/form-data">
+                            <input type="hidden" name="aactivityRoomId" id="aactivityRoomId" value="">
+                            <label for="title">Activity Title:</label>
+                            <input type="text" name="title" id="activityTitle" required><br><br>
+                            <label for="description">Description:</label>
+                            <textarea name="description" id="description"></textarea><br><br>
+                            <label for="attachment">Attachment (PDF/Document/Video):</label>
+                            <input type="file" name="attachment" id="attachment" accept=".pdf,.doc,.docx,.mp4"><br><br>
+                            <label for="points">Points:</label>
+                            <input type="number" name="points" id="points" required min="1"><br><br>
+                            <label for="deadline">Deadline:</label>
+                            <input type="datetime-local" name="deadline" id="deadline" required><br><br>
+                            <button type="submit">Submit Activity</button>
+                        </form>
+                    </div>
+                    <div class="right-content">
+                        <h2>Available Activities</h2>
+                        <ul id="loadedActivities" class="list-group">
+                            <li class="list-group-item">No activities available.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
                 
     
             
@@ -237,50 +266,100 @@
             </main>            
         </div>  
 
-            <script>
-                document.addEventListener("DOMContentLoaded", function () {
-                    // Select all lesson room items (existing activity/quiz rooms)
-                    const lessonRoomItems = document.querySelectorAll('.list-group-item');
-                    const layeredContainer = document.querySelector('.card'); // The card for creating a new activity/quiz room
-                    const quizActivityRoomContent = document.getElementById('quizActivityRoomContent'); // The content section for quiz creation
-            
-                    // Attach click event to each lesson room item
-                    lessonRoomItems.forEach(item => {
-                        item.addEventListener('click', function () {
-                            // Hide the "Create a New Activity/Quiz Room" form
-                            layeredContainer.style.display = 'none';
-                            // Show the "Quiz Activity Room Content" section
-                            quizActivityRoomContent.style.display = 'block';
-                            
-                            const roomId = item.getAttribute('data-room-id'); // Get the room ID from the clicked item
-                            // Set the roomId for hidden inputs
-                            document.getElementById('activityRoomId').value = roomId;
-                        });
-                    });
-                });
-            </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        // Select all lesson room items (existing activity/quiz rooms)
+        const lessonRoomItems = document.querySelectorAll('.list-group-item'); // Room list
+        const layeredContainer = document.querySelector('.card'); // Create Activity/Quiz Room card
+        const quizActivityRoomContent = document.getElementById('quizActivityRoomContent'); // Quiz creation content
+        const activityRoomContent = document.getElementById('activityRoomContent'); // Activity creation content
 
-            <script>
-                function showRoomContent(roomId) {
-    // Hide the "Create a New Activity/Quiz Room" form
+        // Attach click event to each room item
+        lessonRoomItems.forEach(item => {
+            item.addEventListener('click', function () {
+                const roomId = item.getAttribute('data-room-id'); // Get the room ID
+                const activityType = item.querySelector('strong').textContent.trim(); // Get the activity type
+
+                console.log(`Room clicked: ID=${roomId}, Type=${activityType}`);
+
+                // Hide the "Create a New Activity/Quiz Room" form
+                layeredContainer.style.display = 'none';
+
+                if (activityType === 'Quiz') {
+                    // Show the quiz activity room content
+                    quizActivityRoomContent.style.display = 'block';
+                    activityRoomContent.style.display = 'none'; // Hide activity content
+
+                    // Set the hidden input for quiz
+                    const quizActivityRoomIdField = document.getElementById('quizActivityRoomId');
+                    if (quizActivityRoomIdField) {
+                        quizActivityRoomIdField.value = roomId;
+                        console.log(`Quiz Room ID set: ${roomId}`);
+                    } else {
+                        console.error('Hidden input for quizActivityRoomId not found.');
+                    }
+                } else if (activityType === 'Activity') {
+                    // Show the activity room content
+                    activityRoomContent.style.display = 'block';
+                    quizActivityRoomContent.style.display = 'none'; // Hide quiz content
+
+                    // Set the hidden input for activity
+                    const activityRoomIdField = document.getElementById('activityRoomId');
+                    if (activityRoomIdField) {
+                        activityRoomIdField.value = roomId;
+                        console.log(`Activity Room ID set: ${roomId}`);
+                    } else {
+                        console.error('Hidden input for activityRoomId not found.');
+                    }
+                } else {
+                    console.error('Unknown activity type:', activityType);
+                }
+            });
+        });
+    });
+
+</script>
+
+<script>
+function showRoomContent(roomId) {
+    const roomElement = document.querySelector(`[data-room-id='${roomId}']`);
+    if (!roomElement) {
+        console.error('Room element not found for roomId:', roomId);
+        return;
+    }
+
+    const roomType = roomElement.querySelector('strong').textContent.trim();
+
     document.getElementById('createActivityForm').style.display = 'none';
 
-    // Show the quiz activity room content
-    const roomContent = document.getElementById('quizActivityRoomContent');
-    roomContent.style.display = 'block';
+    const roomIdInput = document.getElementById('aactivityRoomId');
+    if (roomIdInput) {
+        roomIdInput.value = roomId; // Update to new hidden field
+        console.log(`Room content displayed for room ID: ${roomId}`);
+    } else {
+        console.error('Hidden input aactivityRoomId not found.');
+    }
 
-    // Update the form inside the quiz activity room with the selected room ID
-    document.getElementById('activityRoomId').value = roomId;
-
-    // Optionally load room-specific data dynamically here
-    console.log(`Loading data for room: ${roomId}`);
+    if (roomType === 'Quiz') {
+        document.getElementById('quizActivityRoomContent').style.display = 'block';
+        document.getElementById('activityRoomContent').style.display = 'none';
+        loadQuizzesForRoom(roomId);
+    } else if (roomType === 'Activity') {
+        document.getElementById('quizActivityRoomContent').style.display = 'none';
+        document.getElementById('activityRoomContent').style.display = 'block';
+        loadActivitiesForRoom(roomId);
+    } else {
+        console.error('Unknown room type:', roomType);
+    }
 }
 
-            </script>
+</script>
+
             
 
     
         <script src="/js/quiz.js"></script> 
+        <script src="/js/activity.js"></script>
         
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">

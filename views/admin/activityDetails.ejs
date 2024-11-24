@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= activity.title %></title>
+    <link rel="stylesheet" href="/styles/activityDetails.css">
+</head>
+<body>
+    <div class="container">
+        <h1><%= activity.title %></h1>
+        <p><%= activity.description %></p>
+        <p><strong>Deadline:</strong> <%= new Date(activity.deadline).toLocaleString() %></p>
+        <p><strong>Points:</strong> <%= activity.points %></p>
+
+        <!-- Attachments -->
+        <% if (activity.fileAttachments && activity.fileAttachments.length > 0) { %>
+            <h3>Attachments:</h3>
+            <ul>
+                <% activity.fileAttachments.forEach(file => { %>
+                    <li><a href="/<%= file.filePath %>" target="_blank"><%= file.fileName %></a></li>
+                <% }) %>
+            </ul>
+        <% } else { %>
+            <p>No attachments available.</p>
+        <% } %>
+
+        <!-- Submission Form -->
+        <h3>Submit Your Work</h3>
+        <form action="/admin/activity/submit/<%= activity._id %>" method="POST" enctype="multipart/form-data">
+            <label for="submissionFile">Attach File:</label>
+            <input type="file" name="submissionFile" id="submissionFile" required>
+            <button type="submit">Submit</button>
+        </form>
+        
+
+        <h2>Submissions</h2>
+        <ul>
+            <% activity.submissions.forEach(submission => { %>
+                <li>
+                    <strong><%= submission.userName %></strong> submitted:
+                    <a href="/file/<%= submission.fileId %>"><%= submission.fileName %></a>
+                    <% if (submission.grade !== null) { %>
+                        <p>Grade: <%= submission.grade %></p>
+                        <p>Feedback: <%= submission.feedback %></p>
+                    <% } else { %>
+                        <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
+                            <input type="number" name="grade" placeholder="Enter grade" required>
+                            <textarea name="feedback" placeholder="Enter feedback"></textarea>
+                            <button type="submit">Submit Grade</button>
+                        </form>
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
+        
+    </div>
+</body>
+</html>

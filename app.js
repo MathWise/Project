@@ -22,32 +22,23 @@ const mongoose = require('mongoose');
 require('./config/passport')(passport);
 
 console.log('MongoDB URI:', process.env.MONGODB_URI);
+// Initialize database and GridFS buckets
 connectDB()
-.then(() => {
-  console.log('Database connected successfully');
-  return initBuckets(); // Ensure buckets are initialized after DB connection
-})
-.then(() => {
-  console.log('GridFS Buckets initialized successfully');
-})
-.catch((error) => {
-  console.error('Error during app initialization:', error);
-  process.exit(1); // Exit the app if DB connection or bucket initialization fails
-});
-
+    .then(async () => {
+        console.log('Database connected successfully');
+        await initBuckets(); // Initialize GridFS buckets after DB connection
+        console.log('GridFS Buckets initialized successfully');
+    })
+    .catch((error) => {
+        console.error('Error during app initialization:', error);
+        process.exit(1); // Exit the app if DB connection or bucket initialization fails
+    });
+    
 const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Initialize the GridFS buckets
-initBuckets()
-    .then(() => {
-        console.log('GridFS Buckets initialized successfully');
-    })
-    .catch((error) => {
-        console.error('Failed to initialize GridFS Buckets', error);
-        process.exit(1);
-    });
+
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));

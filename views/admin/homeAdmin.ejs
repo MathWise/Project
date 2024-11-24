@@ -33,8 +33,7 @@
                 <%= errorMessage[0] %>
             </div>
         <% } %>
-        <button class="room-button" id="openCreateRoomModal">Create Room</button>
-        
+    
               <!-- Search Bar -->
     <form action="/admin/homeAdmin" method="GET" style="margin-bottom: 20px;">
         <label for="search-input" style="margin-right: 10px;">Search Rooms:</label>
@@ -113,8 +112,10 @@
         <br>
    
 
-      <!-- Modal Structure -->
-        <div id="createRoomModal" class="modal">
+        <button class="room-button" id="openCreateRoomModal">Create Room</button>
+
+        <!-- Modal for creating a room -->
+        <div id="createRoomModal" class="modal" style="display: none;">
             <div class="modal-content">
                 <span class="close" id="closeCreateRoomModal">&times;</span>
                 <h2>Create Room</h2>
@@ -128,7 +129,7 @@
                 </form>
             </div>
         </div>
-
+        
     </div>
 
 

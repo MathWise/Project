@@ -3,6 +3,7 @@ const mongoURI = process.env.MONGODB_URI;
 
 let pdfBucket;
 let videoBucket;
+let submissionBucket;
 
 const initBuckets = async () => {
     try {
@@ -11,8 +12,9 @@ const initBuckets = async () => {
 
         pdfBucket = new GridFSBucket(db, { bucketName: 'pdfs' });
         videoBucket = new GridFSBucket(db, { bucketName: 'videos' });
+        submissionBucket = new GridFSBucket(db, { bucketName: 'submissions' });
 
-        console.log("GridFS Buckets Initialized: PDFs and Videos");
+        console.log("GridFS Buckets Initialized: PDFs, Videos , and Submissions");
     } catch (error) {
         console.error("Error initializing GridFS Buckets:", error);
         throw error;
@@ -32,5 +34,11 @@ const getVideoBucket = () => {
     }
     return videoBucket;
 };
+const getSubmissionBucket = () => { // Getter for the submissions bucket
+    if (!submissionBucket) {
+        throw new Error("Submission Bucket not initialized. Call initBuckets() first.");
+    }
+    return submissionBucket;
+};
 
-module.exports = { initBuckets, getPdfBucket, getVideoBucket };
+module.exports = { initBuckets, getPdfBucket, getVideoBucket, getSubmissionBucket };

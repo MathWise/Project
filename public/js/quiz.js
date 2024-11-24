@@ -1,27 +1,19 @@
-// Handle clicking on an activity room to set activityRoomId and fetch quizzes
-document.querySelectorAll('.clickable').forEach(function(roomElement) {
-    roomElement.addEventListener('click', function() {
-        const activityRoomId = this.getAttribute('data-room-id');
-        document.getElementById('activityRoomId').value = activityRoomId;  // Set hidden field value
-
-        const roomContent = document.getElementById('quizActivityRoomContent');
-        roomContent.style.display = 'block';
-
-        // Fetch quizzes for the selected activity room
-        loadQuizzesForRoom(activityRoomId);
-    });
-});
-
-
-// Function to load non-archived quizzes for a specific activity room
+// Function to load quizzes for a specific activity room
 async function loadQuizzesForRoom(activityRoomId) {
     try {
+        console.log('Fetching quizzes for room ID:', activityRoomId); // Log room ID
         const response = await fetch(`/admin/activities/data/${activityRoomId}`);
+
+        if (!response.ok) {
+            console.error('Failed to fetch quizzes:', response.status, response.statusText);
+            return;
+        }
+
         const data = await response.json();
-        console.log('Quizzes data:', data);
+        console.log('Quizzes data:', data); // Log fetched data
 
         const quizList = document.querySelector('#loadedQuizzes');
-        quizList.innerHTML = '';
+        quizList.innerHTML = ''; // Clear the list
 
         if (data.quizzes && data.quizzes.length > 0) {
             data.quizzes.forEach(quiz => {
@@ -32,7 +24,6 @@ async function loadQuizzesForRoom(activityRoomId) {
                         <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
-                        <!-- Kebab Menu for each Quiz -->
                         <div class="kebab-menu" onclick="toggleQuizMenu('${quiz._id}')">&#x22EE;</div>
                         <div class="dropdown-menu quiz-menu" id="quiz-menu-${quiz._id}" style="display: none;">
                             <a href="#" onclick="archiveQuiz('${quiz._id}'); return false;">Archive</a>
@@ -48,6 +39,50 @@ async function loadQuizzesForRoom(activityRoomId) {
         console.error('Error fetching quizzes:', error);
     }
 }
+
+// Event listener for selecting a quiz or activity room
+document.querySelectorAll('.clickable').forEach(function (roomElement) {
+    roomElement.addEventListener('click', function () {
+        const activityRoomId = this.getAttribute('data-room-id'); // Extract room ID
+        const activityType = this.querySelector('strong').textContent.trim(); // Extract type (Activity/Quiz)
+
+        console.log('Room clicked, ID:', activityRoomId, 'Type:', activityType);
+
+        if (!activityRoomId) {
+            console.error('No activityRoomId found for the clicked room.');
+            return;
+        }
+
+        if (activityType === 'Quiz') {
+            // Show quiz-related content and update the hidden field for quizzes
+            document.getElementById('activityRoomContent').style.display = 'none';
+            document.getElementById('quizActivityRoomContent').style.display = 'block';
+
+            const quizActivityRoomIdField = document.getElementById('activityRoomId');
+            if (quizActivityRoomIdField) {
+                quizActivityRoomIdField.value = activityRoomId;
+                console.log('Set quizActivityRoomId:', activityRoomId);
+            }
+            loadQuizzesForRoom(activityRoomId);
+        } else if (activityType === 'Activity') {
+            // Show activity-related content and update the hidden field for activities
+            document.getElementById('quizActivityRoomContent').style.display = 'none';
+            document.getElementById('activityRoomContent').style.display = 'block';
+
+            const activityRoomIdInput = document.getElementById('aactivityRoomId'); // Updated to match new field
+            if (activityRoomIdInput) {
+                activityRoomIdInput.value = activityRoomId; // Set the hidden field value
+                console.log('Set aactivityRoomId for Activity:', activityRoomIdInput.value);
+            } else {
+                console.error('Hidden input aactivityRoomId not found in DOM.');
+            }
+
+            loadActivitiesForRoom(activityRoomId);
+        }
+    });
+});
+
+
 
 
 
@@ -184,6 +219,16 @@ document.addEventListener('change', function(event) {
 
 // Validation and form submission handling
 document.getElementById('quizForm').addEventListener('submit', function(event) {
+    const quizActivityRoomIdField = document.getElementById('activityRoomId');
+    const activityRoomId = quizActivityRoomIdField ? quizActivityRoomIdField.value : null;
+
+    if (!activityRoomId) {
+        event.preventDefault(); // Prevent form submission
+        alert('No activity room selected. Please select a room first.');
+        console.error('Quiz submission failed: No activity room ID found.');
+        return;
+    }
+
     const timer = document.getElementById('timer').value;
     const deadlineInput = document.getElementById('deadline').value;
     const deadlineDate = new Date(deadlineInput);
@@ -209,6 +254,7 @@ document.getElementById('quizForm').addEventListener('submit', function(event) {
     if (!isValid) {
         event.preventDefault();
     } else {
+        console.log('Submitting quiz with activityRoomId:', activityRoomId);
         console.log('Submitting quiz with timer:', timer);
         console.log('Submitting quiz with deadline:', deadlineInput);
     }

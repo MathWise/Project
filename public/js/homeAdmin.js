@@ -97,12 +97,7 @@ if (event.key === 'Enter') {
        menu.style.display = menu.style.display === 'none' || menu.style.display === '' ? 'block' : 'none';
    }
    
-   // Function to toggle the display of the Create Room form
-   document.getElementById("showCreateRoomBtn").addEventListener("click", function() {
-       const form = document.getElementById("createRoomForm");
-       // Toggle display of form between 'block' and 'none'
-       form.style.display = (form.style.display === "block") ? "none" : "block";
-   });
+
 
    // Close dropdown menus when clicking outside
    document.addEventListener('click', function(event) {
@@ -217,33 +212,42 @@ createRoomForm.addEventListener("submit", function (event) {
 
 
 
+document.addEventListener("DOMContentLoaded", () => {
+    const openModalButton = document.getElementById('openCreateRoomModal');
+    const closeModalButton = document.getElementById('closeCreateRoomModal');
+    const modal = document.getElementById('createRoomModal');
 
-// Get elements
-const openModalButton = document.getElementById('openCreateRoomModal');
-const closeModalButton = document.getElementById('closeCreateRoomModal');
-const modal = document.getElementById('createRoomModal');
 
-// Open modal
-openModalButton.addEventListener('click', () => {
-   modal.style.display = 'flex';
+
+    // Check if elements exist before adding event listeners
+    if (openModalButton && closeModalButton && modal) {
+        // Open modal
+        openModalButton.addEventListener('click', () => {
+            console.log("Open Create Room Modal clicked!"); // Debug log
+            modal.style.display = 'flex'; // Ensure modal is set to flex
+        });
+
+        // Close modal
+        closeModalButton.addEventListener('click', () => {
+            console.log("Close Create Room Modal clicked!"); // Debug log
+            modal.style.display = 'none';
+        });
+
+        // Close modal when clicking outside the modal content
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+    } else {
+        console.error("Modal elements not found in the DOM. Check your HTML structure.");
+    }
 });
 
-// Close modal
-closeModalButton.addEventListener('click', () => {
-   modal.style.display = 'none';
-});
-
-// Close modal when clicking outside the modal content
-window.addEventListener('click', (event) => {
-   if (event.target === modal) {
-       modal.style.display = 'none';
-   }
-});
-
-
+// Utility to show loading overlay
 function showLoadingOverlay() {
-   const loadingOverlay = document.getElementById('loadingOverlay');
-   loadingOverlay.style.display = 'flex';
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    loadingOverlay.style.display = 'flex';
 }
 
 
