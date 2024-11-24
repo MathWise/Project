@@ -295,3 +295,13 @@ document.addEventListener('click', function(event) {
         closeAllMenus(); // Close all menus if clicking outside them
     }
 });
+
+document.getElementById('quizForm').addEventListener('submit', function(event) {
+    const timer = document.getElementById('timer').value;
+    
+    // Check if the timer is not selected
+    if (!timer) {
+        event.preventDefault(); // Prevent form submission
+        alert('Please select a timer before submitting the quiz.');
+    }
+});

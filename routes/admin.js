@@ -17,6 +17,7 @@ const User = require('../models/user');
 const connectDB = require('../config/dbConnection');
 const mongoURI = process.env.MONGODB_URI;
 const { DateTime } = require('luxon');
+
 const Quiz = require('../models/QuizActivityRoom'); 
 const ActivityRoom = require('../models/activityRoom'); 
 const QuizResult = require('../models/QuizResult');
@@ -334,9 +335,7 @@ router.post('/delete-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
 
 
 
-
 router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAccess, async (req, res) => {
-    
     const { roomId } = req.params;
     const userId = req.user._id;
 
@@ -349,18 +348,35 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
 
         console.log("Room ID:", roomId);
 
-        // Fetch the latest PDF completion progress
-        const latestCompletedPdfProgress = await PdfProgress.findOne({ userId, progress: 100 })
-            .sort({ updatedAt: -1 });
+        // Fetch lesson rooms for the current room
+        const lessonRooms = await LessonRoom.find({ roomId });
+        if (!lessonRooms || lessonRooms.length === 0) {
+            req.flash('error', 'No lesson rooms found for this room.');
+            return res.render('admin/dashboard', { room, quizAnalytics: [], latestPdf: null, latestVideo: null, latestCompletedPdf: null });
+        }
 
-       
+        const lessonRoomIds = lessonRooms.map(lr => lr._id);
+
+        // Fetch the latest PDF completion progress
+        const latestCompletedPdfProgress = await PdfProgress.findOne({
+            userId,
+            progress: 100,
+            pdfFileId: {
+                $in: (
+                    await Lesson.find({ roomId: { $in: lessonRoomIds } })
+                        .distinct('pdfFiles.pdfFileId')
+                ),
+            },
+        }).sort({ updatedAt: -1 });
 
         let latestCompletedPdf = null;
 
         if (latestCompletedPdfProgress) {
-            // Find the Lesson containing the completed PDF based only on pdfFileId
-            const lesson = await Lesson.findOne({ 'pdfFiles.pdfFileId': latestCompletedPdfProgress.pdfFileId });
-            
+            // Find the Lesson containing the completed PDF, restricted to lessons in this room
+            const lesson = await Lesson.findOne({ 
+                'pdfFiles.pdfFileId': latestCompletedPdfProgress.pdfFileId, 
+                roomId: { $in: lessonRoomIds } 
+            });
 
             if (lesson) {
                 latestCompletedPdf = lesson.pdfFiles.find(
@@ -371,15 +387,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
 
         console.log("Latest Completed PDF:", latestCompletedPdf);
 
-
-        const lessonRooms = await LessonRoom.find({ roomId });
-        if (!lessonRooms || lessonRooms.length === 0) {
-            req.flash('error', 'No lesson rooms found for this room.');
-            return res.render('admin/dashboard', { room, quizAnalytics: [], latestPdf: null, latestVideo: null, latestCompletedPdf: null });
-        }
-
         // Fetch lessons associated with lesson rooms
-        const lessonRoomIds = lessonRooms.map(lr => lr._id);
         const lessons = await Lesson.find({ roomId: { $in: lessonRoomIds } });
 
         // Find the latest PDF
@@ -401,11 +409,10 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
         const videoDocuments = await Video.find({ roomId: { $in: lessonRoomIds } });
 
         let latestVideo = null;
-        
         if (videoDocuments && videoDocuments.length > 0) {
             // Flatten all videoFiles across videoDocuments
             const allVideos = videoDocuments.flatMap(doc => doc.videoFiles);
-        
+
             if (allVideos.length > 0) {
                 // Sort all videos by updatedAt or _id timestamp
                 const sortedVideos = allVideos.sort((a, b) => 
@@ -414,9 +421,8 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
                 latestVideo = sortedVideos[0]; // Pick the most recent video
             }
         }
-        
-        console.log("Latest Video:", latestVideo);
 
+        console.log("Latest Video:", latestVideo);
 
         const activityRooms = await ActivityRoom.find({ roomId });
         const activityRoomIds = activityRooms.map(ar => ar._id);
@@ -443,7 +449,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
                     ? ((scores[scores.length / 2 - 1] + scores[scores.length / 2]) / 2).toFixed(2)
                     : scores[Math.floor(scores.length / 2)];
                 const range = `${Math.min(...scores)} - ${Math.max(...scores)}`;
-                
+
                 const scoreDistribution = Array(totalScore + 1).fill(0);
                 scores.forEach(score => scoreDistribution[score]++);
 
@@ -463,7 +469,7 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
         quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         res.render('admin/dashboard', { room, quizAnalytics, latestPdf, latestVideo, latestCompletedPdf, latestQuiz });
-        
+
     } catch (err) {
         console.error('Error accessing dashboard:', err);
         req.flash('error', 'Error accessing the dashboard.');
@@ -472,6 +478,11 @@ router.get('/dashboard/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcces
 });
 
 
+
+router.get('/quiz/:id', ensureAdminLoggedIn, (req, res) => {
+    const { id } = req.params;
+    res.redirect(`/admin/quizzes/start/${id}`);
+});
 
 // Route to display all test results for a room
 router.get('/dashboard/allTests/:roomId', ensureAdminLoggedIn, async (req, res) => {
@@ -1169,6 +1180,12 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
     console.log('Creating quiz with received deadline:', deadline);  // Log the received deadline
 
     try {
+        // Validate timer
+        if (!timer || isNaN(timer)) {
+            req.flash('error', 'Timer is required and must be a valid number.');
+            return res.redirect(`/admin/activities/${activityRoomId}`);
+        }
+
         const activityRoom = await ActivityRoom.findById(activityRoomId);
         if (!activityRoom) {
             req.flash('error', 'Activity room not found.');

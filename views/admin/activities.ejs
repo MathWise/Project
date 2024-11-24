@@ -134,6 +134,7 @@
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
                         <div class="left-content">
+                            
                             <h1>Create a Quiz</h1>
                             <form id="quizForm" action="/admin/quiz/create" method="POST">
                                 <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
@@ -155,7 +156,7 @@
                                         <div class="form-group">
                                             <label for="timer">Set Timer (Optional)</label>
                                             <select class="form-control" id="timer" name="timer">
-                                                <option value="">No Timer</option>
+                                                <option value="">select Timer</option>
                                                 <option value="5">5 Minutes</option>
                                                 <option value="10">10 Minutes</option>
                                                 <option value="30">30 Minutes</option>
@@ -196,6 +197,7 @@
                                 <button type="button" id="addQuestion">Add Question</button><br><br>
                                 <button type="submit">Submit Quiz</button>
                             </form>
+
                         </div>
             
                         <div class="right-content">
@@ -206,6 +208,9 @@
                         </div>
                     </div>
                 </div>
+
+                
+    
             
                 <!-- Card for Create Activity/Quiz Room Form -->
                 <div id="createActivityForm" class="layered-container">
@@ -227,6 +232,8 @@
                         </form>
                     </div>
                 </div>
+
+
             </main>            
         </div>  
 

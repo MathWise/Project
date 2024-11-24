@@ -183,7 +183,8 @@
                                     <span>Latest Quiz:</span>
                                     <br>
                                     <% if (latestQuiz) { %>
-                                        <a href="/admin/quiz/<%= latestQuiz._id %>" target="_blank">
+                                        <a href="/admin/quizzes/start/<%= latestQuiz._id %>" 
+                                           onclick="return confirmStartQuiz('<%= latestQuiz.title %>', '/admin/quizzes/start/<%= latestQuiz._id %>');">
                                             <%= latestQuiz.title %>
                                         </a>
                                     <% } else { %>
@@ -191,7 +192,6 @@
                                     <% } %>
                                     <hr>
                                 </div>
-                            </div>
         
                             <div class="updates videos-container flex-fill p-3 mt-3" style="background-color: #E0F4F9;">
                                 <div class="videos-header d-flex align-items-center mb-2">

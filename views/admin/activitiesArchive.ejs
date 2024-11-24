@@ -144,10 +144,11 @@
 
     <h1>Archived Content</h1>
     <div class="form-group">
-        <label for="archiveSelect">Archived Option</label>
+        <label for="archiveSelect">View Archived</label>
         <select class="form-control" id="archiveSelect" name="archiveSelect" onchange="toggleArchiveSections()">
-            <option value="activityRooms">Archived Activity Rooms</option>
-            <option value="tests">Archived Tests</option>
+            <option value="activityRooms">Activity Rooms</option>
+            <option value="tests">Tests</option>
+            <option value="activities"> Activity</option>
         </select>
     </div>
 
@@ -159,7 +160,7 @@
                     <li class="archive-item">
                         <img src="/assets/activityroomarchive.png" alt="Activity Icon">
                         <strong><%= activityRoom.subject %></strong> - <%= activityRoom.activityType %>
-                        <button onclick="unarchiveActivityRoom('<%= activityRoom._id %>')">Unarchive</button>
+                        <button onclick="unarchiveActivityRoom('<%= activityRoom._id %>')">Restore</button>
                     </li>
                 <% }); %>
             <% } else { %>
@@ -177,7 +178,7 @@
                         <img src="/assets/activityarchive.png" alt="Quiz Icon">
                         <strong><%= quiz.title %></strong>
                         <p>Archived on: <%= new Date(quiz.archivedAt).toLocaleString() %></p>
-                        <button onclick="unarchiveQuiz('<%= quiz._id %>')">Unarchive</button>
+                        <button onclick="unarchiveQuiz('<%= quiz._id %>')">Restore</button>
                     </li>
                 <% }); %>
             <% } else { %>
@@ -186,37 +187,66 @@
         </ul>
     </div>
 
+    <div class="archive-container" id="archivedActivities" style="display: none;">
+        <h2>Archived Activities</h2>
+        <ul>
+            <% if (archivedActivities.length > 0) { %>
+                <% archivedActivities.forEach(activity => { %>
+                    <li class="archive-item">
+                        <img src="/assets/activityarchive.png" alt="Activity Icon">
+                        <strong><%= activity.title %></strong>
+                        <p>Description: <%= activity.description %></p>
+                        <p>Deadline: <%= activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline' %></p>
+                        <button onclick="unarchiveActivity('<%= activity._id %>')">Restore</button>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li>No archived activities available.</li>
+            <% } %>
+        </ul>
+    </div>
+    
+
     <div class="dropdown-content">
         <a href="/admin/activities/<%= roomId %>">Go Back</a>
     </div>
 
-    <script>
+<script>
         function toggleArchiveSections() {
-            const selectedOption = document.getElementById("archiveSelect").value;
-            document.getElementById("archivedActivityRooms").style.display = selectedOption === "activityRooms" ? "block" : "none";
-            document.getElementById("archivedTests").style.display = selectedOption === "tests" ? "block" : "none";
+            const selectedOption = document.getElementById('archiveSelect').value;
+            document.getElementById('archivedActivityRooms').style.display = selectedOption === 'activityRooms' ? 'block' : 'none';
+            document.getElementById('archivedTests').style.display = selectedOption === 'tests' ? 'block' : 'none';
+            document.getElementById('archivedActivities').style.display = selectedOption === 'activities' ? 'block' : 'none';
         }
 
-        function unarchiveActivityRoom(activityRoomId) {
-            fetch(`/admin/unarchive-activity-room/${activityRoomId}`, { method: 'POST' })
-                .then(response => response.json())
+        function unarchiveActivityRoom(id) {
+            fetch(`/admin/unarchive-activity-room/${id}`, { method: 'POST' })
+                .then(res => res.json())
                 .then(data => {
                     alert(data.message);
-                    window.location.reload();
+                    location.reload();
                 })
-                .catch(error => console.error('Error unarchiving activity room:', error));
+                .catch(err => console.error(err));
         }
 
-        function unarchiveQuiz(quizId) {
-            if (confirm("Are you sure you want to unarchive this quiz?")) {
-                fetch(`/admin/unarchive-quiz/${quizId}`, { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        alert(data.message);
-                        window.location.reload();
-                    })
-                    .catch(error => console.error('Error unarchiving quiz:', error));
-            }
+        function unarchiveQuiz(id) {
+            fetch(`/admin/unarchive-quiz/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload();
+                })
+                .catch(err => console.error(err));
+        }
+
+        function unarchiveActivity(id) {
+            fetch(`/admin/unarchive-activity/${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload();
+                })
+                .catch(err => console.error(err));
         }
     </script>
 </body>

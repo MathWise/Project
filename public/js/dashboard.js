@@ -65,3 +65,13 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("quizAnalytics is undefined in dashboard.js");
     }
 });
+
+function confirmStartQuiz(quizTitle, quizUrl) {
+    const confirmed = confirm(`Are you sure you want to start the quiz: "${quizTitle}"? You cannot cancel once you begin.`);
+    if (confirmed) {
+        // Navigate to the quiz URL if confirmed
+        window.location.href = quizUrl;
+    }
+    // Prevent default action if not confirmed
+    return false;
+}
