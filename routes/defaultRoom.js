@@ -90,12 +90,12 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         console.log('Default Lesson created successfully:', defaultLesson);
 
         // Step 6: Upload default video to GridFS
-        const videoPath = path.join(__dirname, '../public/defaults/sampleVideo.mp4');
+        const videoPath = path.join(__dirname, '../public/defaults/sampleVideos.mp4');
         const videoBucket = getVideoBucket();
         const videoStream = fs.createReadStream(videoPath);
 
         const videoUpload = new Promise((resolve, reject) => {
-            const uploadVideoStream = videoBucket.openUploadStream('sampleVideo.mp4', {
+            const uploadVideoStream = videoBucket.openUploadStream('sampleVideos.mp4', {
                 metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom._id },
             });
 
@@ -107,7 +107,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         await videoUpload;
 
         // Fetch the uploaded video file from GridFS
-        const videoFile = await videoBucket.find({ filename: 'sampleVideo.mp4' }).toArray();
+        const videoFile = await videoBucket.find({ filename: 'sampleVideos.mp4' }).toArray();
         if (!videoFile.length) throw new Error('Video upload failed');
 
         console.log('Default video uploaded successfully:', videoFile[0]);
@@ -118,7 +118,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
             videoFiles: [
                 {
                     videoFileId: videoFile[0]._id,
-                    videoFileName: 'sampleVideo.mp4',
+                    videoFileName: 'sampleVideos.mp4',
                     archived: false,
                 },
             ],
