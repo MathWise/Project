@@ -1295,79 +1295,89 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
 });
 
 // Submit quiz route with enhanced debug logging
-router.post('/activity/submit/:activityId', ensureLoggedIn, upload.single('submissionFile'), async (req, res) => {
-    try {
-        const { activityId } = req.params;
-        const submissionBucket = getSubmissionBucket();
+router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+    const { answers = [] } = req.body;
+    const userId = new mongoose.Types.ObjectId(req.user._id);
 
-        if (!req.file) {
-            req.flash('error', 'No file uploaded.');
-            return res.redirect(`/admin/activity/details/${activityId}`);
+    try {
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
         }
 
-        const filename = `${req.user._id}-${req.file.originalname}`;
-        const uploadStream = submissionBucket.openUploadStream(filename);
+        const attemptCount = await QuizResult.countDocuments({
+            quizId: new mongoose.Types.ObjectId(quizId),
+            userId,
+            isSubmitted: true
+        });
+        console.log(`Attempt count before submission for user ${userId} on quiz ${quizId}: ${attemptCount}`);
 
-        // Upload file to GridFS
-        uploadStream.end(req.file.buffer);
+        if (attemptCount >= quiz.maxAttempts) {
+            req.flash('error', 'You have reached the maximum allowed attempts.');
+            return res.redirect(`/admin/quizzes/result/${quizId}`);
+        }
 
-        uploadStream.on('finish', async () => {
-            const file = await submissionBucket.find({ filename }).toArray();
+        let correctCount = 0;
+        const resultAnswers = quiz.questions.map((question, qIndex) => {
+            const userAnswer = answers[qIndex] || 'No answer provided';
+            let isCorrect = false;
 
-            if (file.length > 0) {
-                const activity = await Activity.findById(activityId);
-                if (!activity) {
-                    req.flash('error', 'Activity not found.');
-                    return res.redirect(`/admin/activity/details/${activityId}`);
+            if (userAnswer !== 'No answer provided') {
+                if (question.type === 'multiple-choice') {
+                    isCorrect = question.choices.some(choice => choice.isCorrect && choice.text === userAnswer);
+                } else if (question.type === 'fill-in-the-blank') {
+                    isCorrect = question.correctAnswer.trim().toLowerCase() === userAnswer.trim().toLowerCase();
                 }
-
-                // Add submission details to the activity
-                activity.submissions.push({
-                    userId: req.user._id,
-                    userName: `${req.user.first_name} ${req.user.last_name}`,
-                    fileName: req.file.originalname,
-                    fileId: file[0]._id,
-                    submittedAt: new Date(),
-                });
-
-                await activity.save();
-                req.flash('success', 'Submission successful!');
-            } else {
-                req.flash('error', 'File upload failed.');
             }
-            res.redirect(`/admin/activity/details/${activityId}`);
+
+            if (isCorrect) correctCount++;
+
+            return {
+                questionId: question._id,
+                questionText: question.questionText,
+                userAnswer,
+                isCorrect
+            };
         });
-    } catch (error) {
-        console.error('Error during submission:', error);
-        req.flash('error', 'Submission failed.');
-        res.redirect(`/admin/activity/details/${activityId}`);
+
+        const isLate = quiz.deadline && DateTime.now().toUTC() > DateTime.fromJSDate(quiz.deadline).toUTC();
+
+        const quizResult = new QuizResult({
+            userId,
+            quizId: new mongoose.Types.ObjectId(quizId),
+            answers: resultAnswers,
+            score: correctCount,
+            isSubmitted: true,
+            isLate,
+            submittedAt: DateTime.now().toUTC().toJSDate()
+        });
+
+        await quizResult.save();
+        console.log(`New QuizResult saved for user ${userId} on quiz ${quizId}.`);
+
+        const savedQuizResult = await QuizResult.findById(quizResult._id);
+        console.log(`Verified QuizResult for user ${userId} on quiz ${quizId}:`, {
+            isSubmitted: savedQuizResult.isSubmitted,
+            score: savedQuizResult.score,
+            submittedAt: savedQuizResult.submittedAt
+        });
+
+        // Clear quizStartTime and currentQuizId after submission
+        delete req.session.quizStartTime;
+        delete req.session.currentQuizId;
+
+        req.flash('success', `You got ${correctCount} out of ${quiz.questions.length} correct!`);
+        return res.redirect(`/admin/quizzes/result/${quizId}`);
+    } catch (err) {
+        console.error('Error submitting quiz:', err);
+        req.flash('error', 'Error submitting quiz. ' + err.message);
+        return res.redirect('/admin/homeAdmin');
     }
 });
 
 
-router.get('/test-submission', async (req, res) => {
-    const submissionBucket = getSubmissionBucket();
-    const filename = 'test-file.txt';
-    const fs = require('fs');
-
-    try {
-        const uploadStream = submissionBucket.openUploadStream(filename);
-        fs.createReadStream('./test-file.txt').pipe(uploadStream);
-
-        uploadStream.on('finish', () => {
-            console.log('File uploaded successfully:', uploadStream.id);
-            res.send(`File uploaded with ID: ${uploadStream.id}`);
-        });
-
-        uploadStream.on('error', (error) => {
-            console.error('Error during file upload:', error);
-            res.status(500).send('File upload failed.');
-        });
-    } catch (error) {
-        console.error('Error testing submission upload:', error);
-        res.status(500).send('Error testing submission upload.');
-    }
-});
 
 
 
@@ -1632,27 +1642,33 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
+
+
+//activty-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
 router.post('/activity/create', ensureAdminLoggedIn, upload.single('attachment'), async (req, res) => {
     const { aactivityRoomId, title, description, points, deadline, videoLink } = req.body;
 
     console.log('Creating activity with aactivityRoomId:', aactivityRoomId);
     console.log('Form Data:', req.body);
 
-    // Validate `aactivityRoomId`
     if (!mongoose.Types.ObjectId.isValid(aactivityRoomId)) {
         req.flash('error', 'Invalid activity room ID.');
         return res.redirect('/admin/homeAdmin');
     }
 
     try {
-        // Check for the corresponding activity room
         const activityRoom = await ActivityRoom.findById(aactivityRoomId);
         if (!activityRoom) {
             req.flash('error', 'Activity room not found.');
             return res.redirect('/admin/activities');
         }
 
-        // Validate points
         if (!points || isNaN(points)) {
             req.flash('error', 'Points must be a valid number.');
             return res.redirect(`/admin/activities/${aactivityRoomId}`);
@@ -1667,12 +1683,15 @@ router.post('/activity/create', ensureAdminLoggedIn, upload.single('attachment')
             return res.redirect(`/admin/activities/${aactivityRoomId}`);
         }
 
-        // Handle file attachment (if provided)
-        const fileAttachment = req.file
-            ? { fileName: req.file.originalname, filePath: req.file.path }
-            : null;
+        let fileAttachment = null;
+        if (req.file) {
+            // If file uploaded, save its reference
+            fileAttachment = {
+                fileName: req.file.filename,
+                fileId: req.file.id, // GridFS ID
+            };
+        }
 
-        // Create and save the activity
         const newActivity = new Activity({
             title,
             description,
@@ -1680,12 +1699,12 @@ router.post('/activity/create', ensureAdminLoggedIn, upload.single('attachment')
             fileAttachments: fileAttachment ? [fileAttachment] : [],
             points: parseInt(points, 10),
             deadline: deadlineUTC,
-            videoLink: videoLink || null, // Save the video link if provided
+            videoLink: videoLink || null,
         });
 
         await newActivity.save();
         req.flash('success', 'Activity created successfully!');
-        res.redirect('/admin/activities/' + activityRoom.roomId);
+        res.redirect(`/admin/activities/${activityRoom.roomId}`);
     } catch (err) {
         console.error('Error creating activity:', err);
         req.flash('error', `Error creating activity: ${err.message}`);
@@ -1797,64 +1816,98 @@ router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
 
 
 // Configure Multer for GridFS storage
-const storages = new GridFsStorage({
+const submissionStorage = new GridFsStorage({
     url: process.env.MONGODB_URI,
     file: (req, file) => {
         return new Promise((resolve, reject) => {
             const fileInfo = {
-                bucketName: 'submissions', // The name of the GridFS bucket
-                filename: `${Date.now()}-${file.originalname}`, // Generate a unique filename
+                bucketName: 'submissions', // Bucket for Activity Submissions
+                filename: `${Date.now()}-${file.originalname}`, // Unique filename
             };
             resolve(fileInfo);
         });
     },
 });
 
-const uploads = multer({ storage: storages });
+const uploadSubmission = multer({ storage: submissionStorage });
 
-router.post('/activity/submit/:activityId', ensureLoggedIn, uploads.single('submissionFile'), async (req, res) => {
+
+
+
+
+// Submit quiz route with enhanced debug logging
+router.post('/activity/submit/:activityId', ensureLoggedIn, upload.single('submissionFile'), async (req, res) => {
     try {
         const { activityId } = req.params;
-
-        console.log("req.user:", req.user);
-        console.log("Uploaded file:", req.file);
-
-        if (!req.user) {
-            req.flash('error', 'User information not found. Please log in again.');
-            return res.redirect(`/admin/activity/details/${activityId}`);
-        }
+        const submissionBucket = getSubmissionBucket();
 
         if (!req.file) {
-            req.flash('error', 'File upload failed. Please try again.');
+            req.flash('error', 'No file uploaded.');
             return res.redirect(`/admin/activity/details/${activityId}`);
         }
 
-        const fullName = `${req.user.first_name} ${req.user.last_name}`;
+        const filename = `${req.user._id}-${req.file.originalname}`;
+        const uploadStream = submissionBucket.openUploadStream(filename);
 
-        // Find the activity
-        const activity = await Activity.findById(activityId);
-        if (!activity) {
-            req.flash('error', 'Activity not found.');
-            return res.redirect(`/admin/activity/details/${activityId}`);
-        }
+        // Upload file to GridFS
+        uploadStream.end(req.file.buffer);
 
-        // Add the submission details to the activity
-        activity.submissions.push({
-            userId: req.user._id,
-            userName: fullName,
-            fileName: req.file.filename, // File name stored in GridFS
-            fileId: req.file.id, // File ID in GridFS
-            submittedAt: new Date(),
+        uploadStream.on('finish', async () => {
+            const file = await submissionBucket.find({ filename }).toArray();
+
+            if (file.length > 0) {
+                const activity = await Activity.findById(activityId);
+                if (!activity) {
+                    req.flash('error', 'Activity not found.');
+                    return res.redirect(`/admin/activity/details/${activityId}`);
+                }
+
+                // Add submission details to the activity
+                activity.submissions.push({
+                    userId: req.user._id,
+                    userName: `${req.user.first_name} ${req.user.last_name}`,
+                    fileName: req.file.originalname,
+                    fileId: file[0]._id,
+                    submittedAt: new Date(),
+                });
+
+                await activity.save();
+                req.flash('success', 'Submission successful!');
+            } else {
+                req.flash('error', 'File upload failed.');
+            }
+            res.redirect(`/admin/activity/details/${activityId}`);
+        });
+    } catch (error) {
+        console.error('Error during submission:', error);
+        req.flash('error', 'Submission failed.');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    }
+});
+
+
+
+router.get('/test-submission', async (req, res) => {
+    const submissionBucket = getSubmissionBucket();
+    const filename = 'test-file.txt';
+    const fs = require('fs');
+
+    try {
+        const uploadStream = submissionBucket.openUploadStream(filename);
+        fs.createReadStream('./test-file.txt').pipe(uploadStream);
+
+        uploadStream.on('finish', () => {
+            console.log('File uploaded successfully:', uploadStream.id);
+            res.send(`File uploaded with ID: ${uploadStream.id}`);
         });
 
-        await activity.save();
-
-        req.flash('success', 'Submission successful!');
-        res.redirect(`/admin/activity/details/${activityId}`);
+        uploadStream.on('error', (error) => {
+            console.error('Error during file upload:', error);
+            res.status(500).send('File upload failed.');
+        });
     } catch (error) {
-        console.error('Error submitting activity:', error);
-        req.flash('error', 'Failed to submit activity.');
-        res.redirect(`/admin/activity/details/${activityId}`);
+        console.error('Error testing submission upload:', error);
+        res.status(500).send('Error testing submission upload.');
     }
 });
 

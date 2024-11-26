@@ -1,4 +1,6 @@
 const { MongoClient, GridFSBucket } = require('mongodb');
+const mongoose = require('mongoose');
+
 const mongoURI = process.env.MONGODB_URI;
 
 let pdfBucket;

@@ -6,7 +6,10 @@ const submissionSchema = new mongoose.Schema({
     fileName: { type: String, required: true }, // Original file name
     fileId: { type: mongoose.Schema.Types.ObjectId, required: true }, // GridFS file ID
     submittedAt: { type: Date, default: Date.now },
-    grade: { type: Number, default: null }, // Admin-assigned grade
+    grade: {  type: Number, 
+        default: null, 
+        min: 0, 
+        max: 100 }, // Admin-assigned grade
     feedback: { type: String, default: '' }, // Admin feedback
 });
 
