@@ -48,3 +48,44 @@ button:hover {
     background-color: #f44336; /* Red */
     color: white;
 }
+
+.kebab-menu-container {
+    position: relative;
+    display: inline-block;
+}
+
+.kebab-menu-btn {
+    background: none;
+    border: none;
+    font-size: 2em; /* Larger size */
+    cursor: pointer;
+    padding: 0.5em;
+    color: black;
+    display: flex; /* Helps align if inside a container */
+    align-items: center;
+    justify-content: center;
+}
+
+
+.kebab-menu-content {
+    position: absolute;
+    background-color: rgb(255, 255, 255);
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.kebab-menu-content form {
+    margin: 0;
+}
+
+.late {
+    color: red;
+    font-weight: bold;
+}
+
+.kebab-menu-btn:hover {
+    color: gray; /* Changes to gray on hover */
+}
