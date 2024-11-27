@@ -23,7 +23,7 @@ const middleware = {
 
     // Ensures the user is an admin
     ensureAdminLoggedIn: (req, res, next) => {
-        
+          console.log("Is user authenticated?", req.isAuthenticated());
         if (!req.isAuthenticated()) {
             console.log("User is not authenticated, redirecting to login");
             req.session.returnTo = req.originalUrl; // Store original URL for post-login redirect

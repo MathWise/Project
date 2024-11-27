@@ -2,6 +2,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 const express = require('express');
 const { initBuckets } = require('./config/gridFS.js');
+const { initActivityBucket } = require('./config/activityGridFS');
+const activityRoutes = require('./routes/activitySec');
+const fileActivityRoutes = require('./routes/fileActivity');
 const path = require('path');
 const User = require('./models/user.js');
 const connectDB = require('./config/dbConnection');
@@ -38,7 +41,16 @@ const app = express();
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-
+// Initialize Activity GridFS bucket
+(async () => {
+  try {
+      await initActivityBucket(); // Initialize the activity bucket
+      console.log('Activity GridFS bucket initialized successfully');
+  } catch (error) {
+      console.error('Failed to initialize Activity GridFS bucket:', error);
+      process.exit(1);
+  }
+})();
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -90,7 +102,8 @@ app.use('/admin', archiveLessonRoomRoutes);
 app.use('/admin', archiveMediaRoutes);
 
 app.use('/admin', defaultRoomRoutes);
-
+app.use('/admin', activityRoutes);
+app.use('/', fileActivityRoutes);
 app.use(roomFPasswordRoutes);
 
 const port = process.env.PORT || 8080;

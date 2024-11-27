@@ -20,7 +20,7 @@ const activitySchema = new mongoose.Schema({
     fileAttachments: [
         {
             fileName: { type: String },
-            filePath: { type: String }
+            _id: { type: mongoose.Schema.Types.ObjectId },
         }
     ], // Optional
     videoLink: { type: String }, // Optional
