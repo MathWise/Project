@@ -10,6 +10,7 @@ const { getSubmissionBucket } = require('../config/activityGridFS');
 const Activity = require('../models/activityM'); // Adjust the path to your Activity model
 const ActivityRoom = require('../models/activityRoom');
 const mime = require('mime-types');
+const XLSX = require('xlsx');
 
 const router = express.Router();
 
@@ -474,7 +475,47 @@ router.post('/activity/grade/:activityId/:submissionId', ensureAdminLoggedIn, as
     }
 });
 
+router.get('/activity/export/:activityId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityId } = req.params;
 
+    try {
+        // Fetch the activity and its submissions
+        const activity = await Activity.findById(activityId);
+        if (!activity) {
+            req.flash('error', 'Activity not found.');
+            return res.redirect(`/admin/activity/details/${activityId}`);
+        }
+
+        // Prepare data for the Excel file
+        const submissionsData = activity.submissions.map((submission) => {
+            const isLate = new Date(submission.submittedAt) > new Date(activity.deadline);
+            return {
+                Name: submission.userName,
+                Grade: submission.grade !== null ? submission.grade : 'Not Graded',
+                Feedback: submission.feedback || 'No Feedback',
+                'Submission Time': new Date(submission.submittedAt).toLocaleString(),
+                'Late Submission': isLate ? 'Yes' : 'No',
+            };
+        });
+
+        // Create a new workbook and worksheet
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(submissionsData);
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Submissions');
+
+        // Generate a buffer for the Excel file
+        const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' });
+
+        // Set response headers for downloading the file
+        res.setHeader('Content-Disposition', `attachment; filename="Submissions_${activity.title}.xlsx"`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Error exporting submissions:', error);
+        req.flash('error', 'Failed to export submissions.');
+        res.redirect(`/admin/activity/details/${activityId}`);
+    }
+});
 // Additional activity-related routes (e.g., for submissions, grading, etc.) can be added here
 
 module.exports = router;

@@ -7,7 +7,10 @@
 <body>
    
     <div class="container">
-        <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>
+        <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>   &nbsp;&nbsp;&nbsp;
+        <a href="/admin/activity/export/<%= activity._id %>" class="btn btn-secondary">Export Submissions to Excel</a>
+
+        
         <% if (successMessages && successMessages.length > 0) { %>
             <div class="success">
                 <% successMessages.forEach(msg => { %>
@@ -24,7 +27,7 @@
         <% } %>
         
 
-        <h1><%= activity.title %></h1>
+        <h1><%= activity.title %> </h1> 
         <p><%= activity.description %></p>
         <p><strong>Deadline:</strong> <%= new Date(activity.deadline).toLocaleString() %></p>
         <p><strong>Points:</strong> <%= activity.points %></p>
@@ -81,12 +84,17 @@
     </form>
 <% } %>
 
-<h2>Submissions</h2>
+<h2>Submissions:</h2> 
 <ul>
+
     <% activity.submissions.forEach(submission => { %>
         <li>
-            <strong><%= submission.userName %></strong> submitted:
+            <strong>Name: <%= submission.userName %></strong> 
+            <br>submitted:
             <a href="/file/<%= submission.fileId %>" target="_blank"><%= submission.fileName %></a>
+            
+            <!-- Display submission time and date -->
+            <p>Submitted on: <%= new Date(submission.submittedAt).toLocaleString() %></p>
             
             <% 
                 const isLate = new Date(submission.submittedAt) > new Date(activity.deadline);
@@ -118,7 +126,6 @@
                 </div>
             <% } else { %>
                 <!-- Submit Grade Form -->
-                 
                 <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
                     <label for="grade">Enter Grade:</label>
                     <input type="number" name="grade" placeholder="Enter grade" required min="1" max="100">
