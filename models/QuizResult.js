@@ -1,3 +1,4 @@
+//models/QuizResul.js
 const mongoose = require('mongoose');
 
 const quizResultSchema = new mongoose.Schema({

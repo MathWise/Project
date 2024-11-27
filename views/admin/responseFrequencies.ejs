@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head'); %>
+    <title>Response Frequencies</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Add a CSS rule to make the canvas smaller */
+        canvas {
+            max-width: 300px;
+            max-height: 300px;
+            margin: 0 auto; /* Center the charts horizontally */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frequency of Responses for <%= quiz.title %></h1>
+        <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-secondary">Back to Overall Summary</a>
+        <a href="/admin/responseFrequencies/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
+
+        <% Object.keys(frequencyData).forEach((questionId, index) => { %>
+            <h3><%= frequencyData[questionId].questionText %></h3>
+            <p><strong>Total Answers:</strong> <%= frequencyData[questionId].total %></p>
+            <!-- Canvas for Pie Chart -->
+            <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
+        <% }) %>
+    </div>
+
+    <script>
+        // Loop through questions and render charts dynamically
+        <% Object.keys(frequencyData).forEach((questionId, index) => { %>
+            const ctx<%= index %> = document.getElementById('chart-<%= index %>').getContext('2d');
+            new Chart(ctx<%= index %>, {
+                type: 'pie',
+                data: {
+                    labels: <%- JSON.stringify(Object.keys(frequencyData[questionId].choices)) %>, // Choice labels
+                    datasets: [{
+                        data: <%- JSON.stringify(Object.values(frequencyData[questionId].choices)) %>, // Frequency values
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(153, 102, 255, 0.6)',
+                            'rgba(255, 159, 64, 0.6)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: false, // Disable responsiveness to use fixed dimensions
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const value = tooltipItem.raw;
+                                    const total = <%- frequencyData[questionId].total %>;
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${tooltipItem.label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        <% }) %>
+    </script>
+</body>
+</html>

@@ -86,7 +86,7 @@ router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
 
 
 
-// Route to manage user access
+
 // Route to manage user access
 router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
     const { search } = req.query; // Get the search query from the request
@@ -728,6 +728,151 @@ router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) 
 });
 
 
+router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz details
+        const quiz = await Quiz.findById(quizId).lean();
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch all results for the quiz
+        const quizResults = await QuizResult.find({ quizId }).lean();
+        if (!quizResults.length) {
+            req.flash('error', 'No results found for this quiz.');
+            return res.redirect(`/admin/overallSummary/${quizId}`);
+        }
+
+        // Calculate frequency of responses for each question
+        const frequencyData = {};
+        quizResults.forEach(result => {
+            result.answers.forEach(answer => {
+                const questionId = answer.questionId;
+                const userAnswer = answer.userAnswer;
+
+                if (!frequencyData[questionId]) {
+                    frequencyData[questionId] = {
+                        questionText: answer.questionText,
+                        choices: {}, // Store frequencies of each choice
+                        total: 0 // Track total answers for the question
+                    };
+                }
+
+                if (!frequencyData[questionId].choices[userAnswer]) {
+                    frequencyData[questionId].choices[userAnswer] = 0;
+                }
+
+                frequencyData[questionId].choices[userAnswer]++;
+                frequencyData[questionId].total++; // Increment the total for the question
+            });
+        });
+
+        // Render the frequency view
+        res.render('admin/responseFrequencies', {
+            quiz,
+            frequencyData
+        });
+
+    } catch (err) {
+        console.error('Error calculating response frequencies:', err);
+        req.flash('error', 'Failed to calculate response frequencies.');
+        res.redirect(`/admin/overallSummary/${quizId}`);
+    }
+});
+
+
+
+router.get('/responseFrequencies/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz details
+        const quiz = await Quiz.findById(quizId).lean();
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Fetch all results for the quiz
+        const quizResults = await QuizResult.find({ quizId }).lean();
+        if (!quizResults.length) {
+            req.flash('error', 'No results found for this quiz.');
+            return res.redirect(`/admin/responseFrequencies/${quizId}`);
+        }
+
+        // Calculate frequency of responses for each question
+        const frequencyData = {};
+        const allChoices = new Set(); // To keep track of all unique choices
+
+        quizResults.forEach(result => {
+            result.answers.forEach(answer => {
+                const questionId = answer.questionId;
+                const userAnswer = answer.userAnswer;
+
+                if (!frequencyData[questionId]) {
+                    frequencyData[questionId] = {
+                        questionText: answer.questionText,
+                        choices: {}, // Store frequencies of each choice
+                        total: 0 // Track total answers for the question
+                    };
+                }
+
+                if (!frequencyData[questionId].choices[userAnswer]) {
+                    frequencyData[questionId].choices[userAnswer] = 0;
+                }
+
+                frequencyData[questionId].choices[userAnswer]++;
+                allChoices.add(userAnswer); // Add the choice to the set of unique choices
+                frequencyData[questionId].total++; // Increment the total for the question
+            });
+        });
+
+        // Sort the choices alphabetically for consistent ordering
+        const sortedChoices = Array.from(allChoices).sort();
+
+        // Create a new workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Response Frequencies');
+
+        // Add headers
+        const headers = ['Question', ...sortedChoices, 'Total Responses'];
+        worksheet.columns = headers.map(header => ({ header, key: header, width: 20 }));
+
+        // Populate rows
+        Object.keys(frequencyData).forEach(questionId => {
+            const question = frequencyData[questionId];
+            const row = { Question: question.questionText, 'Total Responses': question.total };
+
+            // Add frequency for each choice, ensuring consistent column order
+            sortedChoices.forEach(choice => {
+                row[choice] = question.choices[choice] || 0; // Default to 0 if the choice wasn't selected
+            });
+
+            worksheet.addRow(row);
+        });
+
+        // Set response headers
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=Response_Frequencies_${quiz.title.replace(/\s+/g, '_')}.xlsx`
+        );
+
+        // Write workbook to response
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('Error exporting response frequencies:', err);
+        req.flash('error', 'Failed to export response frequencies.');
+        res.redirect(`/admin/responseFrequencies/${quizId}`);
+    }
+});
 
 //end of dashboard----------------------------------------------------------------------------------------------------------------------------
 
