@@ -6,6 +6,120 @@ body {
     color: #333;
 }
 
+/* Apply background to the whole page */
+html, body {
+    height: 100%; /* Ensure full height */
+    margin: 0;
+    background-image: url('/assets/bigbg.png'); /* New background image */
+    background-size: cover;
+    background-position: center;
+    font-family: 'Baloo 2', sans-serif;
+}
+
+/* Container styling with background image */
+
+
+h1, h2, h3 {
+    font-size: 1.8rem;
+    margin: 20px 0;
+}
+
+p {
+    font-size: 1rem;
+    color: white; /* White text for readability */
+}
+
+.btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    margin: 10px;
+    border-radius: 5px;
+    text-decoration: none;
+}
+
+.btn-secondary {
+    background-color: #2196F3;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.success, .error {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    margin-bottom: 10px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    h1, h2, h3 {
+        font-size: 1.5rem;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    button {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+
+    p, h1, h2, h3 {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    h1, h2, h3 {
+        font-size: 1.2rem;
+    }
+
+    .btn, button {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+    }
+
+    p, h1, h2, h3 {
+        font-size: 0.8rem;
+    }
+
+    .container {
+        padding: 10px;
+    }
+}
+
+/* Default styles from original CSS */
 .container {
     max-width: 800px;
     margin: 20px auto;
@@ -40,10 +154,12 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
 .replace-btn {
     background-color: #4CAF50; /* Green */
     color: white;
 }
+
 .remove-btn {
     background-color: #f44336; /* Red */
     color: white;
@@ -65,7 +181,6 @@ button:hover {
     align-items: center;
     justify-content: center;
 }
-
 
 .kebab-menu-content {
     position: absolute;

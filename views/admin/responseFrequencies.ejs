@@ -5,11 +5,87 @@
     <title>Response Frequencies</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Add a CSS rule to make the canvas smaller */
+        /* General body styling */
+        body {
+            background-color: #E0F4F9;
+            color: white;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-image: url('/assets/analytics.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Container styling */
+        .container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 100%;
+            width: 100%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1, h3 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        p {
+            font-size: 1rem;
+            color: white;
+        }
+
+        .btn {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+
+        /* Make canvas responsive */
         canvas {
-            max-width: 300px;
-            max-height: 300px;
-            margin: 0 auto; /* Center the charts horizontally */
+            max-width: 90%;
+            height: auto;
+            margin: 20px auto;
+        }
+
+        /* Media Queries for responsiveness */
+        @media (max-width: 768px) {
+            h1, h3 {
+                font-size: 1.3rem;
+            }
+
+            .btn {
+                font-size: 0.9rem;
+                padding: 8px 16px;
+            }
+
+            p {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h1, h3 {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+
+            p {
+                font-size: 0.8rem;
+            }
+
+            canvas {
+                max-width: 100%;
+                height: auto;
+            }
         }
     </style>
 </head>
@@ -48,7 +124,7 @@
                     }]
                 },
                 options: {
-                    responsive: false, // Disable responsiveness to use fixed dimensions
+                    responsive: true, // Enable responsive behavior for the chart
                     plugins: {
                         legend: {
                             position: 'top',

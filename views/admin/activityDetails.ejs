@@ -3,14 +3,31 @@
 <head>
     <title><%= activity.title %></title>
     <link rel="stylesheet" href="/activityDetails.css">
+    <style>
+        .container {
+    background-image: url('/assets/chalkboard.png'); /* Chalkboard background for the container */
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh; /* Take up full height of the viewport */
+    padding: 20px;
+    margin: 0 auto; /* Ensure it's centered horizontally */
+    width: 100%;
+    max-width: 1200px; /* Prevent container from being too wide on large screens */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5); /* Dark transparent background for text contrast */
+    color: white; /* Make text inside the container white */
+}
+    </style>
+        
 </head>
 <body>
-   
+
     <div class="container">
         <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>   &nbsp;&nbsp;&nbsp;
         <a href="/admin/activity/export/<%= activity._id %>" class="btn btn-secondary">Export Submissions to Excel</a>
 
-        
         <% if (successMessages && successMessages.length > 0) { %>
             <div class="success">
                 <% successMessages.forEach(msg => { %>
@@ -25,9 +42,8 @@
                 <% }); %>
             </div>
         <% } %>
-        
 
-        <h1><%= activity.title %> </h1> 
+        <h1><%= activity.title %></h1> 
         <p><%= activity.description %></p>
         <p><strong>Deadline:</strong> <%= new Date(activity.deadline).toLocaleString() %></p>
         <p><strong>Points:</strong> <%= activity.points %></p>
@@ -42,132 +58,75 @@
                   </li>
                 <% }) %>
               </ul>
-              
         <% } else { %>
             <p>No attachments available.</p>
         <% } %>
 
-      
-
         <!-- Submission Form -->
-<!-- Submission Form -->
-<h3>Submit Your Work</h3>
+        <h3>Submit Your Work</h3>
 
-<% const mySubmission = activity.submissions.find(sub => sub.userId.toString() === currentUser._id.toString()); %>
-<% if (mySubmission) { %>
-    <ul>
-        <li>
-            <a href="/file/<%= mySubmission.fileId %>" target="_blank"><%= mySubmission.fileName %></a>
-            <% if (mySubmission.grade !== null) { %>
-                <p><strong>Grade:</strong> <%= mySubmission.grade %></p>
-                <% if (mySubmission.feedback && mySubmission.feedback.trim().length > 0) { %>
-                    <p><strong>Feedback:</strong> <%= mySubmission.feedback %></p>
-                <% } %>
-            <% } else { %>
-                <p>No grade assigned yet.</p>
-            <% } %>
-
-            <form action="/admin/activity/replace/<%= activity._id %>" method="POST" enctype="multipart/form-data" style="display:inline;">
-                <input type="file" name="submissionFile" required>
-                <button class="replace-btn" type="submit">Replace</button>
+        <% const mySubmission = activity.submissions.find(sub => sub.userId.toString() === currentUser._id.toString()); %>
+        <% if (mySubmission) { %>
+            <ul>
+                <li>
+                    <a href="/file/<%= mySubmission.fileId %>" target="_blank"><%= mySubmission.fileName %></a>
+                    <% if (mySubmission.grade !== null) { %>
+                        <p><strong>Grade:</strong> <%= mySubmission.grade %></p>
+                        <% if (mySubmission.feedback && mySubmission.feedback.trim().length > 0) { %>
+                            <p><strong>Feedback:</strong> <%= mySubmission.feedback %></p>
+                        <% } %>
+                    <% } else { %>
+                        <p>No grade assigned yet.</p>
+                    <% } %>
+                    <form action="/admin/activity/replace/<%= activity._id %>" method="POST" enctype="multipart/form-data" style="display:inline;">
+                        <input type="file" name="submissionFile" required>
+                        <button class="replace-btn" type="submit">Replace</button>
+                    </form>
+                    <form action="/admin/activity/remove/<%= activity._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this submission?');">
+                        <button class="remove-btn" type="submit">Remove</button>
+                    </form>
+                </li>
+            </ul>
+        <% } else { %>
+            <form action="/admin/activity/submit/<%= activity._id %>" method="POST" enctype="multipart/form-data">
+                <label for="submissionFile">Attach File:</label>
+                <input type="file" name="submissionFile" id="submissionFile" required>
+                <button type="submit">Submit</button>
             </form>
-            <form action="/admin/activity/remove/<%= activity._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this submission?');">
-                <button class="remove-btn" type="submit">Remove</button>
-            </form>
-        </li>
-    </ul>
-<% } else { %>
-    <form action="/admin/activity/submit/<%= activity._id %>" method="POST" enctype="multipart/form-data">
-        <label for="submissionFile">Attach File:</label>
-        <input type="file" name="submissionFile" id="submissionFile" required>
-        <button type="submit">Submit</button>
-    </form>
-<% } %>
+        <% } %>
 
-<h2>Submissions:</h2> 
-<ul>
+        <h2>Submissions:</h2> 
+        <ul>
+            <% activity.submissions.forEach(submission => { %>
+                <li>
+                    <strong>Name: <%= submission.userName %></strong> 
+                    <br>submitted:
+                    <a href="/file/<%= submission.fileId %>" target="_blank"><%= submission.fileName %></a>
+                    <p>Submitted on: <%= new Date(submission.submittedAt).toLocaleString() %></p>
+                    <% 
+                        const isLate = new Date(submission.submittedAt) > new Date(activity.deadline);
+                    %>
+                    <% if (isLate) { %>
+                        <p style="color: red;"><strong>Late Submission</strong></p>
+                    <% } else { %>
+                        <p><strong>Submitted On Time</strong></p>
+                    <% } %>
 
-    <% activity.submissions.forEach(submission => { %>
-        <li>
-            <strong>Name: <%= submission.userName %></strong> 
-            <br>submitted:
-            <a href="/file/<%= submission.fileId %>" target="_blank"><%= submission.fileName %></a>
-            
-            <!-- Display submission time and date -->
-            <p>Submitted on: <%= new Date(submission.submittedAt).toLocaleString() %></p>
-            
-            <% 
-                const isLate = new Date(submission.submittedAt) > new Date(activity.deadline);
-            %>
-            <% if (isLate) { %>
-                <p style="color: red;"><strong>Late Submission</strong></p>
-            <% } else { %>
-                <p><strong>Submitted On Time</strong></p>
-            <% } %>
-            
-            <% if (submission.grade !== null) { %>
-                <p>Grade: <%= submission.grade %></p>
-                <p>Feedback: <%= submission.feedback || 'No feedback provided.' %></p>
-                
-                <!-- Edit Grade and Feedback Form -->
-                <div class="kebab-menu-container">
-                    <button class="kebab-menu-btn" onclick="toggleMenu('<%= submission._id %>')">⋮</button>
-                    <div class="kebab-menu-content" id="menu-<%= submission._id %>" style="display: none;">
+                    <% if (submission.grade !== null) { %>
+                        <p>Grade: <%= submission.grade %></p>
+                        <p>Feedback: <%= submission.feedback || 'No feedback provided.' %></p>
+                    <% } else { %>
                         <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
-                            <label for="grade">Edit Grade:</label>
-                            <input type="number" name="grade" placeholder="Enter grade" value="<%= submission.grade %>" required min="1" max="100">
-                            
-                            <label for="feedback">Edit Feedback:</label>
-                            <textarea name="feedback" placeholder="Enter feedback"><%= submission.feedback %></textarea>
-                            
-                            <button type="submit">Update Grade</button>
+                            <label for="grade">Enter Grade:</label>
+                            <input type="number" name="grade" id="grade" min="0" max="<%= activity.points %>" required>
+                            <label for="feedback">Enter Feedback:</label>
+                            <textarea name="feedback" id="feedback" rows="4"></textarea>
+                            <button type="submit">Grade Submission</button>
                         </form>
-                    </div>
-                </div>
-            <% } else { %>
-                <!-- Submit Grade Form -->
-                <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
-                    <label for="grade">Enter Grade:</label>
-                    <input type="number" name="grade" placeholder="Enter grade" required min="1" max="100">
-                    
-                    <label for="feedback">Enter Feedback:</label>
-                    <textarea name="feedback" placeholder="Enter feedback"></textarea>
-                    
-                    <button type="submit">Submit Grade</button>
-                </form>
-            <% } %>
-        </li>
-    <% }) %>
-</ul>
-
-
-
-        
+                    <% } %>
+                </li>
+            <% }) %>
+        </ul>
     </div>
-
-    <script>
-        document.querySelectorAll('form').forEach(form => {
-    form.addEventListener('submit', (event) => {
-        const gradeInput = form.querySelector('input[name="grade"]');
-        const grade = parseInt(gradeInput.value, 10);
-
-        if (isNaN(grade) || grade < 1 || grade > 100) {
-            event.preventDefault();
-            alert('Grade must be between 1 and 100.');
-        }
-    });
-});
-
-function toggleMenu(submissionId) {
-    const menu = document.getElementById(`menu-${submissionId}`);
-    if (menu.style.display === "none" || menu.style.display === "") {
-        menu.style.display = "block";
-    } else {
-        menu.style.display = "none";
-    }
-}
-
-
-    </script>
 </body>
 </html>

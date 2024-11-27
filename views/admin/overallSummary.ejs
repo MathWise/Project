@@ -3,49 +3,132 @@
 <head>
     <%- include('../partials/head'); %>
     <title>Overall Summary</title>
+    <style>
+        body {
+            background-color: #E0F4F9;
+            color: white;
+            margin: 0;
+        }
+
+        .container {
+            background-image: url('/assets/analytics.png');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .btn {
+            margin: 5px;
+        }
+
+        table {
+            background: white;
+            color: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #007BFF; /* Bootstrap blue color */
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+
+        td {
+            text-align: center;
+            padding: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.2rem;
+            }
+
+            .btn {
+                font-size: 0.8rem;
+                padding: 5px 10px;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 1rem;
+            }
+
+            .btn {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+
+            table {
+                font-size: 0.8rem;
+            }
+
+            td, th {
+                padding: 8px;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Overall Summary for <%= quiz.title %></h1>
 
-        <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
-        <a href="/admin/overallSummary/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
-        <a href="/admin/responseFrequencies/<%= quiz._id %>" class="btn btn-info">Frequency of Responses</a>
+        <div class="d-flex flex-wrap justify-content-center mb-3">
+            <a href="/admin/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="/admin/overallSummary/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
+            <a href="/admin/responseFrequencies/<%= quiz._id %>" class="btn btn-info">Frequency of Responses</a>
+        </div>
 
-
-        <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Score</th>
-                    <th>Attempt</th>
-                    <th>Submitted At</th>
-                    <th>Late Submission</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <% resultData.forEach(result => { %>
-                    <% 
-                        const scorePercentage = (result.score / quiz.questions.length) * 100;
-                        const isBelowThreshold = scorePercentage < 75;
-                    %>
+        <div class="table-responsive">
+            <table class="table table-bordered mt-3">
+                <thead>
                     <tr>
-                        <td><%= result.first_name %> <%= result.last_name %></td>
-                        <td style="color: <%= isBelowThreshold ? 'red' : 'black' %>;">
-                            <%= result.score %> / <%= quiz.questions.length %> points
-                        </td>
-                        <!-- Display the attempt number -->
-                        <td><%= result.attempt %></td>
-                        <td><%= new Date(result.submittedAt).toLocaleString() %></td>
-                        <td><%= result.isLate ? 'Yes' : 'No' %></td>
-                        <td>
-                            <a href="/admin/testResult/<%= quiz._id %>/<%= result.userId %>" class="btn btn-primary">Test Result</a>
-                        </td>
+                        <th>User</th>
+                        <th>Score</th>
+                        <th>Attempt</th>
+                        <th>Submitted At</th>
+                        <th>Late Submission</th>
+                        <th>Action</th>
                     </tr>
-                <% }) %>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <% resultData.forEach(result => { %>
+                        <% 
+                            const scorePercentage = (result.score / quiz.questions.length) * 100;
+                            const isBelowThreshold = scorePercentage < 75;
+                        %>
+                        <tr>
+                            <td><%= result.first_name %> <%= result.last_name %></td>
+                            <td style="color: <%= isBelowThreshold ? 'red' : 'black' %>;">
+                                <%= result.score %> / <%= quiz.questions.length %> points
+                            </td>
+                            <td><%= result.attempt %></td>
+                            <td><%= new Date(result.submittedAt).toLocaleString() %></td>
+                            <td><%= result.isLate ? 'Yes' : 'No' %></td>
+                            <td>
+                                <a href="/admin/testResult/<%= quiz._id %>/<%= result.userId %>" class="btn btn-primary btn-sm">Test Result</a>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>
