@@ -539,10 +539,13 @@ router.get('/dashboard/allTests/:roomId', ensureAdminLoggedIn, async (req, res) 
                     scoreDistribution,
                     totalScore,
                     dataAvailable: true,
-                    _id: quiz._id
+                    _id: quiz._id,
+                    createdAt: quiz.createdAt
                 };
             })
         );
+          // Sort the analytics data by date (latest first)
+          quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         // Render all test results
         res.render('admin/allTests', { room, quizAnalytics });
@@ -692,6 +695,157 @@ router.get('/overallSummary/:quizId/export', ensureAdminLoggedIn, async (req, re
     }
 });
 
+router.get('/responseFrequencies/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        // Fetch quiz details and populate questions
+        const quiz = await Quiz.findById(quizId).lean();
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/homeAdmin');
+        }
+
+        // Check if questions exist in the quiz
+        if (!quiz.questions || quiz.questions.length === 0) {
+            req.flash('error', 'No questions found for this quiz.');
+            return res.redirect(`/admin/overallSummary/${quizId}`);
+        }
+
+        const quizResults = await QuizResult.find({ quizId }).lean();
+        if (!quizResults.length) {
+            req.flash('error', 'No results found for this quiz.');
+            return res.redirect(`/admin/responseFrequencies/${quizId}`);
+        }
+
+        // Map question details
+        const questionDetails = quiz.questions.reduce((acc, question) => {
+            if (question.type === 'multiple-choice') {
+                // Extract correct answer(s) for multiple-choice questions
+                const correctChoices = question.choices
+                    .filter(choice => choice.isCorrect)
+                    .map(choice => choice.text)
+                    .join(', '); // Join multiple correct answers if applicable
+                acc[question._id.toString()] = {
+                    questionText: question.questionText || 'No question text available',
+                    correctAnswer: correctChoices || 'N/A'
+                };
+            } else if (question.type === 'fill-in-the-blank') {
+                // Use the `correctAnswer` field for fill-in-the-blank questions
+                acc[question._id.toString()] = {
+                    questionText: question.questionText || 'No question text available',
+                    correctAnswer: question.correctAnswer || 'N/A'
+                };
+            }
+            return acc;
+        }, {});
+
+        // Calculate frequency data
+        const frequencyData = {};
+        quizResults.forEach(result => {
+            result.answers.forEach(answer => {
+                const questionId = answer.questionId.toString();
+                const userAnswer = answer.userAnswer;
+                const isCorrect = answer.isCorrect;
+
+                if (!frequencyData[questionId]) {
+                    frequencyData[questionId] = {
+                        questionText: questionDetails[questionId]?.questionText || 'No question text available',
+                        correctAnswer: questionDetails[questionId]?.correctAnswer || 'N/A',
+                        choices: {}, // Frequencies for A, B, C, D, etc.
+                        correctTotal: 0, // Total correct responses
+                        incorrectTotal: 0, // Total incorrect responses
+                        total: 0 // Total responses
+                    };
+                }
+
+                if (!frequencyData[questionId].choices[userAnswer]) {
+                    frequencyData[questionId].choices[userAnswer] = 0;
+                }
+
+                frequencyData[questionId].choices[userAnswer]++;
+                frequencyData[questionId].total++;
+
+                if (isCorrect) {
+                    frequencyData[questionId].correctTotal++;
+                } else {
+                    frequencyData[questionId].incorrectTotal++;
+                }
+            });
+        });
+
+        // Create workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Response Frequencies');
+
+        // Define headers
+        const headers = [
+            'Question',
+            'A',
+            'B',
+            'C',
+            'D',
+            'Correct Answer',
+            'Correct Responses',
+            'Incorrect Responses',
+            'Total Responses'
+        ];
+        worksheet.columns = headers.map(header => ({ header, key: header, width: 20 }));
+
+        // Populate rows and highlight correct responses
+        Object.keys(frequencyData).forEach(questionId => {
+            const question = frequencyData[questionId];
+            const row = worksheet.addRow({
+                Question: question.questionText,
+                'Correct Answer': question.correctAnswer,
+                'Correct Responses': question.correctTotal,
+                'Incorrect Responses': question.incorrectTotal,
+                'Total Responses': question.total
+            });
+
+            // Map responses to columns A, B, C, D
+            const choiceKeys = Object.keys(question.choices);
+            const correctChoiceKey = choiceKeys.find(
+                choice => choice === question.correctAnswer
+            );
+
+            ['A', 'B', 'C', 'D'].forEach((label, idx) => {
+                const choiceText = choiceKeys[idx];
+                const responseCount = choiceText ? question.choices[choiceText] || 0 : 0;
+
+                // Add response count to the appropriate column
+                row.getCell(label).value = responseCount;
+
+                // Highlight the correct response if it matches
+                if (choiceText === correctChoiceKey) {
+                    row.getCell(label).fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: 'FFFF00' } // Yellow highlight
+                    };
+                }
+            });
+        });
+
+        // Set response headers
+        res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        );
+        res.setHeader(
+            'Content-Disposition',
+            `attachment; filename=Response_Frequencies_${quiz.title.replace(/\s+/g, '_')}.xlsx`
+        );
+
+        // Write workbook to response
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        console.error('Error exporting response frequencies:', err);
+        req.flash('error', 'Failed to export response frequencies.');
+        res.redirect(`/admin/responseFrequencies/${quizId}`);
+    }
+});
 
 // Route to display individual test results for a specific user on a quiz
 router.get('/testResult/:quizId/:userId', ensureAdminLoggedIn, async (req, res) => {
@@ -732,12 +886,42 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
     const { quizId } = req.params;
 
     try {
-        // Fetch quiz details
+        // Fetch quiz details and populate questions
         const quiz = await Quiz.findById(quizId).lean();
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
         }
+
+        // Check if the quiz has questions
+        if (!quiz.questions || quiz.questions.length === 0) {
+            req.flash('error', 'No questions found for this quiz.');
+            return res.redirect(`/admin/overallSummary/${quizId}`);
+        }
+
+        // Map question details (including correctAnswer for multiple-choice and fill-in-the-blank)
+        const questionDetails = quiz.questions.reduce((acc, question) => {
+            if (question.type === 'multiple-choice') {
+                // For multiple-choice, find the correct choice(s)
+                const correctChoices = question.choices
+                    .filter(choice => choice.isCorrect)
+                    .map(choice => choice.text)
+                    .join(', '); // Join multiple correct answers if applicable
+                acc[question._id.toString()] = {
+                    questionText: question.questionText || 'No question text available',
+                    correctAnswer: correctChoices || 'N/A'
+                };
+            } else if (question.type === 'fill-in-the-blank') {
+                // For fill-in-the-blank, use the correctAnswer field
+                acc[question._id.toString()] = {
+                    questionText: question.questionText || 'No question text available',
+                    correctAnswer: question.correctAnswer || 'N/A'
+                };
+            }
+            return acc;
+        }, {});
+
+        console.log('Question Details:', questionDetails); // Debugging
 
         // Fetch all results for the quiz
         const quizResults = await QuizResult.find({ quizId }).lean();
@@ -750,14 +934,15 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
         const frequencyData = {};
         quizResults.forEach(result => {
             result.answers.forEach(answer => {
-                const questionId = answer.questionId;
+                const questionId = answer.questionId.toString();
                 const userAnswer = answer.userAnswer;
 
                 if (!frequencyData[questionId]) {
                     frequencyData[questionId] = {
-                        questionText: answer.questionText,
-                        choices: {}, // Store frequencies of each choice
-                        total: 0 // Track total answers for the question
+                        questionText: questionDetails[questionId]?.questionText || 'No question text available',
+                        correctAnswer: questionDetails[questionId]?.correctAnswer || 'N/A',
+                        choices: {}, // To store frequencies of each choice
+                        total: 0 // To track the total answers for the question
                     };
                 }
 
@@ -766,9 +951,11 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
                 }
 
                 frequencyData[questionId].choices[userAnswer]++;
-                frequencyData[questionId].total++; // Increment the total for the question
+                frequencyData[questionId].total++; // Increment total for the question
             });
         });
+
+        console.log('Frequency Data:', frequencyData); // Debugging
 
         // Render the frequency view
         res.render('admin/responseFrequencies', {
@@ -785,94 +972,100 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
 
 
 
-router.get('/responseFrequencies/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
-    const { quizId } = req.params;
 
-    try {
-        // Fetch quiz details
-        const quiz = await Quiz.findById(quizId).lean();
-        if (!quiz) {
-            req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin/homeAdmin');
-        }
 
-        // Fetch all results for the quiz
-        const quizResults = await QuizResult.find({ quizId }).lean();
-        if (!quizResults.length) {
-            req.flash('error', 'No results found for this quiz.');
-            return res.redirect(`/admin/responseFrequencies/${quizId}`);
-        }
 
-        // Calculate frequency of responses for each question
-        const frequencyData = {};
-        const allChoices = new Set(); // To keep track of all unique choices
+// router.get('/responseFrequencies/:quizId/export', ensureAdminLoggedIn, async (req, res) => {
+//     const { quizId } = req.params;
 
-        quizResults.forEach(result => {
-            result.answers.forEach(answer => {
-                const questionId = answer.questionId;
-                const userAnswer = answer.userAnswer;
+//     try {
+//         const quiz = await Quiz.findById(quizId).lean();
+//         if (!quiz) {
+//             req.flash('error', 'Quiz not found.');
+//             return res.redirect('/admin/homeAdmin');
+//         }
 
-                if (!frequencyData[questionId]) {
-                    frequencyData[questionId] = {
-                        questionText: answer.questionText,
-                        choices: {}, // Store frequencies of each choice
-                        total: 0 // Track total answers for the question
-                    };
-                }
+//         const quizResults = await QuizResult.find({ quizId }).lean();
+//         if (!quizResults.length) {
+//             req.flash('error', 'No results found for this quiz.');
+//             return res.redirect(`/admin/responseFrequencies/${quizId}`);
+//         }
 
-                if (!frequencyData[questionId].choices[userAnswer]) {
-                    frequencyData[questionId].choices[userAnswer] = 0;
-                }
+//         // Assign labels (A, B, C, D) to all unique answers for each question
+//         const frequencyData = {};
+//         quizResults.forEach(result => {
+//             result.answers.forEach(answer => {
+//                 const questionId = answer.questionId.toString();
+//                 const userAnswer = answer.userAnswer;
 
-                frequencyData[questionId].choices[userAnswer]++;
-                allChoices.add(userAnswer); // Add the choice to the set of unique choices
-                frequencyData[questionId].total++; // Increment the total for the question
-            });
-        });
+//                 if (!frequencyData[questionId]) {
+//                     frequencyData[questionId] = {
+//                         questionText: answer.questionText,
+//                         choices: {}, // Choice frequencies
+//                         labels: {}, // Map of answers to labels (e.g., "Berlin" -> "A")
+//                         total: 0
+//                     };
+//                 }
 
-        // Sort the choices alphabetically for consistent ordering
-        const sortedChoices = Array.from(allChoices).sort();
+//                 // Assign a label to the answer if not already assigned
+//                 if (!frequencyData[questionId].labels[userAnswer]) {
+//                     const currentLabels = Object.values(frequencyData[questionId].labels);
+//                     const nextLabel = String.fromCharCode(65 + currentLabels.length); // A, B, C, D
+//                     frequencyData[questionId].labels[userAnswer] = nextLabel;
+//                 }
 
-        // Create a new workbook and worksheet
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Response Frequencies');
+//                 // Increment the frequency count for the answer
+//                 const label = frequencyData[questionId].labels[userAnswer];
+//                 if (!frequencyData[questionId].choices[label]) {
+//                     frequencyData[questionId].choices[label] = 0;
+//                 }
 
-        // Add headers
-        const headers = ['Question', ...sortedChoices, 'Total Responses'];
-        worksheet.columns = headers.map(header => ({ header, key: header, width: 20 }));
+//                 frequencyData[questionId].choices[label]++;
+//                 frequencyData[questionId].total++;
+//             });
+//         });
 
-        // Populate rows
-        Object.keys(frequencyData).forEach(questionId => {
-            const question = frequencyData[questionId];
-            const row = { Question: question.questionText, 'Total Responses': question.total };
+//         // Create a new workbook and worksheet
+//         const workbook = new ExcelJS.Workbook();
+//         const worksheet = workbook.addWorksheet('Response Frequencies');
 
-            // Add frequency for each choice, ensuring consistent column order
-            sortedChoices.forEach(choice => {
-                row[choice] = question.choices[choice] || 0; // Default to 0 if the choice wasn't selected
-            });
+//         // Add headers
+//         const headers = ['Question', 'A', 'B', 'C', 'D', 'Total Responses'];
+//         worksheet.columns = headers.map(header => ({ header, key: header, width: 20 }));
 
-            worksheet.addRow(row);
-        });
+//         // Populate rows
+//         Object.keys(frequencyData).forEach(questionId => {
+//             const question = frequencyData[questionId];
+//             const row = { Question: question.questionText, 'Total Responses': question.total };
 
-        // Set response headers
-        res.setHeader(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        );
-        res.setHeader(
-            'Content-Disposition',
-            `attachment; filename=Response_Frequencies_${quiz.title.replace(/\s+/g, '_')}.xlsx`
-        );
+//             // Fill frequencies for A, B, C, D
+//             ['A', 'B', 'C', 'D'].forEach(label => {
+//                 row[label] = question.choices[label] || 0; // Default to 0 if no responses for this choice
+//             });
 
-        // Write workbook to response
-        await workbook.xlsx.write(res);
-        res.end();
-    } catch (err) {
-        console.error('Error exporting response frequencies:', err);
-        req.flash('error', 'Failed to export response frequencies.');
-        res.redirect(`/admin/responseFrequencies/${quizId}`);
-    }
-});
+//             worksheet.addRow(row);
+//         });
+
+//         // Set response headers for file download
+//         res.setHeader(
+//             'Content-Type',
+//             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+//         );
+//         res.setHeader(
+//             'Content-Disposition',
+//             `attachment; filename=Response_Frequencies_${quiz.title.replace(/\s+/g, '_')}.xlsx`
+//         );
+
+//         // Write workbook to response
+//         await workbook.xlsx.write(res);
+//         res.end();
+//     } catch (err) {
+//         console.error('Error exporting response frequencies:', err);
+//         req.flash('error', 'Failed to export response frequencies.');
+//         res.redirect(`/admin/responseFrequencies/${quizId}`);
+//     }
+// });
+
 
 //end of dashboard----------------------------------------------------------------------------------------------------------------------------
 
@@ -1339,6 +1532,11 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
     }
 
     try {
+
+        if (!Array.isArray(questions) || questions.length === 0) {
+            req.flash('error', 'At least one question is required.');
+            return res.redirect(`/admin/activities/${activityRoomId}`);
+        }
         // Validate timer
         if (!timer || isNaN(timer)) {
             req.flash('error', 'Timer is required and must be a valid number.');
@@ -1351,16 +1549,34 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/activities');
         }
 
-        // Process each question based on its type (multiple-choice or fill-in-the-blank)
-        questions.forEach((question, qIndex) => {
+         // Validate and process questions
+         questions.forEach((question, qIndex) => {
+            if (!question.type) {
+                throw new Error(`Question ${qIndex + 1} must have a valid type.`);
+            }
+
             if (question.type === 'multiple-choice') {
-                question.choices.forEach((choice) => {
-                    choice.isCorrect = !!choice.isCorrect;
+                if (!Array.isArray(question.choices) || question.choices.length === 0) {
+                    throw new Error(`Multiple-choice question ${qIndex + 1} must have at least one choice.`);
+                }
+
+                question.choices.forEach((choice, cIndex) => {
+                    if (!choice.text || choice.text.trim() === '') {
+                        throw new Error(`Choice ${cIndex + 1} for question ${qIndex + 1} must have text.`);
+                    }
+                    choice.isCorrect = !!choice.isCorrect; // Convert to boolean
                 });
+
+                // Ensure at least one choice is marked correct
+                if (!question.choices.some(choice => choice.isCorrect)) {
+                    throw new Error(`Multiple-choice question ${qIndex + 1} must have at least one correct choice.`);
+                }
             } else if (question.type === 'fill-in-the-blank') {
                 if (!question.correctAnswer || question.correctAnswer.trim() === '') {
                     throw new Error(`Fill-in-the-blank question ${qIndex + 1} must have a correct answer.`);
                 }
+            } else {
+                throw new Error(`Unknown question type for question ${qIndex + 1}: ${question.type}`);
             }
         });
 

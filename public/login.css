@@ -22,6 +22,7 @@ body {
 
 input::placeholder {
     font-style: italic; /* Italicize placeholder text */
+    
 }
 
 input.form-control {

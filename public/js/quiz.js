@@ -181,6 +181,12 @@ document.addEventListener('click', function(event) {
         const choicesDiv = questionDiv.querySelector('.choices');
         const choiceCount = choicesDiv.querySelectorAll('.choice').length;
 
+          // Restrict to a maximum of 4 choices
+          if (choiceCount >= 4) {
+            alert("You can only add up to 4 choices per question.");
+            return;
+        }
+
         const newChoiceHTML = `
             <div class="choice" data-choice-index="${choiceCount}">
                 <input type="text" name="questions[${questionIndex}][choices][${choiceCount}][text]" required>
@@ -206,59 +212,115 @@ document.addEventListener('change', function(event) {
         const correctAnswerInput = fillBlankDiv.querySelector('input[type="text"]');
 
         if (event.target.value === 'multiple-choice') {
+            // Show choices and make choice fields required
             choicesDiv.style.display = 'block';
             fillBlankDiv.style.display = 'none';
             correctAnswerInput.removeAttribute('required');
+            
+            // Make choice inputs required
+            const choiceInputs = choicesDiv.querySelectorAll('input[type="text"]');
+            choiceInputs.forEach(input => input.setAttribute('required', true));
         } else if (event.target.value === 'fill-in-the-blank') {
+            // Show correct answer input and make it required
             choicesDiv.style.display = 'none';
             fillBlankDiv.style.display = 'block';
             correctAnswerInput.setAttribute('required', true);
+            
+            // Remove required attribute from choice inputs
+            const choiceInputs = choicesDiv.querySelectorAll('input[type="text"]');
+            choiceInputs.forEach(input => input.removeAttribute('required'));
         }
     }
 });
 
-// Validation and form submission handling
+
 document.getElementById('quizForm').addEventListener('submit', function(event) {
-    const quizActivityRoomIdField = document.getElementById('activityRoomId');
-    const activityRoomId = quizActivityRoomIdField ? quizActivityRoomIdField.value : null;
-
-    if (!activityRoomId) {
-        event.preventDefault(); // Prevent form submission
-        alert('No activity room selected. Please select a room first.');
-        console.error('Quiz submission failed: No activity room ID found.');
-        return;
-    }
-
-    const timer = document.getElementById('timer').value;
-    const deadlineInput = document.getElementById('deadline').value;
-    const deadlineDate = new Date(deadlineInput);
+    const questions = document.querySelectorAll('.question');
+    const questionsData = [];
     let isValid = true;
 
-    if (deadlineInput && deadlineDate < new Date()) {
-        alert("Please select a future deadline date.");
-        isValid = false;
-    }
-
-    const questions = document.querySelectorAll('.question');
-    questions.forEach(question => {
+    questions.forEach((question, index) => {
         const questionType = question.querySelector('.questionType').value;
+
+        // Validate question type
+        if (!questionType) {
+            alert(`Question ${index + 1} must have a valid type.`);
+            isValid = false;
+            return;
+        }
+
+        // Validate question text
+        const questionText = question.querySelector('input[type="text"]').value.trim();
+        if (!questionText) {
+            alert(`Question ${index + 1} must have text.`);
+            isValid = false;
+            return;
+        }
+
         if (questionType === 'multiple-choice') {
-            const correctChoices = question.querySelectorAll('.choices input[type="checkbox"]:checked');
-            if (correctChoices.length === 0) {
-                alert("Please select at least one correct answer for each multiple-choice question.");
+            const choices = [];
+            const choiceElements = question.querySelectorAll('.choices .choice');
+            
+            choiceElements.forEach(choiceEl => {
+                const text = choiceEl.querySelector('input[type="text"]').value.trim();
+                const isCorrect = choiceEl.querySelector('input[type="checkbox"]').checked;
+                if (text) {
+                    choices.push({ text, isCorrect });
+                }
+            });
+
+            // Validate multiple-choice choices
+            if (choices.length === 0) {
+                alert(`Question ${index + 1}: Multiple-choice question must have at least one choice.`);
+                isValid = false;
+            } else if (!choices.some(choice => choice.isCorrect)) {
+                alert(`Question ${index + 1}: Multiple-choice question must have at least one correct answer.`);
+                isValid = false;
+            }
+
+            questionsData.push({ type: questionType, choices });
+        } else if (questionType === 'fill-in-the-blank') {
+            const correctAnswer = question.querySelector('.fill-in-the-blank input[type="text"]').value.trim();
+
+            // Validate fill-in-the-blank correct answer
+            if (!correctAnswer) {
+                alert(`Question ${index + 1}: Fill-in-the-blank question must have a correct answer.`);
+                isValid = false;
+            }
+
+            questionsData.push({ type: questionType, correctAnswer });
+        }
+    });
+
+    console.log('Submitting questions data:', JSON.stringify(questionsData, null, 2));
+
+    // If validation fails, block submission
+    if (!isValid) {
+        event.preventDefault();
+    }
+});
+
+
+function validateQuestions(questions) {
+    let isValid = true;
+
+    questions.forEach((question, index) => {
+        if (question.type === 'multiple-choice') {
+            if (!question.choices.some(choice => choice.isCorrect)) {
+                alert(`Question ${index + 1}: Multiple-choice question must have at least one correct answer.`);
+                isValid = false;
+            }
+        } else if (question.type === 'fill-in-the-blank') {
+            if (!question.correctAnswer) {
+                alert(`Question ${index + 1}: Fill-in-the-blank question must have a correct answer.`);
                 isValid = false;
             }
         }
     });
 
-    if (!isValid) {
-        event.preventDefault();
-    } else {
-        console.log('Submitting quiz with activityRoomId:', activityRoomId);
-        console.log('Submitting quiz with timer:', timer);
-        console.log('Submitting quiz with deadline:', deadlineInput);
-    }
-});
+    return isValid;
+}
+
 
 // Update question indices to maintain order
 function updateQuestionIndices() {

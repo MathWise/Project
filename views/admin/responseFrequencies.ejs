@@ -5,7 +5,6 @@
     <title>Response Frequencies</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* General body styling */
         body {
             background-color: #E0F4F9;
             color: white;
@@ -17,7 +16,6 @@
             background-position: center;
         }
 
-        /* Container styling */
         .container {
             padding: 20px;
             border-radius: 10px;
@@ -45,47 +43,10 @@
             font-size: 1rem;
         }
 
-        /* Make canvas responsive */
         canvas {
             max-width: 90%;
             height: auto;
             margin: 20px auto;
-        }
-
-        /* Media Queries for responsiveness */
-        @media (max-width: 768px) {
-            h1, h3 {
-                font-size: 1.3rem;
-            }
-
-            .btn {
-                font-size: 0.9rem;
-                padding: 8px 16px;
-            }
-
-            p {
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 576px) {
-            h1, h3 {
-                font-size: 1.2rem;
-            }
-
-            .btn {
-                font-size: 0.8rem;
-                padding: 6px 12px;
-            }
-
-            p {
-                font-size: 0.8rem;
-            }
-
-            canvas {
-                max-width: 100%;
-                height: auto;
-            }
         }
     </style>
 </head>
@@ -93,26 +54,32 @@
     <div class="container">
         <h1>Frequency of Responses for <%= quiz.title %></h1>
         <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-secondary">Back to Overall Summary</a>
-        <a href="/admin/responseFrequencies/<%= quiz._id %>/export" class="btn btn-success">Export to Excel</a>
+        <a href="/admin/responseFrequencies/<%= quiz._id %>/export" class="btn btn-success">Export Correct Responses</a>
 
         <% Object.keys(frequencyData).forEach((questionId, index) => { %>
             <h3><%= frequencyData[questionId].questionText %></h3>
             <p><strong>Total Answers:</strong> <%= frequencyData[questionId].total %></p>
-            <!-- Canvas for Pie Chart -->
+            <p><strong>Correct Answer:</strong> <%= frequencyData[questionId].correctAnswer %></p>
             <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
         <% }) %>
     </div>
 
     <script>
-        // Loop through questions and render charts dynamically
-        <% Object.keys(frequencyData).forEach((questionId, index) => { %>
-            const ctx<%= index %> = document.getElementById('chart-<%= index %>').getContext('2d');
-            new Chart(ctx<%= index %>, {
+        // Pass frequencyData from the server to the client as JSON
+        const frequencyData = <%- JSON.stringify(frequencyData) %>;
+
+        // Generate charts for each question
+        Object.keys(frequencyData).forEach((questionId, index) => {
+            const choices = Object.keys(frequencyData[questionId].choices);
+            const labels = choices.map((choice, idx) => `${String.fromCharCode(65 + idx)}. ${choice}`); // A, B, C...
+
+            const ctx = document.getElementById(`chart-${index}`).getContext('2d');
+            new Chart(ctx, {
                 type: 'pie',
                 data: {
-                    labels: <%- JSON.stringify(Object.keys(frequencyData[questionId].choices)) %>, // Choice labels
+                    labels: labels, // Use A. Berlin, B. Munich, etc.
                     datasets: [{
-                        data: <%- JSON.stringify(Object.values(frequencyData[questionId].choices)) %>, // Frequency values
+                        data: Object.values(frequencyData[questionId].choices), // Frequency values
                         backgroundColor: [
                             'rgba(255, 99, 132, 0.6)',
                             'rgba(54, 162, 235, 0.6)',
@@ -124,16 +91,22 @@
                     }]
                 },
                 options: {
-                    responsive: true, // Enable responsive behavior for the chart
+                    responsive: true,
                     plugins: {
                         legend: {
                             position: 'top',
+                            labels: {
+                                color: 'white', // Legend text color
+                                font: {
+                                    size: 14 // Optional: Adjust font size
+                                }
+                            }
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(tooltipItem) {
                                     const value = tooltipItem.raw;
-                                    const total = <%- frequencyData[questionId].total %>;
+                                    const total = frequencyData[questionId].total;
                                     const percentage = ((value / total) * 100).toFixed(1);
                                     return `${tooltipItem.label}: ${value} (${percentage}%)`;
                                 }
@@ -142,7 +115,7 @@
                     }
                 }
             });
-        <% }) %>
+        });
     </script>
 </body>
 </html>
