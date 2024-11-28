@@ -230,7 +230,7 @@ router.post('/unarchive-room/:roomId', ensureAdminLoggedIn, async (req, res) => 
 
 
 // Render the archive page with archived rooms and their related archived content
-router.get('/Archive', ensureLoggedIn, async (req, res) => {
+router.get('/Archive', ensureAdminLoggedIn, async (req, res) => {
     try {
         // Fetch all archived rooms
         const rooms = await Room.find({ isArchived: true });
@@ -1654,6 +1654,7 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
         res.redirect('/admin/homeAdmin');
     }
 });
+
 
 // Submit quiz route with enhanced debug logging
 router.post('/quiz/submit/:quizId', ensureAdminLoggedIn, async (req, res) => {

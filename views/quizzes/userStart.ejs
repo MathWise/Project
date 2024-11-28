@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Page</title>
+
+    <!-- Import Baloo 2 font -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2&display=swap" rel="stylesheet">
+
+    <style>
+ body {
+    background-color: #E0F4F9;
+    font-family: 'Baloo 2', cursive; 
+    background-image: url('/assets/bg.png');
+    background-repeat: no-repeat;    
+    background-size: cover;         
+    background-position: center;   
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;                 
+    margin: 0;                     
+    position: relative;
+    color: #000000;
+    font-weight: bold;
+}
+
+
+.big-box {
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #E0F4F9;
+    background-image: url('/assets/qm.png');
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-size: cover;
+    background-position: center;
+    position: relative; /* Positioning context for the gl.png and other images */
+    text-align: center;
+}
+
+/* Positioning the images */
+.big-box img {
+    position: absolute;
+    height: auto;
+}
+
+.big-box img.top-right {
+    top: 10px;
+    right: 10px;
+    width: 90px; /* Adjust size as needed */
+}
+
+.big-box img.top-left {
+    top: 10px;
+    left: 10px;
+    width: 90px; /* Adjust size as needed */
+}
+
+.big-box img.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    width: 90px; /* Adjust size as needed */
+}
+
+.question p {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+form {
+    max-width: 800px;
+    margin: 0 auto;
+    align-items: center;
+}
+
+button {
+    font-family: 'Baloo 2', cursive;
+    background-color: #6773FF;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+    font-size: 18px;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+/* Media Queries for small screens */
+@media only screen and (max-width: 768px) {
+    .big-box {
+        padding: 15px;
+    }
+
+    form {
+        max-width: 100%;
+        padding: 10px;
+    }
+
+    .question p {
+        font-size: 16px;
+        color: #680A76;
+    }
+
+    button {
+        font-size: 16px;
+    }
+}
+
+@media only screen and (max-width: 480px) {
+    button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+/* Adjust size of the fixed logos */
+#logo {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 120px; /* Adjust the size as needed */
+}
+
+#mw {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    width: 120px; /* Adjust the size as needed */
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Fixed logo on the left -->
+    <img src="/assets/logo.png" alt="Logo" id="logo">
+    
+    <div class="big-box">
+        <!-- GL image positioned inside the container -->
+        <img src="/assets/gl.png" alt="GL Icon" class="top-right">
+        
+        <h2><%= quiz.title %></h2>
+        <p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>
+
+        <!-- Timer display -->
+        <div id="timer-display" data-timer="<%= quiz.timer %>" data-start-time="<%= quizStartTime %>">
+            Time Remaining: <span id="timer">Loading...</span>
+        </div>
+
+        <!-- Notification message when time runs out -->
+        <div id="time-up-message" style="display: none; color: red; font-weight: bold; margin-top: 10px;">
+            Time's up! Submitting your quiz automatically.
+        </div>
+
+        <!-- Form for submitting quiz answers -->
+        <form id="quizForm" action="/user/quiz/submit/<%= quiz._id %>" method="POST" onsubmit="clearLocalStorage()">
+            <input type="hidden" name="roomId" value="<%= quiz.roomId %>">
+
+            <% quiz.questions.forEach((question, qIndex) => { %>
+                <div class="question">
+                    <p>Question <%= qIndex + 1 %>: <%= question.questionText %></p>
+
+                    <% if (question.type === 'multiple-choice') { %>
+                        <% question.choices.forEach((choice) => { %>
+                            <label>
+                                <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>">
+                                <%= choice.text %>
+                            </label><br>
+                        <% }); %>
+                    <% } else if (question.type === 'fill-in-the-blank') { %>
+                        <label>
+                            <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer">
+                        </label><br>
+                    <% } %>
+                </div>
+            <% }); %>
+
+            <input type="hidden" name="userId" value="<%= currentUserId %>">
+            <button type="submit">Submit Quiz</button>
+        </form>
+    </div>
+
+    <!-- Fixed mw image at the bottom left -->
+    <img src="/assets/mw.png" alt="MW Icon" id="mw">
+
+    <script src="/js/start.js"></script>
+
+    <script>
+        function clearLocalStorage() {
+            const quizId = "<%= quiz._id %>";
+            localStorage.removeItem(`quizStartTime_${quizId}`);
+            localStorage.removeItem(`quizRemainingTime_${quizId}`);
+            localStorage.removeItem(`quizProgress_${quizId}`);
+        }
+    </script>
+
+</body>
+</html>

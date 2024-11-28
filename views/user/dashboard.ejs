@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap" rel="stylesheet"> <!-- Baloo 2 font -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet"> <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/homepage.css">
-    <title>Admin Dashboard</title>
+    <title>Student Dashboard</title>
     <head>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
@@ -54,7 +54,7 @@
         <!-- Main Content and Sidebars -->
         <div >
 
-            <form action="/admin/dashboard/{{roomId}}" method="POST" >
+            <form action="/user/dashboard/{{roomId}}" method="POST" >
                 <div class="containers row">
                    
                     <aside class="col-md-1 bg-info text-center p-3">
@@ -67,19 +67,19 @@
                                     </span>
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/lesson/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/user/lesson/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
                                         <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
                                         Lesson
                                     </a>
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/activities/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/user/activities/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
                                         <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                         Activities
                                     </a>
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/educGames/<%= room._id %>"  class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/user/educGames/<%= room._id %>"  class="text-dark" onclick="showLoadingOverlay()">
                                         <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                         Educational Games
                                     </a>
@@ -95,43 +95,7 @@
                             
                         </div> -->
 
-                        <% if (quizAnalytics && quizAnalytics.length > 0) { %>
-                            <!-- Display the latest quiz, which is now the first item in sorted quizAnalytics -->
-                            <% const latestQuiz = quizAnalytics[0]; %>
-                            <div class="quiz-analytics my-4">
-                                <h3 style="color: white;"><%= latestQuiz.quizTitle %>      
-                                    
-                               </h3>
-                                
-                                <div class="d-flex" style="color: white;">
-                                    <div class="stat-box mr-5">
-                                        <strong>Average</strong>
-                                        <p><%= latestQuiz.averageScore %> / <%= latestQuiz.totalScore %> points</p>
-                                    </div>
-                                    <div class="stat-box mr-5">
-                                        <strong>Median</strong>
-                                        <p><%= latestQuiz.medianScore %> / <%= latestQuiz.totalScore %> points</p>
-                                    </div>
-                                    <div class="stat-box mr-5">
-                                        <strong>Range</strong>
-                                        <p><%= latestQuiz.range %></p>
-                                    </div>
-                                    
-
-                                    <div class=" stat-box  ">
-                                        <a href="/admin/dashboard/allTests/<%= room._id %> " onclick="showLoadingOverlay()" class="btn btn-primary">Show All Test Results</a>
-                                    </div>
-                                </div>
-                               
-                                <canvas id="chart-<%= latestQuiz.quizTitle.replace(/\s+/g, '-') %>" width="400" height="200"></canvas>
-
-                            </div>
-                            <!-- Button to view all test results -->
-                        
-                        <% } else { %>
-                            <p>No quiz analytics available.</p>
-                        <% } %>
-                        
+                      
                         
                         
                     </main>
@@ -144,14 +108,14 @@
                                 <div class="updates-header d-flex align-items-center mb-2">
                                     <img src="/assets/codesandbox.svg" alt="CodeSandbox Icon" class="icon">
                                     <h3 class="h6 mb-0 ml-2">Updates</h3>
-                                    <a  href="/admin/lesson/<%= room._id %>" onclick="showLoadingOverlay()" class="ml-auto text-primary">View All</a>
+                                    <a  href="/user/lesson/<%= room._id %>" onclick="showLoadingOverlay()" class="ml-auto text-primary">View All</a>
                                     
                                 </div>
                                 <!-- Latest PDF Lesson Update -->
                                 <% if (latestPdf) { %>
                                     <div class="update-item">
                                         <img src="/assets/pdf-icon.svg" alt="PDF Icon" style="width: 40px;">
-                                        <span>Latest Lesson: <br><a href="/admin/pdf/<%= latestPdf.pdfFileId %>" target="_blank"><%= latestPdf.pdfFileName %></a></span>
+                                        <span>Latest Lesson: <br><a href="/user/pdf/<%= latestPdf.pdfFileId %>" target="_blank"><%= latestPdf.pdfFileName %></a></span>
                                         <hr>
                                     </div>
                                 <% } else { %>
@@ -166,7 +130,7 @@
                                     <span>Lessons completed:</span>
                                     <br>
                                     <% if (latestCompletedPdf) { %>
-                                        <a href="/admin/pdf/<%= latestCompletedPdf.pdfFileId %>" target="_blank">
+                                        <a href="/user/pdf/<%= latestCompletedPdf.pdfFileId %>" target="_blank">
                                             <%= latestCompletedPdf.pdfFileName %>
                                         </a>
                                     <% } else { %>
@@ -181,7 +145,7 @@
                                     <span>Latest Quiz:</span>
                                     <br>
                                     <% if (latestQuiz) { %>
-                                        <a href="/admin/quiz/<%= latestQuiz._id %>" target="_blank">
+                                        <a href="/user/quiz/<%= latestQuiz._id %>" target="_blank">
                                             <%= latestQuiz.title %>
                                         </a>
                                     <% } else { %>
@@ -195,12 +159,12 @@
                                 <div class="videos-header d-flex align-items-center mb-2">
                                     <img src="/assets/youtube.svg" alt="YouTube Icon" class="icon">
                                     <h3 class="h6 mb-0 ml-2">Videos</h3>
-                                    <a href="/admin/lesson/<%= room._id %>" onclick="showLoadingOverlay()" class="ml-auto text-primary">View All</a>
+                                    <a href="/user/lesson/<%= room._id %>" onclick="showLoadingOverlay()" class="ml-auto text-primary">View All</a>
                                 </div>
                                 <div class="video-update-item">
                                     <% if (latestVideo) { %>
                                         <p>Latest Video: <br>
-                                            <a href="/admin/video/<%= latestVideo.videoFileId %>" target="_blank">
+                                            <a href="/user/video/<%= latestVideo.videoFileId %>" target="_blank">
                                                 <%= latestVideo.videoFileName %>
                                             </a>
                                         </p>

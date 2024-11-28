@@ -4,6 +4,7 @@ const express = require('express');
 const { initBuckets } = require('./config/gridFS.js');
 const { initActivityBucket } = require('./config/activityGridFS');
 const activityRoutes = require('./routes/activitySec');
+const userActivityRoutes = require('./routes/userActivitySec');
 const fileActivityRoutes = require('./routes/fileActivity');
 const path = require('path');
 const User = require('./models/user.js');
@@ -100,7 +101,7 @@ app.use('/user', appRoutes);
 
 app.use('/admin', archiveLessonRoomRoutes);
 app.use('/admin', archiveMediaRoutes);
-
+app.use('/user', userActivityRoutes);
 app.use('/admin', defaultRoomRoutes);
 app.use('/admin', activityRoutes);
 app.use('/', fileActivityRoutes);

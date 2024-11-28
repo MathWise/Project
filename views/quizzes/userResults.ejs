@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Quiz Results</title>
+    <style>
+        /* Set background and font style */
+        body {
+            background-color: #E0F4F9;
+    font-family: 'Baloo 2', cursive; 
+    background-image: url('/assets/bg.png');
+    background-repeat: no-repeat;    
+    background-size: cover;         
+    background-position: center;   
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;                 
+    margin: 0;                     
+    position: relative;
+    color: #000000;
+    font-weight: bold;
+}
+
+        .status-on-time {
+            color: green;
+        }
+
+        .status-late {
+            color: red;
+        }
+
+        .text-success {
+            color: green;
+        }
+
+        .text-warning {
+            color: orange;
+        }
+
+        .text-danger {
+            color: red;
+        }
+
+        h1, h2, p, strong, span, ul, li {
+            font-family: 'Baloo 2', cursive;
+        }
+
+        .container {
+            margin-top: 20px;
+            background-image: url('/assets/mr.png');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        /* Position the logos */
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+    </style>
+</head>
+<body>
+    <!-- Top-left logo -->
+    <img src="/assets/logo.png" id="logo" alt="Logo">
+
+    <!-- Bottom-left logo -->
+    <img src="/assets/mw.png" id="mw" alt="MW Logo">
+
+    <div class="container">
+        <h1>Quiz Results</h1>
+        <h2><%= quiz.title %></h2>
+        <p><strong>Attempts Left:</strong> <%= attemptsLeft %> out of <%= quiz.maxAttempts %> attempts</p>
+
+        <% if (!quizResult) { %>
+            <p>No result found for this quiz.</p>
+        <% } else { %>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <strong>Created on:</strong> <%= new Date(quiz.createdAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %><br>
+                    <strong>Deadline:</strong> <%= quiz.deadline ? new Date(quiz.deadline).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : "No deadline" %><br>
+                    <strong>Submitted on:</strong> <%= new Date(quizResult.submittedAt).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) %><br>
+                    
+                    <strong>Status:</strong> 
+                    <span class="<%= quizResult.isLate ? 'status-late' : 'status-on-time' %>">
+                        <%= quizResult.isLate ? "Turned in late" : "On time" %>
+                    </span><br>
+                    
+                    <strong>Score:</strong> <%= quizResult.score %> <br>
+                    <% const scorePercentage = (quizResult.score / quiz.questions.length) * 100; %>
+                    <p class="<%= scorePercentage >= 80 ? 'text-success' : scorePercentage >= 50 ? 'text-warning' : 'text-danger' %>">
+                        <% if (scorePercentage >= 80) { %>
+                            Great job! You scored above 80%.
+                        <% } else if (scorePercentage >= 50) { %>
+                            Good effort! Consider reviewing some of the material.
+                        <% } else { %>
+                            Keep practicing! Better luck next time.
+                        <% } %>
+                    </p>
+
+                    <strong>Answers:</strong>
+                    <ul>
+                        <% quizResult.answers.forEach(answer => { %>
+                            <li>
+                                <strong>Question:</strong> <%= answer.questionText %><br>
+                                <strong>Your Answer:</strong> <%= answer.userAnswer %><br>
+                                <strong>Correct:</strong> <%= answer.isCorrect ? "Yes" : "No" %>
+                            </li>
+                        <% }); %>
+                    </ul>
+                </li>
+            </ul>
+        <% } %>
+
+        <div class="mt-4">
+            <p>Main Room ID: <%= roomId %></p>
+            <a href="/user/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>
+            <a href="/user/dashboard/<%= roomId %>" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+    
+    <script>
+        window.history.pushState(null, '', window.location.href);
+        window.addEventListener('popstate', function () {
+            window.location.href = '/user/quizzes/UserResult/<%= quiz._id || quizId %>';
+        });
+    </script>
+</body>
+</html>

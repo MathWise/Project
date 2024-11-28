@@ -24,8 +24,8 @@
 <body>
    
     <div class="container">
-        <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>   &nbsp;&nbsp;&nbsp;
-        <a href="/admin/activity/export/<%= activity._id %>" class="btn btn-secondary">Export Submissions to Excel</a>
+        <a href="/user/activities/<%= roomId %>" class="btn btn-primary">Back to Activities</a>   &nbsp;&nbsp;&nbsp;
+        <a href="/user/activity/export/<%= activity._id %>" class="btn btn-secondary">Export Submissions to Excel</a>
 
         
         <% if (successMessages && successMessages.length > 0) { %>
@@ -84,78 +84,22 @@
                 <p>No grade assigned yet.</p>
             <% } %>
 
-            <form action="/admin/activity/replace/<%= activity._id %>" method="POST" enctype="multipart/form-data" style="display:inline;">
+            <form action="/user/activity/replace/<%= activity._id %>" method="POST" enctype="multipart/form-data" style="display:inline;">
                 <input type="file" name="submissionFile" required>
                 <button class="replace-btn" type="submit">Replace</button>
             </form>
-            <form action="/admin/activity/remove/<%= activity._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this submission?');">
+            <form action="/user/activity/remove/<%= activity._id %>" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to remove this submission?');">
                 <button class="remove-btn" type="submit">Remove</button>
             </form>
         </li>
     </ul>
 <% } else { %>
-    <form action="/admin/activity/submit/<%= activity._id %>" method="POST" enctype="multipart/form-data">
+    <form action="/user/activity/submit/<%= activity._id %>" method="POST" enctype="multipart/form-data">
         <label for="submissionFile">Attach File:</label>
         <input type="file" name="submissionFile" id="submissionFile" required>
         <button type="submit">Submit</button>
     </form>
 <% } %>
-
-<h2>Submissions:</h2> 
-<ul>
-
-    <% activity.submissions.forEach(submission => { %>
-        <li>
-            <strong>Name: <%= submission.userName %></strong> 
-            <br>submitted:
-            <a href="/file/<%= submission.fileId %>" target="_blank"><%= submission.fileName %></a>
-            
-            <!-- Display submission time and date -->
-            <p>Submitted on: <%= new Date(submission.submittedAt).toLocaleString() %></p>
-            
-            <% 
-                const isLate = new Date(submission.submittedAt) > new Date(activity.deadline);
-            %>
-            <% if (isLate) { %>
-                <p style="color: red;"><strong>Late Submission</strong></p>
-            <% } else { %>
-                <p><strong>Submitted On Time</strong></p>
-            <% } %>
-            
-            <% if (submission.grade !== null) { %>
-                <p>Grade: <%= submission.grade %></p>
-                <p>Feedback: <%= submission.feedback || 'No feedback provided.' %></p>
-                
-                <!-- Edit Grade and Feedback Form -->
-                <div class="kebab-menu-container">
-                    <button class="kebab-menu-btn" onclick="toggleMenu('<%= submission._id %>')">⋮</button>
-                    <div class="kebab-menu-content" id="menu-<%= submission._id %>" style="display: none;">
-                        <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
-                            <label for="grade">Edit Grade:</label>
-                            <input type="number" name="grade" placeholder="Enter grade" value="<%= submission.grade %>" required min="1" max="100">
-                            
-                            <label for="feedback">Edit Feedback:</label>
-                            <textarea name="feedback" placeholder="Enter feedback"><%= submission.feedback %></textarea>
-                            
-                            <button type="submit">Update Grade</button>
-                        </form>
-                    </div>
-                </div>
-            <% } else { %>
-                <!-- Submit Grade Form -->
-                <form action="/admin/activity/grade/<%= activity._id %>/<%= submission._id %>" method="POST">
-                    <label for="grade">Enter Grade:</label>
-                    <input type="number" name="grade" placeholder="Enter grade" required min="1" max="100">
-                    
-                    <label for="feedback">Enter Feedback:</label>
-                    <textarea name="feedback" placeholder="Enter feedback"></textarea>
-                    
-                    <button type="submit">Submit Grade</button>
-                </form>
-            <% } %>
-        </li>
-    <% }) %>
-</ul>
 
 
 
