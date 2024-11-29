@@ -29,6 +29,7 @@ const activitySchema = new mongoose.Schema({
     deadline: { type: Date, required: true }, 
     createdAt: { type: Date, default: Date.now },
     archived: { type: Boolean, default: false },
+    isDraft: { type: Boolean, default: false },
 });
 
 const Activity = mongoose.model('Activity', activitySchema);

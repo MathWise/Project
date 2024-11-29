@@ -1474,6 +1474,12 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
         // Get IDs of all non-archived activity rooms
         const activityRoomIds = activityRooms.map(ar => ar._id);
         // Fetch quizzes and activities related to the activity rooms
+
+        // Modify quiz query based on user role
+        const quizQuery = { roomId: { $in: activityRoomIds }, archived: false };
+        if (req.user.role !== 'admin') {
+            quizQuery.isDraft = false; // Exclude drafts for non-admins
+        }
         const [quizzes, activities] = await Promise.all([
             Quiz.find({ roomId: { $in: activityRoomIds }, archived: false }),
             Activity.find({ roomId: { $in: activityRoomIds }, archived: false }),
@@ -1495,35 +1501,47 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
 
 
 
+
 // API route to fetch non-archived quizzes for a specific activity room
-router.get('/activities/data/:roomId', ensureAdminLoggedIn, async (req, res) => {
+router.get('/activities/data/:roomId', ensureLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    console.log('Fetching non-archived quizzes for room:', roomId); // Add logging
+    console.log('Fetching activities for room:', roomId);
 
     try {
-        // Fetch only quizzes associated with the roomId and where archived is false
+        const isAdmin = req.user.role === 'admin';
+
+        // Define base queries for quizzes and activities
+        const quizQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
+        const activityQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
+
+        // Add `isDraft` filter for non-admins
+        if (!isAdmin) {
+            quizQuery.isDraft = false;
+        }
+
+        // Fetch quizzes and activities based on queries
         const [quizzes, activities] = await Promise.all([
-            Quiz.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
-            Activity.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
+            Quiz.find(quizQuery),
+            Activity.find(activityQuery)
         ]);
 
-        if (!quizzes || quizzes.length === 0) {
-            console.log('No non-archived quizzes found for room:', roomId);
-        }
+        console.log('Quizzes fetched:', quizzes.length);
+        console.log('Activities fetched:', activities.length);
 
         res.json({ quizzes, activities });
     } catch (err) {
-        console.error('Error fetching quizzes:', err);
-        res.status(500).json({ message: 'Error fetching quizzes.' });
+        console.error('Error fetching quizzes and activities:', err);
+        res.status(500).json({ message: 'Error fetching data.' });
     }
 });
+
 
 
 
 // Route to submit a new quiz
 router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
 
-    const { activityRoomId, title, questions, timer, deadline, maxAttempts = 5 } = req.body;
+    const { activityRoomId, title, questions, timer, deadline, maxAttempts = 5 ,isDraft} = req.body;
     console.log('Creating quiz with received deadline:', deadline);  // Log the received deadline
     if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
         console.error('Invalid activityRoomId:', activityRoomId);
@@ -1595,7 +1613,8 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
             questions,
             timer: timer ? parseInt(timer, 10) : null,
             deadline: deadlineUTC,
-            maxAttempts: parseInt(maxAttempts, 10)
+            maxAttempts: parseInt(maxAttempts, 10),
+            isDraft: isDraft === 'true',
         });
 
         await newQuiz.save();
@@ -1608,6 +1627,55 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
         res.redirect(`/admin/activities/${activityRoomId || ''}`);
     }
 });
+
+
+//public or private
+router.post('/quiz/publish/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        const quiz = await Quiz.findByIdAndUpdate(
+            quizId,
+            { isDraft: false }, // Update the draft status
+            { new: true } // Return the updated document
+        );
+
+        if (!quiz) {
+            req.flash('error', 'Quiz not found.');
+            return res.redirect('/admin/activities');
+        }
+
+        req.flash('success', 'Quiz successfully published and is now visible to students.');
+        res.redirect(`/admin/activities/${quiz.roomId}`);
+    } catch (err) {
+        console.error('Error publishing quiz:', err);
+        req.flash('error', 'Failed to publish quiz.');
+        res.redirect('/admin/activities');
+    }
+});
+
+
+// Toggle draft status of a quiz
+router.post('/quiz/toggle-draft/:quizId', ensureAdminLoggedIn, async (req, res) => {
+    const { quizId } = req.params;
+
+    try {
+        const quiz = await Quiz.findById(quizId);
+        if (!quiz) {
+            return res.status(404).json({ message: 'Quiz not found.' });
+        }
+
+        // Toggle the draft status using the schema method
+        await quiz.toggleDraft();
+
+        const status = quiz.isDraft ? 'private' : 'public';
+        res.status(200).json({ message: `Quiz is now ${status}.` });
+    } catch (error) {
+        console.error('Error toggling draft status:', error);
+        res.status(500).json({ message: 'Failed to toggle draft status.' });
+    }
+});
+
 
 
 // Start quiz route with consistent ObjectId usage

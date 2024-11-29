@@ -500,6 +500,12 @@ router.get('/activities/:roomId',ensureStudentLoggedIn,  async (req, res) => {
 
         // Get IDs of all non-archived activity rooms
         const activityRoomIds = activityRooms.map(ar => ar._id);
+
+        // Modify quiz query based on user role
+        const quizQuery = { roomId: { $in: activityRoomIds }, archived: false };
+        if (req.user.role !== 'admin') {
+            quizQuery.isDraft = false; // Exclude drafts for non-admins
+        }
         // Fetch quizzes and activities related to the activity rooms
         const [quizzes, activities] = await Promise.all([
             Quiz.find({ roomId: { $in: activityRoomIds }, archived: false }),
@@ -526,28 +532,37 @@ router.get('/activities/:roomId',ensureStudentLoggedIn,  async (req, res) => {
 
 
 // API route to fetch non-archived quizzes for a specific activity room
-router.get('/activities/data/:roomId', ensureStudentLoggedIn,  async (req, res) => {
+router.get('/activities/data/:roomId', ensureLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    console.log('Fetching non-archived quizzes for room:', roomId); // Add logging
+    console.log('Fetching activities for room:', roomId);
 
     try {
-        // Fetch only quizzes associated with the roomId and where archived is false
+        const isAdmin = req.user.role === 'admin';
+
+        // Define base queries for quizzes and activities
+        const quizQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
+        const activityQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
+
+        // Add `isDraft` filter for non-admins
+        if (!isAdmin) {
+            quizQuery.isDraft = false;
+        }
+
+        // Fetch quizzes and activities based on queries
         const [quizzes, activities] = await Promise.all([
-            Quiz.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
-            Activity.find({ roomId: new mongoose.Types.ObjectId(roomId), archived: false }),
+            Quiz.find(quizQuery),
+            Activity.find(activityQuery)
         ]);
 
-        if (!quizzes || quizzes.length === 0) {
-            console.log('No non-archived quizzes found for room:', roomId);
-        }
+        console.log('Quizzes fetched:', quizzes.length);
+        console.log('Activities fetched:', activities.length);
 
         res.json({ quizzes, activities });
     } catch (err) {
-        console.error('Error fetching quizzes:', err);
-        res.status(500).json({ message: 'Error fetching quizzes.' });
+        console.error('Error fetching quizzes and activities:', err);
+        res.status(500).json({ message: 'Error fetching data.' });
     }
 });
-
 
 
 

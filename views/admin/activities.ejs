@@ -140,6 +140,12 @@
                                 <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
                                 <label for="title">Quiz Title:</label>
                                 <input type="text" name="title" id="title" required><br><br>
+
+                                <label for="isDraft">
+                                    <input type="checkbox" name="isDraft" id="isDraft" value="true">
+                                    Save as Draft (Quiz will not be visible to students)
+                                </label>
+                                <br><br>
             
                                 <div id="questions">
                                     <div class="question" data-question-index="0">
@@ -196,6 +202,7 @@
             
                                 <button type="button" id="addQuestion">Add Question</button><br><br>
                                 <button type="submit">Submit Quiz</button>
+                  
                             </form>
 
                         </div>
@@ -226,6 +233,15 @@
                             <input type="number" name="points" id="points" required min="1"><br><br>
                             <label for="deadline">Deadline:</label>
                             <input type="datetime-local" name="deadline" id="deadline" required><br><br>
+                            <label>Save as:</label>
+                            <div>
+                                <label>
+                                    <input type="radio" name="isDraft" value="true" checked> Draft
+                                </label>
+                                <label>
+                                    <input type="radio" name="isDraft" value="false"> Public
+                                </label>
+                            </div><br>
                             <button type="submit">Submit Activity</button>
                         </form>
                     </div>

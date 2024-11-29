@@ -20,13 +20,16 @@ async function loadActivitiesForRoom(activityRoomId) {
         activityList.innerHTML = ''; // Clear the list
 
         if (data.activities && data.activities.length > 0) {
+          
             data.activities.forEach(activity => {
+                const isDraftLabel = activity.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
                 const deadline = activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline';
                 const activityHtml = `
                 <li class="list-group-item d-flex align-items-center" id="activity-item-${activity._id}">
                     <a href="/user/activity/details/${activity._id}" class="text-decoration-none w-100">
                         <div>
-                            <strong>${activity.title}</strong>
+
+                            <strong>${activity.title}</strong> ${isDraftLabel}
                             <p>${activity.description || 'No description provided'}</p>
                             <p>Deadline: ${deadline}</p>
                         </div>
@@ -56,24 +59,6 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Archive an activity
-function archiveActivity(activityId) {
-    const confirmArchive = confirm('Are you sure you want to archive this activity? This action cannot be undone.');
-    if (confirmArchive) {
-        fetch(`/admin/archive-activity/${activityId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                const activityElement = document.getElementById(`activity-item-${activityId}`);
-                if (activityElement) {
-                    activityElement.remove(); // Remove the activity from the DOM
-                }
-            })
-            .catch(error => console.error('Error archiving activity:', error));
-    } else {
-        console.log('Archiving canceled.');
-    }
-}
 
 
 document.querySelectorAll('.clickable').forEach(function (roomElement) {

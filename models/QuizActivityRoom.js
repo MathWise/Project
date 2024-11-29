@@ -43,6 +43,7 @@ questionSchema.pre('save', function (next) {
 const quizSchema = new mongoose.Schema({
     title: { type: String, required: true },
     roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true, index: true },
+    isDraft: { type: Boolean, default: false }, 
     questions: [questionSchema],
     timer: { type: Number, default: null }, // Timer in minutes, optional field
     createdAt: { 
@@ -51,14 +52,19 @@ const quizSchema = new mongoose.Schema({
     },
     deadline: {
         type: Date,
-        // Remove the custom setter to avoid further processing errors
+        default:null,
         validate: {
-            validator: function(value) {
-                return !value || value > Date.now(); // Ensure deadline is in the future if set
+            validator: function (value) {
+                // Validate only when the `deadline` field is modified
+                if (this.isModified('deadline')) {
+                    return !value || value > Date.now();
+                }
+                return true; // Skip validation for unmodified deadlines
             },
-            message: 'Deadline must be in the future'
-        }
+            message: 'Deadline must be in the future',
+        },
     },
+    
     maxAttempts: { type: Number, default: 5, min: 1, max: 5 },
      // New fields for archiving
      archived: { type: Boolean, default: false }, // Archive status
@@ -66,10 +72,11 @@ const quizSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-// Add deadline validation to ensure it's a future date if set
-quizSchema.path('deadline').validate(function (value) {
-    return !value || value > Date.now(); // Ensure deadline is in the future if set
-}, 'Deadline must be in the future');
+quizSchema.methods.toggleDraft = async function () {
+    this.isDraft = !this.isDraft;
+    return this.save({ validateModifiedOnly: true }); // Validate only modified fields
+};
+
 
 const Quiz = mongoose.model('Quiz', quizSchema);
 module.exports = Quiz;

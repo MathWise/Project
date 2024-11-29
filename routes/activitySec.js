@@ -111,6 +111,28 @@ router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, 
     }
 });
 
+router.post('/activity/toggle-draft/:activityId', ensureAdminLoggedIn, async (req, res) => {
+    const { activityId } = req.params;
+
+    try {
+        const activity = await Activity.findById(activityId);
+        if (!activity) {
+            return res.status(404).json({ message: 'Activity not found.' });
+        }
+
+        // Toggle the draft status
+        activity.isDraft = !activity.isDraft;
+        await activity.save();
+
+        res.status(200).json({
+            message: activity.isDraft ? 'Activity is now private (Draft).' : 'Activity is now public.',
+            status: activity.isDraft ? 'private' : 'public',
+        });
+    } catch (error) {
+        console.error('Error toggling activity draft status:', error);
+        res.status(500).json({ message: 'Failed to toggle activity status.' });
+    }
+});
 
 // Route to archive an activity
 router.post('/archive-activity/:activityId', ensureAdminLoggedIn, async (req, res) => {

@@ -19,15 +19,18 @@ async function loadQuizzesForRoom(activityRoomId) {
             data.quizzes.forEach(quiz => {
                 const createdAt = new Date(quiz.createdAt).toLocaleString();
                 const deadline = quiz.deadline ? new Date(quiz.deadline).toLocaleString() : 'No deadline';
+                const isDraftLabel = quiz.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
                 const quizHtml = `
                     <li class="list-group-item" id="quiz-item-${quiz._id}">
                         <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
+                        ${isDraftLabel}
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
                         <div class="kebab-menu" onclick="toggleQuizMenu('${quiz._id}')">&#x22EE;</div>
                         <div class="dropdown-menu quiz-menu" id="quiz-menu-${quiz._id}" style="display: none;">
                             <a href="#" onclick="archiveQuiz('${quiz._id}'); return false;">Archive</a>
                             <a href="/admin/quiz/modify/${quiz._id}">Modify</a>
+                            <a href="#" onclick="toggleDraftStatus('${quiz._id}'); return false;">${quiz.isDraft ? 'Publish' : 'Make Private'}</a>
                         </div>
                     </li>`;
                 quizList.insertAdjacentHTML('beforeend', quizHtml);
@@ -39,7 +42,6 @@ async function loadQuizzesForRoom(activityRoomId) {
         console.error('Error fetching quizzes:', error);
     }
 }
-
 // Event listener for selecting a quiz or activity room
 document.querySelectorAll('.clickable').forEach(function (roomElement) {
     roomElement.addEventListener('click', function () {
@@ -83,6 +85,47 @@ document.querySelectorAll('.clickable').forEach(function (roomElement) {
 });
 
 
+
+
+// Function to publish a draft quiz
+async function publishQuiz(quizId) {
+    const confirmPublish = confirm('Are you sure you want to publish this quiz?');
+    if (!confirmPublish) return;
+
+    try {
+        const response = await fetch(`/admin/quiz/publish/${quizId}`, { method: 'POST' });
+
+        if (response.ok) {
+            alert('Quiz successfully published.');
+            document.getElementById(`quiz-item-${quizId}`).querySelector('.badge').remove(); // Remove draft label
+            const menu = document.getElementById(`quiz-menu-${quizId}`);
+            menu.querySelector('a[onclick^="publishQuiz"]').remove(); // Remove Publish option
+        } else {
+            const errorData = await response.json();
+            alert(`Failed to publish quiz: ${errorData.message || 'Unknown error.'}`);
+        }
+    } catch (error) {
+        console.error('Error publishing quiz:', error);
+        alert('An error occurred while publishing the quiz.');
+    }
+}
+
+function toggleDraftStatus(quizId) {
+    const confirmToggle = confirm('Are you sure you want to toggle the visibility of this quiz?');
+    if (confirmToggle) {
+        fetch(`/admin/quiz/toggle-draft/${quizId}`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+    
+            // Reload the quiz list dynamically
+            const activityRoomId = document.getElementById('activityRoomId').value;
+            loadQuizzesForRoom(activityRoomId);
+        })
+        .catch(error => console.error('Error toggling draft status:', error));
+    
+    }
+}
 
 
 

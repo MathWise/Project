@@ -221,26 +221,7 @@
                 menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
             }
         
-            // Archive function for a video
-            function archiveVideo(videoFileId) {
 
-                    // Retrieve the current roomId dynamically
-                const roomId = document.getElementById('videoRoomId').value;
-
-                if (confirm('Are you sure you want to archive this video?')) {
-                        fetch(`/admin/archive-video/${videoFileId}`, { method: 'POST' })
-                            .then(response => response.json())
-                            .then(data => {
-                                alert(data.message);
-                                document.getElementById(`videoMenu-${videoFileId}`).style.display = 'none';
-                                loadLessonFiles(roomId, userId);
-                            })
-                            .catch(error => {
-     
-                                alert('Failed to archive video.');
-                            });
-                    }
-                }
                 
             // Close dropdowns if clicked outside
             document.addEventListener('click', function(event) {
@@ -254,32 +235,6 @@
             });
         
 
-            // Archive function to send an AJAX request for archiving a PDF
-            function archivePdf(pdfFileId) {
-
-                const roomId = document.getElementById('pdfRoomId').value;
-
-
-                // Show a confirmation dialog
-                if (!roomId) {
-                        alert('Room ID not found. Unable to archive PDF.');
-                        return;
-                    }
-
-                    if (confirm('Are you sure you want to archive this PDF?')) {
-                        fetch(`/admin/archive-pdf/${pdfFileId}`, { method: 'POST' })
-                            .then(response => response.json())
-                            .then(data => {
-                                alert(data.message);
-                                document.getElementById(`pdfMenu-${pdfFileId}`).style.display = 'none';
-                                loadLessonFiles(roomId, userId);
-                            })
-                            .catch(error => {
-                      
-                                alert('Failed to archive PDF.');
-                            });
-                    }
-                }
             async function loadLessonFiles(roomId, userId) {
     const pdfList = document.getElementById('uploadedPdfs');
     const videoList = document.getElementById('uploadedVideos');
@@ -542,72 +497,8 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
         
             // Other functions remain unchanged (e.g., openPdfModal, closePdfModal, savePdfProgress)
         
-             // Event listener for PDF upload form submission
-             document.getElementById('uploadPdfForm').addEventListener('submit', async function(event) {
-                event.preventDefault(); // Prevent default form submission
-
-                const submitButton = this.querySelector('button[type="submit"]');
-                const formData = new FormData(this);
-                const roomId = document.getElementById('pdfRoomId').value;
-                const userId = '<%= currentUser._id %>'; // User ID for progress tracking
-
-                 // Disable the button to prevent double submissions
-                submitButton.disabled = true;
-                submitButton.textContent = "Uploading...";
-
-                try {
-                    // Upload the PDF via AJAX
-                    const response = await fetch(`/admin/upload-pdf/${roomId}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    if (response.ok) {
-                        alert('PDF uploaded successfully!');
-                        
-                        // Reload the list of PDFs and Videos to reflect the new upload
-                        loadLessonFiles(roomId, userId); 
-                    } else {
-                        throw new Error('Error uploading PDF');
-                    }
-                } catch (error) {
-      
-                    alert('Error uploading PDF.');
-                }finally {
-            // Re-enable the button after upload completes or fails
-            submitButton.disabled = false;
-            submitButton.textContent = "Upload PDF";
-        }
-            });
         
-            // Event listener for Video upload form submission
-            document.getElementById('uploadVideoForm').addEventListener('submit', async function(event) {
-                event.preventDefault();
-                const submitButton = this.querySelector('button[type="submit"]');
-                const formData = new FormData(this);
-                const roomId = document.getElementById('videoRoomId').value;
-                const userId = '<%= currentUser._id %>'; // For dynamic reloading
 
-                 // Disable the button to prevent double submissions
-                submitButton.disabled = true;
-                submitButton.textContent = "Uploading...";
-
-                try {
-                    const response = await fetch(`/admin/upload-video/${roomId}`, { method: 'POST', body: formData });
-                    if (response.ok) {
-                        alert('Video uploaded successfully!');
-                        loadLessonFiles(roomId, userId);
-                    } else throw new Error('Error uploading video');
-                } catch (error) {
-       
-                    alert('Error uploading video.');
-                }finally {
-            // Re-enable the button after upload completes or fails
-            submitButton.disabled = false;
-            submitButton.textContent = "Upload Video";
-        }
-            });
-        
         </script>
 
         <script>    
@@ -651,26 +542,7 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
         menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
     }
 
-     // Archive function to send an AJAX request for archiving a lesson room
-    function archiveLessonRoom(lessonRoomId) {
-        fetch(`/admin/archive-lesson-room/${lessonRoomId}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                alert('Lesson room archived successfully.');
-                location.reload(); // Reload to refresh the lesson room list
-            } else {
-                alert('Failed to archive lesson room.');
-            }
-        })
-        .catch(error => {
 
-        });
-    }
 
     // Close dropdowns if clicked outside
     document.addEventListener('click', function(event) {

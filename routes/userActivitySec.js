@@ -35,9 +35,12 @@ router.get('/activities/data/:activityRoomId', ensureStudentLoggedIn, async (req
             return res.status(400).json({ message: 'Invalid activity room ID.' });
         }
 
+        // Filter based on `isDraft` for non-admin users
+        const isAdmin = req.user.role === 'admin';
         const activities = await Activity.find({
             roomId: new mongoose.Types.ObjectId(activityRoomId),
             archived: false,
+            ...(isAdmin ? {} : { isDraft: false }), // Show drafts only to admins
         });
 
         res.json({ activities });

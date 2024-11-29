@@ -19,8 +19,13 @@ async function loadQuizzesForRoom(activityRoomId) {
             data.quizzes.forEach(quiz => {
                 const createdAt = new Date(quiz.createdAt).toLocaleString();
                 const deadline = quiz.deadline ? new Date(quiz.deadline).toLocaleString() : 'No deadline';
+                const isDraftLabel = quiz.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
+                const publishOption = quiz.isDraft
+                                ? `<a href="#" onclick="publishQuiz('${quiz._id}'); return false;">Publish</a>`
+                : '';
                 const quizHtml = `
                     <li class="list-group-item" id="quiz-item-${quiz._id}">
+                      ${isDraftLabel}
                         <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
@@ -91,24 +96,6 @@ function toggleQuizMenu(quizId) {
 
 
 
-// Function to archive a quiz
-function archiveQuiz(quizId) {
-    const confirmArchive = confirm("Are you sure you want to archive this quiz? This action cannot be undone.");
-    if (confirmArchive) {
-        fetch(`/admin/archive-quiz/${quizId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                const quizElement = document.getElementById(`quiz-item-${quizId}`);
-                if (quizElement) {
-                    quizElement.remove(); // Remove the quiz from the DOM
-                }
-            })
-            .catch(error => console.error('Error archiving quiz:', error));
-    } else {
-        console.log("Archiving canceled.");
-    }
-}
 
 
 
@@ -360,21 +347,7 @@ document.addEventListener("click", function(event) {
     }
 });
 
-// Function to archive an activity room with confirmation
-function archiveActivityRoom(activityRoomId) {
-    const confirmArchive = confirm("Are you sure you want to archive this activity room? This action cannot be undone.");
-    if (confirmArchive) {
-        fetch(`/admin/archive-activity-room/${activityRoomId}`, { method: 'POST' })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                window.location.reload(); // Reload the page to reflect changes
-            })
-            .catch(error => console.error('Error archiving activity room:', error));
-    } else {
-        console.log("Archiving canceled.");
-    }
-}
+
 
 // Toggle the individual kebab menu for each room
 function toggleMenu(roomId) {
