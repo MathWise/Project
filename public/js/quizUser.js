@@ -112,7 +112,7 @@ function confirmStartQuiz(quizId, quizTitle) {
     
     if (userConfirmed) {
         // Redirect to the quiz start page
-        window.location.href = `/user/quizzes/start/${quizId}`;
+        window.location.href = `/user/quizzes/userStart/${quizId}`;
     } else {
         console.log('User canceled the quiz start.');
     }
