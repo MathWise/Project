@@ -1579,7 +1579,7 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
             if (index === 0) {
                 quizTimer = parseInt(row['Timer'], 10) || quizTimer;
                 quizMaxAttempts = parseInt(row['Max Attempts'], 10) || quizMaxAttempts;
-
+        
                 if (row['Deadline']) {
                     const parsedDeadline = DateTime.fromFormat(row['Deadline'], 'MM/dd/yy, h:mm a', { zone: 'Asia/Manila' });
                     if (parsedDeadline.isValid) {
@@ -1590,19 +1590,19 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
                 }
                 return;
             }
-
+        
             if (!row['Question Text'] || !row['Type']) {
                 console.warn(`Skipping row ${index + 1}: Missing required fields (Question Text or Type).`);
                 return;
             }
-
+        
             const question = {
                 questionText: row['Question Text'],
                 type: row['Type'],
                 choices: [],
                 correctAnswer: row['Correct Answer'] || ''
             };
-
+        
             if (row['Type'] === 'multiple-choice') {
                 if (!row['Choices']) {
                     console.warn(`Skipping row ${index + 1}: Missing choices for multiple-choice question.`);
@@ -1613,15 +1613,25 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
                     isCorrect: choiceText.trim() === row['Correct Answer']
                 }));
                 question.choices = choices;
-
+        
                 if (!question.choices.some(choice => choice.isCorrect)) {
                     console.warn(`Skipping row ${index + 1}: No correct choice specified for multiple-choice question.`);
                     return;
                 }
+            } else if (row['Type'] === 'fill-in-the-blank') {
+                if (!row['Correct Answer']) {
+                    console.warn(`Skipping row ${index + 1}: Fill-in-the-blank question must have a correct answer.`);
+                    return;
+                }
+                question.correctAnswer = row['Correct Answer'].toString().trim();
+            } else {
+                console.warn(`Skipping row ${index + 1}: Unsupported question type "${row['Type']}".`);
+                return;
             }
-
+        
             quizQuestions.push(question);
         });
+        
 
         console.log('Constructed quiz questions:', quizQuestions);
 
