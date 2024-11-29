@@ -221,7 +221,7 @@
                 <div class="content-wrapper">
                     <div class="left-content">
                         <h1>Create an Activity</h1>
-                        <form id="activityForm" action="/activity/create" method="POST" enctype="multipart/form-data">
+                        <form id="activityForm" action="/admin/activity/create" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="aactivityRoomId" id="aactivityRoomId" value="">
                             <label for="title">Activity Title:</label>
                             <input type="text" name="title" id="activityTitle" required><br><br>
@@ -293,6 +293,7 @@
         const quizActivityRoomContent = document.getElementById('quizActivityRoomContent'); // Quiz creation content
         const activityRoomContent = document.getElementById('activityRoomContent'); // Activity creation content
 
+        
         // Attach click event to each room item
         lessonRoomItems.forEach(item => {
             item.addEventListener('click', function () {

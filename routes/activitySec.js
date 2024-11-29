@@ -30,31 +30,35 @@ router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('at
             return res.redirect('/admin/activities');
         }
 
-        // Initialize fileAttachments array for optional file upload
-        const fileAttachments = [];
-
-        if (req.file) {
-            const submissionBucket = getSubmissionBucket();
-            const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
-            uploadStream.end(req.file.buffer);
-
-            // Wait for the upload to finish
-            const uploadResult = await new Promise((resolve, reject) => {
-                uploadStream.on('finish', resolve);
-                uploadStream.on('error', reject);
-            });
-
-            fileAttachments.push({
-                fileName: req.file.originalname,
-                _id: uploadResult._id, // Store GridFS file ID
-            });
+        if (!req.file) {
+            req.flash('error', 'No file uploaded.');
+            return res.redirect('/admin/activities');
         }
+
+        const submissionBucket = getSubmissionBucket();
+        const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
+        uploadStream.end(req.file.buffer);
+
+        uploadStream.on('finish', async () => {
+            try {
+                // Retrieve the uploaded file's metadata from the GridFS bucket
+                const file = await submissionBucket.find({ filename: req.file.originalname }).toArray();
+
+                if (file.length === 0) {
+                    throw new Error('Uploaded file not found in GridFS.');
+                }
+
+                const fileAttachment = {
+                    fileName: req.file.originalname,
+                    _id: file[0]._id, // Use the first file (should match the uploaded file)
+                };
+
 
         const newActivity = new Activity({
             title,
             description,
             roomId: new mongoose.Types.ObjectId(aactivityRoomId),
-            fileAttachments,
+            fileAttachments: [fileAttachment],
             points: parseInt(points, 10),
             deadline: deadline ? new Date(deadline) : null, // Handle optional deadlines
             isDraft: isDraft === 'true', // Convert draft flag to boolean
@@ -69,7 +73,16 @@ router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('at
         res.redirect('/admin/activities');
     }
 });
-
+uploadStream.on('error', (error) => {
+    console.error('Error uploading file to GridFS:', error);
+    req.flash('error', 'Failed to upload file.');
+    res.redirect('/admin/activities');
+});
+} catch (error) {
+console.error('Error creating activity:', error);
+res.status(500).json({ message: 'Failed to create activity' });
+}
+});
 
 
 router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
