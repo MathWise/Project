@@ -24,6 +24,7 @@ const ActivityRoom = require('../models/activityRoom');
 const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
 const { ObjectId } = require('mongodb'); 
+const XLSX = require('xlsx');
 const { archiveItem, cascadeArchive, cascadeUnarchive, cascadeDelete } = require('../utils/archiveHelper');
 
 
@@ -1447,6 +1448,7 @@ router.get('/activities/:roomId', ensureAdminLoggedIn, middleware.ensureRoomAcce
         return res.redirect('/admin/homeAdmin');
     }
 
+    
     req.session.submittedQuizzes = [];
 
     try {
@@ -1532,6 +1534,115 @@ router.get('/activities/data/:roomId', ensureLoggedIn, async (req, res) => {
 });
 
 
+router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (req, res) => {
+    try {
+        console.log('Import quiz endpoint hit');
+
+        if (!req.file) {
+            console.error('No file uploaded.');
+            return res.status(400).json({ message: 'No file uploaded. Please select a valid Excel file.' });
+        }
+
+        if (!req.body.activityRoomId) {
+            console.error('Missing activityRoomId.');
+            return res.status(400).json({ message: 'Activity Room ID is required.' });
+        }
+
+        const activityRoomId = Array.isArray(req.body.activityRoomId)
+            ? req.body.activityRoomId[0] // Use the first ID if multiple IDs are sent
+            : req.body.activityRoomId;
+
+        if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
+            console.error('Invalid Activity Room ID:', activityRoomId);
+            return res.status(400).json({ message: 'Invalid Activity Room ID.' });
+        }
+
+        console.log('Activity Room ID received:', activityRoomId);
+
+        const fileBuffer = req.file.buffer;
+        console.log('File uploaded successfully. Parsing Excel file...');
+
+        const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        if (!sheet) throw new Error('No sheet found in the Excel file.');
+
+        const data = XLSX.utils.sheet_to_json(sheet);
+        console.log('Parsed data from Excel:', data);
+
+        const quizQuestions = [];
+        let quizTimer = 5;
+        let quizMaxAttempts = 3;
+        let quizDeadline = null;
+
+        data.forEach((row, index) => {
+            if (index === 0) {
+                quizTimer = parseInt(row['Timer'], 10) || quizTimer;
+                quizMaxAttempts = parseInt(row['Max Attempts'], 10) || quizMaxAttempts;
+
+                if (row['Deadline']) {
+                    const parsedDeadline = DateTime.fromFormat(row['Deadline'], 'MM/dd/yy, h:mm a', { zone: 'Asia/Manila' });
+                    if (parsedDeadline.isValid) {
+                        quizDeadline = parsedDeadline.toUTC().toJSDate();
+                    } else {
+                        console.warn(`Invalid deadline format: ${row['Deadline']}. Skipping deadline.`);
+                    }
+                }
+                return;
+            }
+
+            if (!row['Question Text'] || !row['Type']) {
+                console.warn(`Skipping row ${index + 1}: Missing required fields (Question Text or Type).`);
+                return;
+            }
+
+            const question = {
+                questionText: row['Question Text'],
+                type: row['Type'],
+                choices: [],
+                correctAnswer: row['Correct Answer'] || ''
+            };
+
+            if (row['Type'] === 'multiple-choice') {
+                if (!row['Choices']) {
+                    console.warn(`Skipping row ${index + 1}: Missing choices for multiple-choice question.`);
+                    return;
+                }
+                const choices = row['Choices'].split(',').map(choiceText => ({
+                    text: choiceText.trim(),
+                    isCorrect: choiceText.trim() === row['Correct Answer']
+                }));
+                question.choices = choices;
+
+                if (!question.choices.some(choice => choice.isCorrect)) {
+                    console.warn(`Skipping row ${index + 1}: No correct choice specified for multiple-choice question.`);
+                    return;
+                }
+            }
+
+            quizQuestions.push(question);
+        });
+
+        console.log('Constructed quiz questions:', quizQuestions);
+
+        const newQuiz = new Quiz({
+            title: 'Imported Quiz',
+            roomId: new mongoose.Types.ObjectId(activityRoomId), // Ensure correct roomId assignment
+            timer: quizTimer,
+            maxAttempts: quizMaxAttempts,
+            deadline: quizDeadline,
+            questions: quizQuestions,
+            isDraft: true
+        });
+
+        await newQuiz.save();
+        console.log('Quiz saved successfully:', newQuiz);
+        res.json({ message: 'Quiz imported successfully!', quizId: newQuiz._id });
+    } catch (error) {
+        console.error('Error importing quiz:', error);
+        res.status(500).json({ message: 'Failed to import quiz.', error: error.message });
+    }
+});
 
 
 // Route to submit a new quiz

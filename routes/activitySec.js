@@ -3,6 +3,7 @@ const multer = require('multer');
 const middleware = require('../middleware');
 const { DateTime } = require('luxon');
 const { ensureLoggedIn, ensureAdminLoggedIn } = middleware;
+const Quiz = require('../models/QuizActivityRoom'); 
 const mongoose = require('mongoose');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const { GridFSBucket } = require('mongodb');
@@ -537,6 +538,10 @@ router.get('/activity/export/:activityId', ensureAdminLoggedIn, async (req, res)
         res.redirect(`/admin/activity/details/${activityId}`);
     }
 });
+
+
+
+
 // Additional activity-related routes (e.g., for submissions, grading, etc.) can be added here
 
 module.exports = router;

@@ -136,6 +136,15 @@
                         <div class="left-content">
                             
                             <h1>Create a Quiz</h1>
+
+                            <form id="importQuizForm" enctype="multipart/form-data" method="POST" action="/admin/quiz/import">
+                                <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
+                                <label for="quizFile">Upload Quiz File (Excel):</label>
+                                <input type="file" id="quizFile" name="file" accept=".xls,.xlsx" required>
+                                <button type="submit">Import Quiz</button>
+                            </form>
+                            
+                            
                             <form id="quizForm" action="/admin/quiz/create" method="POST">
                                 <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
                                 <label for="title">Quiz Title:</label>

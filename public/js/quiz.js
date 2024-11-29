@@ -85,6 +85,33 @@ document.querySelectorAll('.clickable').forEach(function (roomElement) {
 });
 
 
+document.getElementById('importQuizForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.target);
+
+    // Add the activityRoomId dynamically if not in the form
+    const activityRoomId = document.getElementById('activityRoomId').value;
+    formData.append('activityRoomId', activityRoomId);
+
+    try {
+        const response = await fetch('/admin/quiz/import', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            alert('Quiz imported successfully!');
+            window.location.reload();
+        } else {
+            const error = await response.json();
+            alert('Error importing quiz: ' + error.message);
+        }
+    } catch (err) {
+        console.error('Error importing quiz:', err);
+        alert('An error occurred. Please try again.');
+    }
+});
 
 
 // Function to publish a draft quiz
