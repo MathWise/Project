@@ -21,28 +21,24 @@ const uploadSubmission = multer({ storage });
 
 
 
-// API route to fetch non-archived activities for a specific activity room
 router.get('/activities/data/:activityRoomId', ensureStudentLoggedIn, async (req, res) => {
     const { activityRoomId } = req.params;
 
-    console.log('Received activityRoomId:', activityRoomId);
-
     try {
-
-          // Validate the activityRoomId format
-          if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
-            console.error('Invalid activityRoomId:', activityRoomId);
+        if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
             return res.status(400).json({ message: 'Invalid activity room ID.' });
         }
 
-        // Filter based on `isDraft` for non-admin users
         const isAdmin = req.user.role === 'admin';
-        const activities = await Activity.find({
+        const query = {
             roomId: new mongoose.Types.ObjectId(activityRoomId),
             archived: false,
-            ...(isAdmin ? {} : { isDraft: false }), // Show drafts only to admins
-        });
+            ...(isAdmin ? {} : { isDraft: false }) // Include `isDraft: false` for non-admins
+        };
 
+        const activities = await Activity.find(query);
+
+        console.log('Activities fetched:', activities.length);
         res.json({ activities });
     } catch (err) {
         console.error('Error fetching activities:', err);

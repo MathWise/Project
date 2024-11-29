@@ -19,10 +19,9 @@ const storage = multer.memoryStorage();
 
 const uploadSubmission = multer({ storage });
 
-
 // Route to create an activity
 router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('attachment'), async (req, res) => {
-    const { title, description, points, deadline, aactivityRoomId } = req.body;
+    const { title, description, points, deadline, aactivityRoomId, isDraft } = req.body;
 
     try {
         const activityRoom = await ActivityRoom.findById(aactivityRoomId);
@@ -31,79 +30,66 @@ router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('at
             return res.redirect('/admin/activities');
         }
 
-        if (!req.file) {
-            req.flash('error', 'No file uploaded.');
-            return res.redirect('/admin/activities');
+        // Initialize fileAttachments array for optional file upload
+        const fileAttachments = [];
+
+        if (req.file) {
+            const submissionBucket = getSubmissionBucket();
+            const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
+            uploadStream.end(req.file.buffer);
+
+            // Wait for the upload to finish
+            const uploadResult = await new Promise((resolve, reject) => {
+                uploadStream.on('finish', resolve);
+                uploadStream.on('error', reject);
+            });
+
+            fileAttachments.push({
+                fileName: req.file.originalname,
+                _id: uploadResult._id, // Store GridFS file ID
+            });
         }
 
-        const submissionBucket = getSubmissionBucket();
-        const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
-        uploadStream.end(req.file.buffer);
-
-        uploadStream.on('finish', async () => {
-            try {
-                // Retrieve the uploaded file's metadata from the GridFS bucket
-                const file = await submissionBucket.find({ filename: req.file.originalname }).toArray();
-
-                if (file.length === 0) {
-                    throw new Error('Uploaded file not found in GridFS.');
-                }
-
-                const fileAttachment = {
-                    fileName: req.file.originalname,
-                    _id: file[0]._id, // Use the first file (should match the uploaded file)
-                };
-
-                const newActivity = new Activity({
-                    title,
-                    description,
-                    roomId: new mongoose.Types.ObjectId(aactivityRoomId),
-                    fileAttachments: [fileAttachment],
-                    points: parseInt(points, 10),
-                    deadline: new Date(deadline),
-                });
-
-                await newActivity.save();
-                req.flash('success', 'Activity created successfully!');
-                res.redirect(`/admin/activities/${activityRoom.roomId}`);
-            } catch (error) {
-                console.error('Error processing uploaded file:', error);
-                req.flash('error', 'Failed to process uploaded file.');
-                res.redirect('/admin/activities');
-            }
+        const newActivity = new Activity({
+            title,
+            description,
+            roomId: new mongoose.Types.ObjectId(aactivityRoomId),
+            fileAttachments,
+            points: parseInt(points, 10),
+            deadline: deadline ? new Date(deadline) : null, // Handle optional deadlines
+            isDraft: isDraft === 'true', // Convert draft flag to boolean
         });
 
-        uploadStream.on('error', (error) => {
-            console.error('Error uploading file to GridFS:', error);
-            req.flash('error', 'Failed to upload file.');
-            res.redirect('/admin/activities');
-        });
+        await newActivity.save();
+        req.flash('success', isDraft === 'true' ? 'Activity saved as draft!' : 'Activity created successfully!');
+        res.redirect(`/admin/activities/${activityRoom.roomId}`);
     } catch (error) {
         console.error('Error creating activity:', error);
-        res.status(500).json({ message: 'Failed to create activity' });
+        req.flash('error', 'Failed to create activity.');
+        res.redirect('/admin/activities');
     }
 });
 
 
-// API route to fetch non-archived activities for a specific activity room
+
 router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
     const { activityRoomId } = req.params;
 
-    console.log('Received activityRoomId:', activityRoomId);
-
     try {
-
-          // Validate the activityRoomId format
-          if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
-            console.error('Invalid activityRoomId:', activityRoomId);
+        if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
             return res.status(400).json({ message: 'Invalid activity room ID.' });
         }
 
-        const activities = await Activity.find({
+        const isAdmin = req.user.role === 'admin';
+        const query = {
             roomId: new mongoose.Types.ObjectId(activityRoomId),
             archived: false,
-        });
+            ...(isAdmin ? {} : { isDraft: false }) // Include `isDraft: false` for non-admins
+        };
 
+        const activities = await Activity.find(query);
+
+        console.log('Activities fetched:', activities.length);
         res.json({ activities });
     } catch (err) {
         console.error('Error fetching activities:', err);
@@ -111,6 +97,8 @@ router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, 
     }
 });
 
+
+// Toggle draft status for an activity
 router.post('/activity/toggle-draft/:activityId', ensureAdminLoggedIn, async (req, res) => {
     const { activityId } = req.params;
 
@@ -120,19 +108,17 @@ router.post('/activity/toggle-draft/:activityId', ensureAdminLoggedIn, async (re
             return res.status(404).json({ message: 'Activity not found.' });
         }
 
-        // Toggle the draft status
         activity.isDraft = !activity.isDraft;
         await activity.save();
 
-        res.status(200).json({
-            message: activity.isDraft ? 'Activity is now private (Draft).' : 'Activity is now public.',
-            status: activity.isDraft ? 'private' : 'public',
-        });
+        const status = activity.isDraft ? 'private (Draft)' : 'public';
+        res.status(200).json({ message: `Activity is now ${status}.` });
     } catch (error) {
         console.error('Error toggling activity draft status:', error);
         res.status(500).json({ message: 'Failed to toggle activity status.' });
     }
 });
+
 
 // Route to archive an activity
 router.post('/archive-activity/:activityId', ensureAdminLoggedIn, async (req, res) => {

@@ -221,29 +221,32 @@
                 <div class="content-wrapper">
                     <div class="left-content">
                         <h1>Create an Activity</h1>
-                        <form id="activityForm" action="/admin/activity/create" method="POST" enctype="multipart/form-data">
+                        <form id="activityForm" action="/activity/create" method="POST" enctype="multipart/form-data">
                             <input type="hidden" name="aactivityRoomId" id="aactivityRoomId" value="">
                             <label for="title">Activity Title:</label>
                             <input type="text" name="title" id="activityTitle" required><br><br>
+                            
                             <label for="description">Description:</label>
                             <textarea name="description" id="description"></textarea><br><br>
-                            <label for="attachment">Attachment (PDF/Document/Video):</label>
+                            
+                            <label for="attachment">Attachment (optional):</label>
                             <input type="file" name="attachment" id="attachment" accept=".pdf,.doc,.docx,.mp4"><br><br>
+                            
                             <label for="points">Points:</label>
                             <input type="number" name="points" id="points" required min="1"><br><br>
-                            <label for="deadline">Deadline:</label>
-                            <input type="datetime-local" name="deadline" id="deadline" required><br><br>
-                            <label>Save as:</label>
-                            <div>
-                                <label>
-                                    <input type="radio" name="isDraft" value="true" checked> Draft
-                                </label>
-                                <label>
-                                    <input type="radio" name="isDraft" value="false"> Public
-                                </label>
-                            </div><br>
+                            
+                            <label for="deadline">Deadline (optional):</label>
+                            <input type="datetime-local" name="deadline" id="deadline"><br><br>
+                            
+                            <label for="isDraft">Save as Draft?</label>
+                            <select name="isDraft" id="isDraft">
+                                <option value="false">Publish</option>
+                                <option value="true">Save as Draft</option>
+                            </select><br><br>
+                            
                             <button type="submit">Submit Activity</button>
                         </form>
+                        
                     </div>
                     <div class="right-content">
                         <h2>Available Activities</h2>

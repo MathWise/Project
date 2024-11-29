@@ -21,12 +21,13 @@ async function loadActivitiesForRoom(activityRoomId) {
 
         if (data.activities && data.activities.length > 0) {
             data.activities.forEach(activity => {
+                const isDraftLabels = activity.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
                 const deadline = activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline';
                 const activityHtml = `
                 <li class="list-group-item d-flex align-items-center" id="activity-item-${activity._id}">
                     <a href="/admin/activity/details/${activity._id}" class="text-decoration-none w-100">
                         <div>
-                            <strong>${activity.title}</strong>
+                             <strong>${activity.title}</strong> ${isDraftLabels}
                             <p>${activity.description || 'No description provided'}</p>
                             <p>Deadline: ${deadline}</p>
                         </div>
@@ -39,6 +40,9 @@ async function loadActivitiesForRoom(activityRoomId) {
                     <div class="dropdown-menu activity-menu" id="activity-menu-${activity._id}" style="display: none;">
                         <a href="#" onclick="archiveActivity('${activity._id}'); return false;">Archive</a>
                         <a href="/admin/activity/modify/${activity._id}">Modify</a>
+                         <a href="#" onclick="toggleDraftStatus1('${activity._id}'); return false;">
+                                ${activity.isDraft ? 'Publish' : 'Make Private'}
+                            </a>
                     </div>
                 </li>`;
                 activityList.insertAdjacentHTML('beforeend', activityHtml);
@@ -80,6 +84,24 @@ function archiveActivity(activityId) {
             .catch(error => console.error('Error archiving activity:', error));
     } else {
         console.log('Archiving canceled.');
+    }
+}
+
+function toggleDraftStatus1(activityId) {
+    const confirmToggles = confirm('Are you sure you want to toggle the visibility of this activity?');
+    if (confirmToggles) {
+        fetch(`/admin/activity/toggle-draft/${activityId}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+
+
+    
+            // Reload the quiz list dynamically
+            const activityRoomId = document.getElementById('activityRoomId').value;
+            loadActivitiesForRoom(activityRoomId);
+            })
+            .catch(error => console.error('Error toggling activity draft status:', error));
     }
 }
 

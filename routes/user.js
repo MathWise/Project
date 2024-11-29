@@ -529,26 +529,21 @@ router.get('/activities/:roomId',ensureStudentLoggedIn,  async (req, res) => {
 
 
 
-
-
-// API route to fetch non-archived quizzes for a specific activity room
 router.get('/activities/data/:roomId', ensureLoggedIn, async (req, res) => {
     const { roomId } = req.params;
-    console.log('Fetching activities for room:', roomId);
 
     try {
-        const isAdmin = req.user.role === 'admin';
-
-        // Define base queries for quizzes and activities
-        const quizQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
-        const activityQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
-
-        // Add `isDraft` filter for non-admins
-        if (!isAdmin) {
-            quizQuery.isDraft = false;
+        if (!mongoose.Types.ObjectId.isValid(roomId)) {
+            return res.status(400).json({ message: 'Invalid room ID.' });
         }
 
-        // Fetch quizzes and activities based on queries
+        const isAdmin = req.user.role === 'admin';
+        const baseQuery = { roomId: new mongoose.Types.ObjectId(roomId), archived: false };
+
+        // Add `isDraft` filter for non-admins
+        const quizQuery = { ...baseQuery, ...(isAdmin ? {} : { isDraft: false }) };
+        const activityQuery = { ...baseQuery, ...(isAdmin ? {} : { isDraft: false }) };
+
         const [quizzes, activities] = await Promise.all([
             Quiz.find(quizQuery),
             Activity.find(activityQuery)
