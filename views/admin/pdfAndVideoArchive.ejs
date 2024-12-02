@@ -183,6 +183,8 @@
                 }
 
                 const data = await response.json();
+                console.log('Archived content:', data);
+
                 const pdfList = document.getElementById('archivedPdfsList');
                 const videoList = document.getElementById('archivedVideosList');
                 pdfList.innerHTML = '';
@@ -198,6 +200,7 @@
                                         <strong>PDF Name:</strong> ${pdf.pdfFileName}
                                     </div>
                                     <button onclick="confirmUnarchive('pdf', '${pdf.pdfFileId}')">Unarchive</button>
+                                    <button style="background-color: red;" onclick="confirmDelete('pdf', '${pdf.pdfFileId}')">Delete</button>
                                 </li>
                             `;
                         });
@@ -218,6 +221,7 @@
                                         <strong>Video Name:</strong> ${video.videoFileName}
                                     </div>
                                     <button onclick="confirmUnarchive('video', '${video.videoFileId}')">Unarchive</button>
+                                     <button onclick="confirmDelete('video', '${video.videoFileId}')">Delete</button>
                                 </li>
                             `;
                         });
@@ -232,6 +236,52 @@
                 alert('Failed to load archived content. Please try again.');
             }
         }
+
+        async function confirmDelete(type, id) {
+    if (confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
+        const url = type === 'pdf' ? `/admin/delete-pdf/${id}` : `/admin/delete-video/${id}`;
+        try {
+            console.log(`Sending DELETE request to: ${url}`);
+            const response = await fetch(url, { method: 'DELETE' });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('Error response from server:', errorData);
+                alert(errorData.error || 'An error occurred while deleting the file.');
+                return;
+            }
+
+            const data = await response.json();
+            alert(data.message || `${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully.`);
+
+            // Trigger cleanup or compaction
+            await triggerCleanup(); // New method to trigger compaction/cleanup
+
+            // Reload content after successful deletion
+            loadArchivedContent();
+        } catch (error) {
+            console.error(`Error deleting ${type}:`, error);
+            alert('Failed to delete the file. Please try again.');
+        }
+    }
+}
+
+// Example function to trigger cleanup after deletion
+async function triggerCleanup() {
+    try {
+        // Trigger MongoDB compaction or other cleanup mechanisms
+        const compactionResponse = await fetch('/admin/trigger-compaction', { method: 'POST' });
+
+        if (!compactionResponse.ok) {
+            console.error('Error during cleanup/compaction');
+        } else {
+            console.log('Cleanup/compaction triggered successfully');
+        }
+    } catch (error) {
+        console.error('Error triggering cleanup:', error);
+    }
+}
+
 
         async function confirmUnarchive(type, id) {
             if (confirm(`Are you sure you want to unarchive this ${type}?`)) {

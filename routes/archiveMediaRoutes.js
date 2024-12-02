@@ -8,6 +8,7 @@ const Video = require('../models/video');
 const { ensureAdminLoggedIn } = require('../middleware');
 const { ObjectId } = require('mongodb'); 
 
+
 const router = express.Router();
 
 // Route to display archived PDFs and Videos for a given Room
@@ -148,6 +149,7 @@ router.post('/unarchive-video/:videoFileId', ensureAdminLoggedIn, async (req, re
         res.status(500).json({ error: 'Failed to unarchive video.' });
     }
 });
+
 
 
 

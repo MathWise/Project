@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config();
 const express = require('express');
+const cors = require('cors');
 const { initBuckets } = require('./config/gridFS.js');
 const { initActivityBucket } = require('./config/activityGridFS');
 const activityRoutes = require('./routes/activitySec');
@@ -17,6 +18,7 @@ const userslogin = require('./routes/userslogin.js');
 const forgetPassRoutes = require('./routes/forgetpassword.js');
 const roomFPasswordRoutes = require('./routes/roomFPassword');
 const archiveLessonRoomRoutes = require('./routes/archiveLessonRoomRoutes');
+const pdfDelete = require('./routes/pdfDelete');
 const archiveMediaRoutes = require('./routes/archiveMediaRoutes');
 const defaultRoomRoutes = require('./routes/defaultRoom');
 const adRoutes = require("./routes/admin.js");
@@ -69,10 +71,18 @@ app.use(session({
   }
 }));
 
+const corsOptions = {
+  origin: 'http://localhost:8080',  // Allow only requests from this origin (adjust to your frontend's URL)
+  methods: ['GET', 'POST', 'DELETE'],  // Allow only specific HTTP methods
+  allowedHeaders: ['Content-Type'],  // Allow specific headers
+};
+
 app.use(flash());
+
 
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cors(corsOptions));
 
 app.use((req, res, next) => {
   console.log('Success Messages:', req.flash('success'));
@@ -101,6 +111,7 @@ app.use('/user', appRoutes);
 
 app.use('/admin', archiveLessonRoomRoutes);
 app.use('/admin', archiveMediaRoutes);
+app.use('/admin', pdfDelete);
 app.use('/user', userActivityRoutes);
 app.use('/admin', defaultRoomRoutes);
 app.use('/admin', activityRoutes);
