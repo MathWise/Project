@@ -76,10 +76,12 @@ body {
 
 /* Left Sidebar Styling */
 .bg-info {
-    border-top-right-radius: 15px; /* Rounded corners on the top right */
-    border-bottom-right-radius: 15px; /* Rounded corners on the bottom right */
-    border-left: none; /* No left border */
-    padding: 20px; /* Adjust padding if needed */
+    width: 200px; /* Set the specific width */
+    height: 60vh; /* Full height of the viewport */
+    border-top-right-radius: 15px;
+    border-bottom-right-radius: 15px;
+    border-left: none;
+    padding: 20px;
 }
 
 /* Responsive Styling */
