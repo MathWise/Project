@@ -173,27 +173,67 @@ button:hover {
 .kebab-menu-btn {
     background: none;
     border: none;
-    font-size: 2em; /* Larger size */
+    font-size: 1.5em; /* Adjust size for better responsiveness */
     cursor: pointer;
     padding: 0.5em;
-    color: black;
-    display: flex; /* Helps align if inside a container */
+    color: white;
+    display: flex; /* Align button within container */
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    background-color: green; 
+    transition: background-color 0.3s ease;
 }
+
+.kebab-menu-btn:hover {
+    background-color: blue; 
+    color: white;
+}
+
 
 .kebab-menu-content {
     position: absolute;
-    background-color: rgb(255, 255, 255);
+    right: 0; /* Align to the right for better visibility */
+    top: 100%; /* Position below the button */
+    background-color: rgba(128, 128, 128, 0.9); /* Semi-transparent gray */
     border: 1px solid #ccc;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
     padding: 10px;
     z-index: 1000;
     min-width: 200px;
+    border-radius: 5px; /* Rounded corners */
+    display: none; /* Hidden by default */
+    text-align: left; /* Align content */
 }
 
+/* Kebab Menu Forms */
 .kebab-menu-content form {
     margin: 0;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .kebab-menu-btn {
+        font-size: 1.2em; /* Adjust size for smaller screens */
+        padding: 0.3em;
+    }
+
+    .kebab-menu-content {
+        min-width: 150px; /* Reduce width for smaller screens */
+        font-size: 0.9rem; /* Adjust font size */
+    }
+}
+
+@media (max-width: 576px) {
+    .kebab-menu-btn {
+        font-size: 1em; /* Smaller size for very small screens */
+        padding: 0.2em;
+    }
+
+    .kebab-menu-content {
+        min-width: 120px; /* Further reduce width */
+        font-size: 0.8rem; /* Smaller font size */
+    }
 }
 
 .late {
@@ -201,9 +241,6 @@ button:hover {
     font-weight: bold;
 }
 
-.kebab-menu-btn:hover {
-    color: gray; /* Changes to gray on hover */
-}
 
 .btn-secondary {
     display: inline-block;
