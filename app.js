@@ -21,6 +21,7 @@ const archiveLessonRoomRoutes = require('./routes/archiveLessonRoomRoutes');
 const pdfDelete = require('./routes/pdfDelete');
 const archiveMediaRoutes = require('./routes/archiveMediaRoutes');
 const defaultRoomRoutes = require('./routes/defaultRoom');
+const deleteQuizRoutes = require('./routes/deleteQuiz');
 const adRoutes = require("./routes/admin.js");
 const appRoutes = require("./routes/user.js");
 const passport = require('passport');
@@ -108,7 +109,7 @@ app.use('/', userslogin);
 app.use(forgetPassRoutes);
 app.use('/admin', adRoutes);
 app.use('/user', appRoutes);
-
+app.use('/admin', deleteQuizRoutes);
 app.use('/admin', archiveLessonRoomRoutes);
 app.use('/admin', archiveMediaRoutes);
 app.use('/admin', pdfDelete);

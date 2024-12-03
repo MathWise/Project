@@ -5,6 +5,7 @@ const Lesson = require('../models/lesson');
 const Video = require('../models/video');
 const { ensureAdminLoggedIn } = require('../middleware');
 
+
 const router = express.Router();
 
 // Route to delete a PDF

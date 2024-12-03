@@ -174,31 +174,35 @@
         <ul id="archivedQuizzesList">
             <% if (archivedQuizzes && archivedQuizzes.length > 0) { %>
                 <% archivedQuizzes.forEach(quiz => { %>
-                    <li class="archive-item">
+                    <li class="archive-item" data-quiz-id="<%= quiz._id %>">
                         <img src="/assets/activityarchive.png" alt="Quiz Icon">
                         <strong><%= quiz.title %></strong>
                         <p>Archived on: <%= quiz.archivedAt ? new Date(quiz.archivedAt).toLocaleString() : 'N/A' %></p>
                         <button onclick="unarchiveQuiz('<%= quiz._id %>')">Restore</button>
+                        <button onclick="deleteQuiz('<%= quiz._id %>')">Delete</button>
                     </li>
                 <% }); %>
             <% } else { %>
                 <p>No archived quizzes available.</p>
             <% } %>
         </ul>
+        
     </div>
     
+
 
     <div class="archive-container" id="archivedActivities" style="display: none;">
         <h2>Archived Activities</h2>
         <ul>
             <% if (archivedActivities && archivedActivities.length > 0) { %>
                 <% archivedActivities.forEach(activity => { %>
-                    <li class="archive-item">
+                    <li class="archive-item" id="activity-<%= activity._id %>">
                         <img src="/assets/activityarchive.png" alt="Activity Icon">
                         <strong><%= activity.title %></strong>
                         <p>Description: <%= activity.description || 'No description provided' %></p>
                         <p>Deadline: <%= activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline' %></p>
                         <button onclick="unarchiveActivity('<%= activity._id %>')">Restore</button>
+                        <button onclick="deleteActivity('<%= activity._id %>')">Delete Activity</button>
                     </li>
                 <% }); %>
             <% } else { %>
@@ -206,6 +210,8 @@
             <% } %>
         </ul>
     </div>
+    
+    
     
     
     
@@ -252,6 +258,59 @@
                 })
                 .catch(err => console.error(err));
         }
+
+        function deleteQuiz(quizId) {
+    if (confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) {
+        fetch(`/admin/delete-quiz/${quizId}`, {
+            method: 'DELETE',
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+
+                    // Remove the deleted quiz from the DOM
+                    const quizElement = document.querySelector(`[data-quiz-id="${quizId}"]`);
+                    if (quizElement) {
+                        quizElement.remove();
+                    }
+                } else {
+                    alert(data.error || "Failed to delete the quiz.");
+                }
+            })
+            .catch(err => console.error("Error deleting quiz:", err));
+    }
+}
+
+function deleteActivity(activityId) {
+    if (confirm('Are you sure you want to delete this activity? This action cannot be undone.')) {
+        console.log('Deleting activity with ID:', activityId);
+        
+        fetch(`/admin/delete-activity/${activityId}`, {
+            method: 'DELETE',
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Delete response:', data);
+            if (data.success) {
+                alert('Activity deleted successfully');
+                // Find and remove the activity element from the DOM
+                const activityElement = document.getElementById(`activity-${activityId}`);
+                if (activityElement) {
+                    activityElement.remove();  // Remove the activity element
+                }
+            } else {
+                alert('Failed to delete activity: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while deleting the activity');
+        });
+    }
+}
+
+
     </script>
 </body>
 </html>

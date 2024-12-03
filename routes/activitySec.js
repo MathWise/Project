@@ -186,6 +186,7 @@ router.post('/unarchive-activity/:activityId', ensureAdminLoggedIn, async (req, 
     }
 });
 
+
 router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
     const { id } = req.params;
     
@@ -539,6 +540,76 @@ router.get('/activity/export/:activityId', ensureAdminLoggedIn, async (req, res)
     }
 });
 
+router.delete('/delete-activity/:activityId', async (req, res) => {
+    const { activityId } = req.params;
+
+    try {
+        // Check if the activityId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(activityId)) {
+            return res.status(400).json({ success: false, message: 'Invalid activity ID' });
+        }
+
+        // Find the activity in the database
+        const activity = await Activity.findById(activityId);
+        if (!activity) {
+            return res.status(404).json({ success: false, message: 'Activity not found' });
+        }
+
+        // Log the activity object to check file IDs
+        console.log('Activity object:', activity);
+
+        // Get the GridFS bucket
+        const submissionBucket = getSubmissionBucket();
+
+        // Delete associated files in GridFS
+        if (activity.submissions.length > 0) {
+            for (const submission of activity.submissions) {
+                if (submission.fileId) {
+                    console.log(`Attempting to delete file with ID: ${submission.fileId}`);
+                    const file = await submissionBucket.find({ _id: submission.fileId }).toArray();
+                    if (file.length === 0) {
+                        console.error(`File with ID ${submission.fileId} not found in GridFS`);
+                        continue; // Skip this file if it's not found
+                    }
+                    try {
+                        await submissionBucket.delete(submission.fileId);
+                        console.log(`Deleted file from GridFS: ${submission.fileId}`);
+                    } catch (err) {
+                        console.error(`Error deleting file ${submission.fileId}:`, err.message);
+                    }
+                }
+            }
+        }
+
+        // Delete file attachments from GridFS
+        if (activity.fileAttachments.length > 0) {
+            for (const attachment of activity.fileAttachments) {
+                if (attachment._id) {
+                    console.log(`Attempting to delete file attachment with ID: ${attachment._id}`);
+                    const file = await submissionBucket.find({ _id: attachment._id }).toArray();
+                    if (file.length === 0) {
+                        console.error(`File attachment with ID ${attachment._id} not found in GridFS`);
+                        continue; // Skip this attachment if it's not found
+                    }
+                    try {
+                        await submissionBucket.delete(attachment._id);
+                        console.log(`Deleted file attachment from GridFS: ${attachment._id}`);
+                    } catch (err) {
+                        console.error(`Error deleting file attachment ${attachment._id}:`, err.message);
+                    }
+                }
+            }
+        }
+
+        // Delete the activity from the database
+        await Activity.findByIdAndDelete(activityId);
+
+        res.json({ success: true, message: 'Activity deleted successfully' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false, message: 'Failed to delete activity', error: err.message });
+    }
+});
 
 
 

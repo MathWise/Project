@@ -1976,6 +1976,7 @@ router.get('/quizzes/result/:quizId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
+
 // Route to archive a specific activity room
 router.post('/archive-activity-room/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
     const { activityRoomId } = req.params;
@@ -2188,6 +2189,7 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
         res.redirect(`/admin/quiz/modify/${quizId}`);
     }
 });
+
 
 
 
