@@ -157,10 +157,11 @@
         <ul>
             <% if (archivedActivityRooms && archivedActivityRooms.length > 0) { %>
                 <% archivedActivityRooms.forEach(activityRoom => { %>
-                    <li class="archive-item">
+                    <li class="archive-item" id="activity-room-<%= activityRoom._id %>">
                         <img src="/assets/activityroomarchive.png" alt="Activity Icon">
                         <strong><%= activityRoom.subject %></strong> - <%= activityRoom.activityType %>
                         <button onclick="unarchiveActivityRoom('<%= activityRoom._id %>')">Restore</button>
+                        <button onclick="deleteActivityRoom('<%= activityRoom._id %>')">Delete</button>
                     </li>
                 <% }); %>
             <% } else { %>
@@ -168,6 +169,7 @@
             <% } %>
         </ul>
     </div>
+    
 
     <div class="archive-container" id="archivedTests" style="display: none;">
         <h2>Archived Tests</h2>
@@ -309,6 +311,27 @@ function deleteActivity(activityId) {
         });
     }
 }
+
+function deleteActivityRoom(id) {
+    if (confirm("Are you sure you want to delete this Activity Room? This action will delete all associated data.")) {
+        fetch(`/admin/delete-activity-room/${id}`, { method: 'DELETE' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    // Remove the deleted activity room from the DOM
+                    const activityRoomElement = document.getElementById(`activity-room-${id}`);
+                    if (activityRoomElement) {
+                        activityRoomElement.remove();
+                    }
+                } else {
+                    alert("Failed to delete activity room: " + data.message);
+                }
+            })
+            .catch(err => console.error("Error deleting activity room:", err));
+    }
+}
+
 
 
     </script>

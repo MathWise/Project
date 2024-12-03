@@ -4,6 +4,7 @@ const middleware = require('../middleware');
 const { DateTime } = require('luxon');
 const { ensureLoggedIn, ensureAdminLoggedIn } = middleware;
 const Quiz = require('../models/QuizActivityRoom'); 
+const QuizResult = require('../models/QuizResult');
 const mongoose = require('mongoose');
 const { GridFsStorage } = require('multer-gridfs-storage');
 const { GridFSBucket } = require('mongodb');
@@ -14,6 +15,9 @@ const mime = require('mime-types');
 const XLSX = require('xlsx');
 
 const router = express.Router();
+const db = mongoose.connection;
+
+
 
 // GridFS storage for activity submissions
 const storage = multer.memoryStorage();
@@ -610,6 +614,85 @@ router.delete('/delete-activity/:activityId', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to delete activity', error: err.message });
     }
 });
+
+router.delete('/delete-activity-room/:activityRoomId', async (req, res) => {
+    const { activityRoomId } = req.params;
+
+    try {
+        // Validate the activityRoomId
+        if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
+            return res.status(400).json({ success: false, message: 'Invalid activity room ID.' });
+        }
+
+        // Find and delete the activity room
+        const activityRoom = await ActivityRoom.findByIdAndDelete(activityRoomId);
+
+        if (!activityRoom) {
+            return res.status(404).json({ success: false, message: 'Activity room not found.' });
+        }
+
+        console.log(`Deleting activity room: ${activityRoomId}`);
+
+        // Delete associated quizzes and quiz results
+        const quizzes = await Quiz.find({ roomId: activityRoomId });
+        const quizDeletePromises = quizzes.map(async (quiz) => {
+            console.log(`Deleting quiz results for quiz: ${quiz._id}`);
+            await QuizResult.deleteMany({ quizId: quiz._id }); // Delete quiz results
+            console.log(`Deleting quiz: ${quiz._id}`);
+            await Quiz.deleteOne({ _id: quiz._id }); // Delete the quiz itself
+        });
+
+        // Delete associated activities and their submissions/attachments
+        const gridFSBucketSubmissions = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+            bucketName: 'submissions'
+        });
+
+        const activities = await Activity.find({ roomId: activityRoomId });
+        const activityDeletePromises = activities.map(async (activity) => {
+            console.log(`Deleting submissions and attachments for activity: ${activity._id}`);
+
+            // Delete submissions in GridFS
+            const submissionDeletePromises = activity.submissions.map(async (submission) => {
+                if (submission.fileId) {
+                    try {
+                        console.log(`Deleting submission file: ${submission.fileId}`);
+                        await gridFSBucketSubmissions.delete(new mongoose.Types.ObjectId(submission.fileId));
+                    } catch (error) {
+                        console.warn(`Failed to delete submission file: ${submission.fileId}`, error.message);
+                    }
+                }
+            });
+
+            // Delete file attachments in GridFS
+            const attachmentDeletePromises = activity.fileAttachments.map(async (attachment) => {
+                if (attachment._id) {
+                    try {
+                        console.log(`Deleting attachment file: ${attachment._id}`);
+                        await gridFSBucketSubmissions.delete(new mongoose.Types.ObjectId(attachment._id));
+                    } catch (error) {
+                        console.warn(`Failed to delete attachment file: ${attachment._id}`, error.message);
+                    }
+                }
+            });
+
+            // Wait for all submission and attachment deletions
+            await Promise.all([...submissionDeletePromises, ...attachmentDeletePromises]);
+
+            console.log(`Deleting activity: ${activity._id}`);
+            await Activity.deleteOne({ _id: activity._id }); // Delete the activity
+        });
+
+        // Wait for all deletions to complete
+        await Promise.all([...quizDeletePromises, ...activityDeletePromises]);
+
+        console.log(`Activity room ${activityRoomId} and all associated data deleted successfully.`);
+        res.status(200).json({ success: true, message: 'Activity room and related data deleted successfully.' });
+    } catch (error) {
+        console.error('Error deleting activity room and related data:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete activity room and related data.', error: error.message });
+    }
+});
+
 
 
 
