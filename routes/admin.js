@@ -1549,7 +1549,7 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
         }
 
         const activityRoomId = Array.isArray(req.body.activityRoomId)
-            ? req.body.activityRoomId[0] // Use the first ID if multiple IDs are sent
+            ? req.body.activityRoomId[0]
             : req.body.activityRoomId;
 
         if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
@@ -1575,11 +1575,13 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
         let quizMaxAttempts = 3;
         let quizDeadline = null;
 
+        // Parse metadata and questions
         data.forEach((row, index) => {
             if (index === 0) {
+                // Parse metadata
                 quizTimer = parseInt(row['Timer'], 10) || quizTimer;
                 quizMaxAttempts = parseInt(row['Max Attempts'], 10) || quizMaxAttempts;
-        
+
                 if (row['Deadline']) {
                     const parsedDeadline = DateTime.fromFormat(row['Deadline'], 'MM/dd/yy, h:mm a', { zone: 'Asia/Manila' });
                     if (parsedDeadline.isValid) {
@@ -1590,54 +1592,59 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
                 }
                 return;
             }
-        
+
+            // Validate required fields
             if (!row['Question Text'] || !row['Type']) {
                 console.warn(`Skipping row ${index + 1}: Missing required fields (Question Text or Type).`);
                 return;
             }
-        
+
             const question = {
                 questionText: row['Question Text'],
-                type: row['Type'],
+                type: row['Type'].toLowerCase(),
                 choices: [],
-                correctAnswer: row['Correct Answer'] || ''
+                correctAnswer: row['Correct Answer'] ? row['Correct Answer'].toString().trim() : ''
             };
-        
-            if (row['Type'] === 'multiple-choice') {
+
+            if (question.type === 'multiple-choice') {
                 if (!row['Choices']) {
                     console.warn(`Skipping row ${index + 1}: Missing choices for multiple-choice question.`);
                     return;
                 }
-                const choices = row['Choices'].split(',').map(choiceText => ({
-                    text: choiceText.trim(),
-                    isCorrect: choiceText.trim() === row['Correct Answer']
+
+                // Parse choices and validate correct answer
+                const choices = row['Choices'].split(',').map(choice => choice.trim());
+                question.choices = choices.map(choice => ({
+                    text: choice,
+                    isCorrect: choice === question.correctAnswer
                 }));
-                question.choices = choices;
-        
-                if (!question.choices.some(choice => choice.isCorrect)) {
-                    console.warn(`Skipping row ${index + 1}: No correct choice specified for multiple-choice question.`);
+
+                // Ensure correct answer is in choices
+                if (!choices.includes(question.correctAnswer)) {
+                    console.warn(
+                        `Skipping row ${index + 1}: Correct Answer "${question.correctAnswer}" not found in Choices [${choices.join(', ')}].`
+                    );
                     return;
                 }
-            } else if (row['Type'] === 'fill-in-the-blank') {
-                if (!row['Correct Answer']) {
+            } else if (question.type === 'fill-in-the-blank') {
+                if (!question.correctAnswer) {
                     console.warn(`Skipping row ${index + 1}: Fill-in-the-blank question must have a correct answer.`);
                     return;
                 }
-                question.correctAnswer = row['Correct Answer'].toString().trim();
             } else {
                 console.warn(`Skipping row ${index + 1}: Unsupported question type "${row['Type']}".`);
                 return;
             }
-        
+
             quizQuestions.push(question);
         });
-        
 
         console.log('Constructed quiz questions:', quizQuestions);
 
+        // Save the quiz
         const newQuiz = new Quiz({
             title: 'Imported Quiz',
-            roomId: new mongoose.Types.ObjectId(activityRoomId), // Ensure correct roomId assignment
+            roomId: new mongoose.Types.ObjectId(activityRoomId),
             timer: quizTimer,
             maxAttempts: quizMaxAttempts,
             deadline: quizDeadline,
