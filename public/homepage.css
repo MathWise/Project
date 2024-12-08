@@ -77,49 +77,39 @@ body {
 /* Left Sidebar Styling */
 .bg-info {
     width: 200px; /* Set the specific width */
-    height: 60vh; /* Full height of the viewport */
+    height: auto; /* Full height of the viewport */
     border-top-right-radius: 15px;
     border-bottom-right-radius: 15px;
     border-left: none;
     padding: 20px;
 }
 
-/* Responsive Styling */
 @media (max-width: 768px) {
-    .upper-side, .containers {
-        flex-direction: column;
+    body {
+        padding-top: 200px; /* Adjust this value based on header height */
     }
 
-    .greeting-text {
-        font-size: 14px;
+    .dropdown-content {
+        min-width: 140px;
     }
 
-    .big-box1 {
-        height: 300px;
-    }
-
-    .form-control {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .updates-container {
-        width: 100%;
-    }
-
-    /* Adjust .bg-info height for mobile view */
-    .bg-info {
-        height: 50vh; /* Set desired height */
+    .bg-main {
+        height: 500px;
     }
 }
 
-/* For screens larger than 1200px */
-@media (min-width: 1200px) {
-    .greeting-text {
-        font-size: 20px;
+@media (max-width: 480px) {
+    body {
+        padding-top: 200px; /* Adjust this value based on header height */
+    }
+
+    .dropdown-content {
+        min-width: 120px;
+    }
+    .bg-main {
+        height: 500px;
     }
 }
-
 /* Adjust dropdown menu styling to align with existing layout */
 .dropdown-content {
     background-color: #ffffff;
@@ -127,6 +117,7 @@ body {
     border-radius: 5px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
+    display: none; top: 50px; right: 10px;
 }
 
 .dropdown-content a {
@@ -156,7 +147,6 @@ body {
     background-image: url('assets/analytics.png');
     background-size: cover;
     background-position: center;
-    
     z-index: -1; /* Place pseudo-element behind the content */
 }
 

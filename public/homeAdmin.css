@@ -12,7 +12,12 @@ body {
 }
 
 .container {
-    margin-top: auto;
+    width: 90%;
+    max-width: 1200px; /* Limit the width on large screens */
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 8px;
+
 }
 
 h1 {
@@ -362,4 +367,37 @@ opacity: 1; /* Ensure it's fully visible initially */
 
 .modal-content button:hover {
     background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+    .room-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .room {
+        padding: 10px;
+    }
+
+    .dropdown-content {
+        min-width: 140px;
+    }
+
+    .modal-content {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dropdown-content {
+        min-width: 120px;
+    }
+
+    .room {
+        padding: 5px;
+    }
+
+    .modal-content {
+        padding: 10px;
+    }
 }

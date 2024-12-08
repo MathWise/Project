@@ -41,8 +41,7 @@
                      onclick="toggleDropdownMenu()">
                 
                 <!-- Dropdown Menu Content -->
-                <div class="dropdown-content position-absolute" id="dropdownMenu" 
-                     style="display: none; top: 50px; right: 10px;">
+                <div class="dropdown-content position-absolute" id="dropdownMenu">
                     <a href="/admin/homeAdmin" onclick="showLoadingOverlay()">Go back</a>
                     <a href="/admin/lessonRoomArchive/<%= room._id %>" onclick="showLoadingOverlay()">Lesson Room Archive</a>
                     <a href="/admin/pdfAndVideoArchive/<%= room._id %>" onclick="showLoadingOverlay()">PDF and Video Archive</a>

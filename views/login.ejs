@@ -10,17 +10,14 @@
     <link rel="stylesheet" href="login.css">
 </head>
 <body>
-    
     <div class="container-fluid min-vh-100 d-flex justify-content-center align-items-center" style="background-color: #b3e5fc;">
-        <div class="card shadow-lg" style="max-width: 900px; width: 100%; position: relative;">
-            <div class="card-body p-5 d-flex">
+        <div class="card shadow-lg w-100" style="max-width: 900px;">
+            <div class="card-body p-5 row align-items-center">
                 <!-- Left Side Content: Text and Logo -->
-                <div class="d-flex flex-column justify-content-center" style="max-width: 60%; margin-right: 50px; margin-top: -90px;"> <!-- Adjusted margin-top -->
-                    <!-- Logo above the text -->
-                    <div class="text-center mb-3">
+                <div class="col-lg-6 text-center text-lg-start mb-4 mb-lg-0">
+                    <div class="mb-3">
                         <img src="assets/logo.png" alt="MathWise Icon" class="img-fluid" style="width: 120px;">
                     </div>
-                    <!-- Text content -->
                     <h1 class="card-title mb-3" style="color: #680A76; font-weight: bold;">Welcome to MathWise</h1>
                     <p class="card-text" style="color: #680A76; font-size: 1.2rem; line-height: 1.5;">
                         A Math E-learning platform<br>
@@ -29,12 +26,8 @@
                     </p>
                 </div>
 
-                   <!-- Loading Animation Overlay -->
-                <div id="loadingOverlay" style="display: none;">
-                    <div class="spinner"></div>
-                </div>
                 <!-- Right Side Content: Login Form -->
-                <div class="d-flex flex-column justify-content-center" style="max-width: 40%; margin-top: 120px;"> <!-- Adjusted margin-top -->
+                <div class="col-lg-6">
                     <form action="/login" method="post" id="loginForm">
                         <% if (successMessage && successMessage.length > 0) { %>
                             <div class="alert alert-success" id="success-alert">
@@ -64,25 +57,23 @@
                         <br>
                         <a href="/mail/forgetpassword" class="text-muted">Forgot Password? <span class="text-primary">Click here</span></a>
                     </div>
-                    <br>
-                    <div class="position-absolute bottom-0 start-0 p-3">
+                    <div class="text-center mt-4">
                         <p class="text-muted mb-0">Powered by <strong>MathWise</strong></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const loginForm = document.getElementById('loginForm');
+        const loadingOverlay = document.getElementById('loadingOverlay');
 
-const loginForm = document.getElementById('loginForm');
-    const loadingOverlay = document.getElementById('loadingOverlay');
-
-    // Show loading overlay when the form is submitted
-    loginForm.addEventListener('submit', () => {
-        loadingOverlay.style.display = 'flex';
-    });
+        // Show loading overlay when the form is submitted
+        loginForm.addEventListener('submit', () => {
+            loadingOverlay.style.display = 'flex';
+        });
 
         const togglePassword = document.getElementById('togglePasswordIcon');
         const passwordField = document.getElementById('password');
@@ -144,6 +135,11 @@ const loginForm = document.getElementById('loginForm');
         100% {
             transform: rotate(360deg);
         }
+    }
+
+    /* Ensure consistent padding/margin */
+    .card-body {
+        padding: 2rem;
     }
 </style>
 </body>
