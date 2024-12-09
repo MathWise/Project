@@ -3,17 +3,18 @@ body {
     font-family: 'Baloo 2', sans-serif;
     background-color: #E0F4F9; /* Set body background color */
     padding-top: 150px; /* Adjust this value based on header height */
-    
+    margin: 0; /* Remove default margin */
 }
 
 .fixed-header {
-    position: fixed; /* Makes the header stay at the top */
+    position: fixed; /* Keeps the header at the top */
     top: 0;
     left: 0;
     width: 100%; /* Ensures it spans the full width */
     z-index: 1000; /* Keeps the header on top of other elements */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: Adds a shadow for better distinction */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Adds a shadow for better distinction */
     background-color: #E0F4F9;
+    padding: 10px 20px; /* Ensure proper padding for content */
 }
 
 #quizActivityRoomContent {
@@ -47,6 +48,7 @@ body {
     padding: 20px; /* Add padding for the form */
     z-index: 1; /* Ensure form is above the background */
     color: white; /* Change text color for visibility */
+    text-align: center; /* Center text content for smaller screens */
 }
 
 
@@ -84,6 +86,8 @@ body {
     background-size: cover; /* Cover the entire box */
     background-repeat: no-repeat;
     border-radius: 8px;
+    flex-wrap: wrap; /* Allow elements to wrap on smaller screens */
+    
 
 }
 
@@ -103,6 +107,7 @@ body {
     margin: 10px; /* Adds margin for spacing */
     flex: 1; /* Allow buttons to grow equally */
     min-width: 150px; /* Set a minimum width for buttons */
+    max-width: 300px;
 }
 
 .button-card img {
@@ -110,8 +115,8 @@ body {
     top: 10px; 
     left: 50%; /* Center horizontally */
     transform: translateX(-50%); /* Adjust position */
-    width: 100px; /* Bigger size for the button icons */
-    height: 100px; /* Maintain aspect ratio */
+    width: 80px; /* Bigger size for the button icons */
+    height: 80px; /* Maintain aspect ratio */
 }
 
 .button-card .upcoming {
@@ -136,16 +141,18 @@ body {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
-    height: 100%; /* Ensure full height for content */
+   
 }
 
 .left-content {
     flex: 1; /* Take available space */
     margin-right: 20px; /* Space between the iframes */
+    margin: 0 10px;
 }
 
 .right-content {
     flex: 1; /* Take available space */
+    margin: 0 10px;
 }
 
 /* Responsive adjustments */
@@ -158,8 +165,18 @@ body {
     .right-content {
         margin-right: 0; /* Remove right margin for mobile */
         margin-bottom: 20px; /* Add bottom margin for spacing */
+        margin: 10px 0;
+    }
+    .button-card {
+        min-width: 100%; /* Full width for smaller screens */
+    }
+
+    .button-card img {
+        width: 70px;
+        height: 70px;
     }
 }
+
 
 /* Logs image style */
 .logo {
