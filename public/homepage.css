@@ -6,6 +6,13 @@ body {
     padding-top: 150px; /* Adjust this value based on header height */
 }
 
+.home-button {
+    background-color: #FFDF9F; /* Set background color for the Lesson button */
+    padding: 10px; /* Add padding for better appearance */
+    border-radius: 5px; /* Round the corners of the Lesson button */
+    display: block;
+}
+
 .fixed-header {
     position: fixed; /* Makes the header stay at the top */
     top: 0;
@@ -24,9 +31,6 @@ body {
     border-radius: 10px;
 }
 
-.containers {
-    min-height: 607px;
-}
 
 .big-box1 {
     margin-left: 10px;
@@ -74,14 +78,19 @@ body {
     margin-right: 8px;
 }
 
+.rounded-sidebar {
+    border-radius: 15px;
+}
+
 /* Left Sidebar Styling */
-.bg-info {
-    width: 200px; /* Set the specific width */
-    height: auto; /* Full height of the viewport */
-    border-top-right-radius: 15px;
-    border-bottom-right-radius: 15px;
-    border-left: none;
-    padding: 20px;
+.sidebar {
+    background-color: #17A2B8; /* Sidebar color */
+}
+
+.sidebar a {
+    color: #000;
+    text-decoration: none;
+    display: block; /* Ensure full clickable area */
 }
 
 @media (max-width: 768px) {
@@ -96,6 +105,11 @@ body {
     .bg-main {
         height: 500px;
     }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
 }
 
 @media (max-width: 480px) {
@@ -108,6 +122,11 @@ body {
     }
     .bg-main {
         height: 500px;
+    }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
     }
 }
 /* Adjust dropdown menu styling to align with existing layout */

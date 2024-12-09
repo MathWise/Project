@@ -384,7 +384,18 @@ function showRoomContent(roomId) {
 
 </script>
 
-            
+<script>
+    window.addEventListener('resize', adjustBodyPadding);
+ 
+ function adjustBodyPadding() {
+     const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+     document.body.style.paddingTop = `${headerHeight}px`;
+ }
+ 
+ // Call the function on page load to set initial padding
+ adjustBodyPadding();
+ 
+ </script>      
 
     
         <script src="/js/quiz.js"></script> 

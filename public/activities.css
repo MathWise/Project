@@ -175,6 +175,11 @@ body {
         width: 70px;
         height: 70px;
     }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
 }
 
 

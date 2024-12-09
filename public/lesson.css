@@ -103,19 +103,6 @@ body {
     flex: 1; /* Take available space */
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .big-box {
-        flex-direction: column; /* Stack vertically on small screens */
-    }
-
-    .left-content,
-    .right-content {
-        margin-right: 0; /* Remove right margin for mobile */
-        margin-bottom: 20px; /* Add bottom margin for spacing */
-    }
-}
-
 /* Logs image style */
 .logs {
     position: absolute;
@@ -187,6 +174,42 @@ body {
         width: 100px; /* Smaller buttons on smaller screens */
         font-size: 14px; /* Adjust font size for readability */
     }
+
+    .big-box {
+        flex-direction: column; /* Stack vertically on small screens */
+    }
+
+    .left-content,
+    .right-content {
+        margin-right: 0; /* Remove right margin for mobile */
+        margin-bottom: 20px; /* Add bottom margin for spacing */
+    }
+
+    #videoModal {
+        padding: 20px; /* Add some padding for smaller screens */
+    }
+    
+    #videoViewer {
+        max-width: 100%;
+        max-height: 70vh;
+    }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .module-button {
+        height: 200px;
+        width: 150px;
+    }
+
+    .video-button {
+        height: 200px;
+        width: 150px;
+    }
+
+    
 }
 
 @media (max-width: 480px) {
@@ -197,6 +220,40 @@ body {
         height: 80px;
         width: 80px; /* Smaller button size for very small screens */
         font-size: 12px;
+    }
+
+    .big-box {
+        flex-direction: column; /* Stack vertically on small screens */
+    }
+
+    .left-content,
+    .right-content {
+        margin-right: 0; /* Remove right margin for mobile */
+        margin-bottom: 20px; /* Add bottom margin for spacing */
+    }
+
+    #videoModal {
+        padding: 20px; /* Add some padding for smaller screens */
+    }
+    
+    #videoViewer {
+        max-width: 100%;
+        max-height: 70vh;
+    }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .module-button {
+        height: 200px;
+        width: 150px;
+    }
+
+    .video-button {
+        height: 200px;
+        width: 150px;
     }
 }
 
@@ -339,6 +396,8 @@ body {
         
         .lesson-button {
             background-color: #FFDF9F; /* Set background color for the Lesson button */
+            padding: 10px; /* Add padding for better appearance */
+            border-radius: 5px; /* Round the corners of the Lesson button */
             display: block;
         }
       /* Styling for the video inside the modal */
@@ -427,18 +486,6 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
-}
-
-/* Ensure modal works on smaller screens */
-@media (max-width: 600px) {
-    #videoModal {
-        padding: 20px; /* Add some padding for smaller screens */
-    }
-    
-    #videoViewer {
-        max-width: 100%;
-        max-height: 70vh;
-    }
 }
         
 /* Adjust dropdown menu styling to align with existing layout */

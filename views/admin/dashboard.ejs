@@ -57,30 +57,32 @@
 
             <form action="/admin/dashboard/{{roomId}}" method="POST" >
                 <div class="containers row">
-                   
-                    <aside class="col-md-1 bg-info text-center p-3">
+                    <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
                         <nav>
                             <ul class="list-unstyled">
                                 <li style="margin-bottom: 35px;">
-                                    <span class="text-dark font-weight-bold" style="background-color: #FFDF9F; padding: 10px; border-radius: 5px; display: block;" onclick="reloadDashboard(event, '{{roomId}}')">
-                                        <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
-                                        Dashboard
+                                    <a href="/admin/dashboard/<%= room._id %>" class="text-dark home-button">
+                                        <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
+                                    Dashboard
                                     </span>
+                                    </a>
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/lesson/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/admin/lesson/<%= room._id %>" class="text-dark">
                                         <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
                                         Lesson
+                                        </span>
                                     </a>
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/activities/<%= room._id %>" class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/admin/activities/<%= room._id %>" class="text-dark activities-button">
+                                        <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
                                         <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                         Activities
-                                    </a>
+                                    </a >
                                 </li>
                                 <li style="margin-bottom: 35px;">
-                                    <a href="/admin/educGames/<%= room._id %>"  class="text-dark" onclick="showLoadingOverlay()">
+                                    <a href="/admin/educGames/<%= room._id %>" class="text-dark">
                                         <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                         Educational Games
                                     </a>
@@ -271,6 +273,19 @@
         const loadingOverlay = document.getElementById('loadingOverlay');
         loadingOverlay.style.display = 'flex';
     }
+</script>
+
+<script>
+   window.addEventListener('resize', adjustBodyPadding);
+
+function adjustBodyPadding() {
+    const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+    document.body.style.paddingTop = `${headerHeight}px`;
+}
+
+// Call the function on page load to set initial padding
+adjustBodyPadding();
+
 </script>
     
     <script src="/js/dashboard.js"></script>

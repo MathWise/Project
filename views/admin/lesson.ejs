@@ -131,11 +131,11 @@
                 <!-- New big box section -->
                 <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
                     <div class="d-flex justify-content-center align-items-center mt-3">
-                        <button id="moduleButton" class="btn custom-btn d-flex flex-column align-items-center" style="height: 200px;">
+                        <button id="moduleButton" class="btn custom-btn d-flex flex-column align-items-center module-button" style="height: 200px;">
                             <img src="/assets/module.png" alt="Module Icon" style="width: 150px; height: 150px;"> <!-- Adjust size as needed -->
                             <span>Module</span>
                         </button>
-                        <button id="videoButton" class="btn custom-btn d-flex flex-column align-items-center" style="height: 200px;">
+                        <button id="videoButton" class="btn custom-btn d-flex flex-column align-items-center video-button" style="height: 200px;">
                             <img src="/assets/video.png" alt="Module Icon" style="width: 150px; height: 150px;"> <!-- Adjust size as needed -->
                             <span>Video</span>
                         </button>
@@ -778,6 +778,19 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
     });
 });
 </script>
+
+<script>
+    window.addEventListener('resize', adjustBodyPadding);
+ 
+ function adjustBodyPadding() {
+     const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+     document.body.style.paddingTop = `${headerHeight}px`;
+ }
+ 
+ // Call the function on page load to set initial padding
+ adjustBodyPadding();
+ 
+ </script>
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
