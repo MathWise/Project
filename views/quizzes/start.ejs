@@ -162,7 +162,7 @@ button:hover {
         </div>
 
         <!-- Form for submitting quiz answers -->
-        <form id="quizForm" action="/admin/quiz/submit/<%= quiz._id %>" method="POST" onsubmit="clearLocalStorage()">
+        <form id="quizForm" action="/admin/quiz/submit/<%= quiz._id %>" method="POST" onsubmit="return confirmSubmission()">
             <input type="hidden" name="roomId" value="<%= quiz.roomId %>">
 
             <% quiz.questions.forEach((question, qIndex) => { %>
@@ -194,14 +194,14 @@ button:hover {
 
     <script src="/js/start.js"></script>
 
-    <script>
+    <!-- <script>
         function clearLocalStorage() {
             const quizId = "<%= quiz._id %>";
             localStorage.removeItem(`quizStartTime_${quizId}`);
             localStorage.removeItem(`quizRemainingTime_${quizId}`);
             localStorage.removeItem(`quizProgress_${quizId}`);
         }
-    </script>
+    </script> -->
 
 </body>
 </html>

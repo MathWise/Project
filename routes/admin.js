@@ -1814,6 +1814,7 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
+
         const attemptCount = await QuizResult.countDocuments({
             quizId: new mongoose.Types.ObjectId(id),
             userId,
@@ -1828,11 +1829,11 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/quizzes/result/' + id);
         }
 
-         // Reset quizStartTime if starting a new quiz or if it's missing
-         if (!req.session.quizStartTime || req.session.currentQuizId !== id) {
-            req.session.quizStartTime = Date.now();
-            req.session.currentQuizId = id;  // Track current quiz ID to handle new quiz starts
-        }
+        // Always reset quizStartTime and currentQuizId for a new attempt
+        req.session.quizStartTime = Date.now();
+        req.session.currentQuizId = id;
+
+        
         res.render('quizzes/start', {
             quiz,
             currentUserId: userId,

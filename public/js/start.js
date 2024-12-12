@@ -4,15 +4,15 @@ const quizForm = document.getElementById('quizForm');
 const timerDisplay = document.getElementById('timer');
 const quizId = quizForm.action.split('/').pop(); // Extract the quiz ID from the form action URL
 
-// Initialize or load the start time from localStorage
-let startTime = parseInt(localStorage.getItem(`quizStartTime_${quizId}`), 10);
-const quizDuration = parseInt(timerDisplayElement.getAttribute('data-timer'), 10) * 60 * 1000; // in milliseconds
+// Clear any old localStorage data for this quiz when the page loads
+localStorage.removeItem(`quizStartTime_${quizId}`);
+localStorage.removeItem(`quizRemainingTime_${quizId}`);
+localStorage.removeItem(`quizProgress_${quizId}`);
 
-if (!startTime) {
-    // If no start time in localStorage, set a new start time
-    startTime = Date.now();
-    localStorage.setItem(`quizStartTime_${quizId}`, startTime);
-}
+// Initialize the start time and duration
+const quizDuration = parseInt(timerDisplayElement.getAttribute('data-timer'), 10) * 60 * 1000; // in milliseconds
+const startTime = Date.now(); // Set the current time as the start time
+localStorage.setItem(`quizStartTime_${quizId}`, startTime); // Store the start time in localStorage
 
 const endTime = startTime + quizDuration;
 
@@ -27,7 +27,10 @@ function updateTimer() {
             timeUpMessageElement.style.display = 'block';
         }
         // Automatically submit the quiz without any user interaction
-        setTimeout(() => quizForm.submit(), 2000); // Give user 2 seconds to see the message
+        setTimeout(() => {
+            clearLocalStorage();
+            quizForm.submit();
+        }, 2000); // Give user 2 seconds to see the message
     } else {
         const minutes = Math.floor(remainingTime / 1000 / 60);
         const seconds = Math.floor((remainingTime / 1000) % 60);
@@ -67,6 +70,21 @@ function loadProgress() {
             }
         });
     }
+}
+
+function confirmSubmission() {
+    const confirmation = confirm("Are you sure you want to submit the quiz? Once submitted, you cannot change your answers.");
+    if (confirmation) {
+        clearLocalStorage(); // Clear localStorage only if the user confirms
+    }
+    return confirmation; // If true, the form will submit; otherwise, submission is canceled
+}
+
+// Clear localStorage when the quiz is submitted
+function clearLocalStorage() {
+    localStorage.removeItem(`quizStartTime_${quizId}`);
+    localStorage.removeItem(`quizRemainingTime_${quizId}`);
+    localStorage.removeItem(`quizProgress_${quizId}`);
 }
 
 // Event listeners to save progress

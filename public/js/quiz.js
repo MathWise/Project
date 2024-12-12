@@ -81,6 +81,13 @@ document.querySelectorAll('.clickable').forEach(function (roomElement) {
 
             loadActivitiesForRoom(activityRoomId);
         }
+
+         // Update hidden input for the Import Quiz form
+         const importQuizField = document.getElementById('importQuizActivityRoomId');
+         if (importQuizField) {
+             importQuizField.value = activityRoomId;
+             console.log('Set activityRoomId for Import Quiz:', activityRoomId);
+         }
     });
 });
 
