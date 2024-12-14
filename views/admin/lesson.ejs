@@ -17,11 +17,11 @@
         <div class="upper-side row no-gutters p-3 align-items-center fixed-header">
             <!-- Logo on the Top Left -->
             <div class="col-md-4 col-4 d-flex align-items-center">
-                <img src="/assets/logo.png" alt="Logo" class="img-fluid" style="width: 110px;">
+                <img src="/assets/logo.png" alt="Logo" class="img-fluid logo" style="width: 110px;">
             </div>
     
             <!-- Greetings in the Center -->
-            <div class="col-md-4 col-4 text-center">
+            <div class="col-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
                     Hello Teacher <%= room.teacherName %> <br> Welcome to <%= room.name %>
                 </span>
@@ -52,10 +52,11 @@
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
+                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark home-button">
                                 <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
                             Dashboard
                             </span>
+                            </a>
                         </li>
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/lesson/<%= room._id %>" class="text-dark lesson-button">
@@ -66,13 +67,13 @@
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
+                            <a href="/admin/activities/<%= room._id %>" class="text-dark activities-button">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
                             </a >
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/educGames/<%= room._id %>" class="text-dark">
+                            <a href="/admin/educGames/<%= room._id %>" class="text-dark game-button">
                                 <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Educational Games
                             </a>

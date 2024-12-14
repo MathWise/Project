@@ -209,7 +209,40 @@ body {
         width: 150px;
     }
 
-    
+    .logo {
+        width: 70px !important;
+    }
+
+    .greeting-text {
+        font-size: 14px !important;
+    }
+
+    .settings-icon {
+        width: 30px !important;
+        margin-right: 25px !important;
+    }
+
+    .home-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .lesson-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .activities-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .game-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+   
 }
 
 @media (max-width: 480px) {
@@ -254,6 +287,11 @@ body {
     .video-button {
         height: 200px;
         width: 150px;
+    }
+
+    .fixed-header {
+        height: auto; /* Allow header to expand with content */
+        padding: 10px; /* Adjust padding for smaller screens */
     }
 }
 

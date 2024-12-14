@@ -57,7 +57,7 @@ input.form-control {
 }
 
 /* Responsive adjustments */
-@media (max-width: 767px) {
+@media (max-width: 768px) {
     .card {
         height: auto; /* Auto height for smaller screens */
         margin: 20px; /* Add margin for spacing on smaller screens */
@@ -75,15 +75,21 @@ input.form-control {
     input.form-control {
         height: 35px; /* Set height for inputs */
     }
-}
+    .card-text {
+       font-size: 12px !important;
+    }
 
-@media (min-width: 768px) {
-    .card {
-        max-width: 600px; /* Adjust max width for wider screens */
+    .card-title {
+        font-size: 25px !important;
+    }
+
+    .img-fluid {
+        width: 100px !important;
     }
 }
 
-@media (min-width: 992px) {
+
+@media (max-width: 480px) {
     .card {
         max-width: 700px; /* Set max width for larger screens */
     }
