@@ -25,7 +25,7 @@ const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
 const { ObjectId } = require('mongodb'); 
 const XLSX = require('xlsx');
-const { archiveItem, cascadeArchive, cascadeUnarchive, cascadeDelete } = require('../utils/archiveHelper');
+const { archiveItem, cascadeArchive, cascadeUnarchive } = require('../utils/archiveHelper');
 
 
 // Route to grant access to a specific room
@@ -272,54 +272,6 @@ router.get('/Archive', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
-// Route to delete a specific room from the database
-router.post('/delete-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
-    const { roomId } = req.params;
-    const { roomPassword } = req.body;
-
-    try {
-        // Step 1: Verify the room exists
-        const room = await Room.findById(roomId);
-        if (!room) {
-            req.flash('error', 'Room not found.');
-            return res.redirect('/admin/Archive');
-        }
-
-        // Step 2: Verify the password
-        if (room.roomPassword !== roomPassword) {
-            req.flash('error', 'Incorrect password. Room deletion canceled.');
-            return res.redirect('/admin/Archive');
-        }
-
-        // Step 3: Delete the room and related data from the database
-        console.log(`Deleting room with ID: ${roomId}`);
-        await Room.findByIdAndDelete(roomId);
-        console.log('Room deleted successfully.');
-
-        console.log(`Deleting associated LessonRooms for room ID: ${roomId}`);
-        await LessonRoom.deleteMany({ roomId });        // Delete related lesson rooms
-        console.log('Associated LessonRooms deleted successfully.');
-
-        console.log(`Deleting associated ActivityRooms for room ID: ${roomId}`);
-        await ActivityRoom.deleteMany({ roomId });      // Delete related activity rooms
-        console.log('Associated ActivityRooms deleted successfully.');
-
-        console.log(`Deleting associated Quizzes for room ID: ${roomId}`);
-        await Quiz.deleteMany({ roomId });              // Delete related quizzes
-        console.log('Associated Quizzes deleted successfully.');
-
-        console.log(`Deleting associated Lessons for room ID: ${roomId}`);
-        await Lesson.deleteMany({ roomId });            // Delete lessons (including PDFs/videos)
-        console.log('Associated Lessons deleted successfully.');
-
-        req.flash('success', 'Room and all related content deleted successfully.');
-        res.redirect('/admin/Archive');
-    } catch (err) {
-        console.error('Error deleting room:', err);
-        req.flash('error', 'Error deleting room.');
-        res.redirect('/admin/Archive');
-    }
-});
 
 
 //end of managing room--------------------------------------------------------------------------------

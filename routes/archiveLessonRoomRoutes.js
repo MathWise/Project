@@ -47,11 +47,14 @@ router.post('/archive-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (re
 router.delete('/delete-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (req, res) => {
     const { lessonRoomId } = req.params;
 
+    const session = await mongoose.startSession();
+    session.startTransaction();
     try {
         // Find and delete the lesson room
-        const lessonRoom = await LessonRoom.findByIdAndDelete(lessonRoomId);
+        const lessonRoom = await LessonRoom.findByIdAndDelete(lessonRoomId, { session });
 
         if (!lessonRoom) {
+            await session.abortTransaction();
             return res.status(404).json({ error: 'Lesson room not found.' });
         }
 
@@ -59,38 +62,25 @@ router.delete('/delete-lesson-room/:lessonRoomId', ensureAdminLoggedIn, async (r
         const gridFSBucketPDF = new GridFSBucket(mongoose.connection.db, { bucketName: 'pdfs' });
         const gridFSBucketVideo = new GridFSBucket(mongoose.connection.db, { bucketName: 'videos' });
 
-        // DELETE PDFs
         const pdfFilesCursor = gridFSBucketPDF.find({ filename: new RegExp(`^${lessonRoomId}-`) });
         const pdfFiles = await pdfFilesCursor.toArray();
-
-        const pdfDeletePromises = pdfFiles.map(async pdfFile => {
-            try {
-                await gridFSBucketPDF.delete(pdfFile._id); // Deletes from `pdfs.files` and `pdfs.chunks`
-            } catch (error) {
-                console.warn(`Failed to delete PDF with ID ${pdfFile._id}:`, error.message);
-            }
-        });
-
-        // DELETE Videos
         const videoFilesCursor = gridFSBucketVideo.find({ filename: new RegExp(`^${lessonRoomId}-`) });
         const videoFiles = await videoFilesCursor.toArray();
 
-        const videoDeletePromises = videoFiles.map(async videoFile => {
-            try {
-                await gridFSBucketVideo.delete(videoFile._id); // Deletes from `videos.files` and `videos.chunks`
-            } catch (error) {
-                console.warn(`Failed to delete Video with ID ${videoFile._id}:`, error.message);
-            }
-        });
+        const pdfDeletePromises = pdfFiles.map(pdfFile => gridFSBucketPDF.delete(pdfFile._id));
+        const videoDeletePromises = videoFiles.map(videoFile => gridFSBucketVideo.delete(videoFile._id));
 
-        // Wait for all deletions to complete
         await Promise.all([...pdfDeletePromises, ...videoDeletePromises]);
 
         console.log(`Lesson room ${lessonRoomId} and all associated PDFs/Videos deleted successfully.`);
-        return res.status(200).json({ message: 'Lesson room and associated content deleted successfully.' });
+        await session.commitTransaction();
+        res.status(200).json({ message: 'Lesson room and associated content deleted successfully.' });
     } catch (error) {
         console.error('Error deleting lesson room:', error);
-        return res.status(500).json({ error: 'Failed to delete lesson room.' });
+        await session.abortTransaction();
+        res.status(500).json({ error: 'Failed to delete lesson room.' });
+    } finally {
+        session.endSession();
     }
 });
 

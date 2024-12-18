@@ -615,19 +615,26 @@ router.delete('/delete-activity/:activityId', async (req, res) => {
     }
 });
 
+
 router.delete('/delete-activity-room/:activityRoomId', async (req, res) => {
     const { activityRoomId } = req.params;
+
+    // Start a transaction
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
     try {
         // Validate the activityRoomId
         if (!mongoose.Types.ObjectId.isValid(activityRoomId)) {
+            await session.abortTransaction();
             return res.status(400).json({ success: false, message: 'Invalid activity room ID.' });
         }
 
         // Find and delete the activity room
-        const activityRoom = await ActivityRoom.findByIdAndDelete(activityRoomId);
+        const activityRoom = await ActivityRoom.findByIdAndDelete(activityRoomId, { session });
 
         if (!activityRoom) {
+            await session.abortTransaction();
             return res.status(404).json({ success: false, message: 'Activity room not found.' });
         }
 
@@ -637,14 +644,14 @@ router.delete('/delete-activity-room/:activityRoomId', async (req, res) => {
         const quizzes = await Quiz.find({ roomId: activityRoomId });
         const quizDeletePromises = quizzes.map(async (quiz) => {
             console.log(`Deleting quiz results for quiz: ${quiz._id}`);
-            await QuizResult.deleteMany({ quizId: quiz._id }); // Delete quiz results
+            await QuizResult.deleteMany({ quizId: quiz._id }, { session }); // Delete quiz results
             console.log(`Deleting quiz: ${quiz._id}`);
-            await Quiz.deleteOne({ _id: quiz._id }); // Delete the quiz itself
+            await Quiz.deleteOne({ _id: quiz._id }, { session }); // Delete the quiz itself
         });
 
         // Delete associated activities and their submissions/attachments
         const gridFSBucketSubmissions = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-            bucketName: 'submissions'
+            bucketName: 'submissions',
         });
 
         const activities = await Activity.find({ roomId: activityRoomId });
@@ -678,18 +685,30 @@ router.delete('/delete-activity-room/:activityRoomId', async (req, res) => {
             // Wait for all submission and attachment deletions
             await Promise.all([...submissionDeletePromises, ...attachmentDeletePromises]);
 
+            // Remove all submissions for the activity
+            console.log(`Removing all submissions for activity: ${activity._id}`);
+            await Activity.updateOne(
+                { _id: activity._id },
+                { $set: { submissions: [] } }, // Clear submissions array
+                { session }
+            );
+
             console.log(`Deleting activity: ${activity._id}`);
-            await Activity.deleteOne({ _id: activity._id }); // Delete the activity
+            await Activity.deleteOne({ _id: activity._id }, { session }); // Delete the activity
         });
 
         // Wait for all deletions to complete
         await Promise.all([...quizDeletePromises, ...activityDeletePromises]);
 
         console.log(`Activity room ${activityRoomId} and all associated data deleted successfully.`);
+        await session.commitTransaction();
         res.status(200).json({ success: true, message: 'Activity room and related data deleted successfully.' });
     } catch (error) {
         console.error('Error deleting activity room and related data:', error);
+        await session.abortTransaction();
         res.status(500).json({ success: false, message: 'Failed to delete activity room and related data.', error: error.message });
+    } finally {
+        session.endSession();
     }
 });
 

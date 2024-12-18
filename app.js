@@ -22,6 +22,7 @@ const pdfDelete = require('./routes/pdfDelete');
 const archiveMediaRoutes = require('./routes/archiveMediaRoutes');
 const defaultRoomRoutes = require('./routes/defaultRoom');
 const deleteQuizRoutes = require('./routes/deleteQuiz');
+const roomDeleteRoutes = require('./routes/roomDelete')
 const adRoutes = require("./routes/admin.js");
 const appRoutes = require("./routes/user.js");
 const passport = require('passport');
@@ -118,6 +119,7 @@ app.use('/admin', defaultRoomRoutes);
 app.use('/admin', activityRoutes);
 app.use('/', fileActivityRoutes);
 app.use(roomFPasswordRoutes);
+app.use('/admin', roomDeleteRoutes);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => {
