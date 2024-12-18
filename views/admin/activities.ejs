@@ -138,10 +138,14 @@
                             <h1>Create a Quiz</h1>
 
                             <form id="importQuizForm" enctype="multipart/form-data" method="POST" action="/admin/quiz/import">
-                                <input type="hidden" name="activityRoomId" id="importQuizActivityRoomId" value="">
                                 <label for="quizFile">Upload Quiz File (Excel):</label>
-                                <input type="file" id="quizFile" name="file" accept=".xls,.xlsx" required>
-                                <button type="submit">Import Quiz</button>
+                                <div class="file-upload-container">
+                                    <label for="quizFile" class="choose-file-label">Choose File</label>
+                                    <input type="file" id="quizFile" name="file" accept=".xls,.xlsx" required>
+                                    <span id="quizFileName">No file chosen</span> <!-- To show the selected file name or default text -->
+                                    <button type="submit" class="btn import-btn">Import Quiz</button>
+                                </div>
+
                             </form>
                             
                             
@@ -197,7 +201,8 @@
                                                 <label>Correct?</label>
                                                 <input type="checkbox" name="questions[0][choices][0][isCorrect]"><br>
                                             </div>
-                                            <button type="button" class="addChoice">Add Choice</button><br>
+                                            <button type="button" class="addChoice btn" style="background-color: #FFDF9F; color: black;">Add Choice</button><br><br>
+
                                         </div>
             
                                         <div class="fill-in-the-blank" style="display: none;">
@@ -205,12 +210,12 @@
                                             <input type="text" name="questions[0][correctAnswer]" required><br>
                                         </div>
             
-                                        <button type="button" class="removeQuestion">Remove Question</button><br><br>
+                                        <button type="button" class="removeQuestion btn" style="background-color: #FFDF9F; color: black;">Remove Question</button><br><br>
                                     </div>
                                 </div>
             
-                                <button type="button" id="addQuestion">Add Question</button><br><br>
-                                <button type="submit">Submit Quiz</button>
+                                        <button type="button" id="addQuestion" class="btn" style="background-color: #FFDF9F; color: black;">Add Question</button><br> <br>
+                                        <button type="submit" class="btn submit-btn">Submit Quiz</button>
                   
                             </form>
 
@@ -239,7 +244,14 @@
                             <textarea name="description" id="description"></textarea><br><br>
                             
                             <label for="attachment">Attachment (optional):</label>
-                            <input type="file" name="attachment" id="attachment" accept=".pdf,.doc,.docx,.mp4"><br><br>
+                            <div class="file-upload-container">
+                                <label for="attachment" class="choose-file-label">Choose File</label>
+                                <input type="file" name="attachment" id="attachment" accept=".pdf,.doc,.docx,.mp4">
+                                <span id="attachmentFileName">No file chosen</span> <!-- To show the selected file name or default text -->
+                            </div>
+                            
+                            
+
                             
                             <label for="points">Points:</label>
                             <input type="number" name="points" id="points" required min="1"><br><br>
@@ -253,7 +265,7 @@
                                 <option value="true">Save as Draft</option>
                             </select><br><br>
                             
-                            <button type="submit">Submit Activity</button>
+                            <button type="submit" class="btn submit-btn">Submit Activity</button>
                         </form>
                         
                     </div>
@@ -295,6 +307,22 @@
         </div>  
 
     <script>
+      // For Quiz File Attachment
+document.getElementById('quizFile').addEventListener('change', function(event) {
+    var fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
+    document.getElementById('quizFileName').textContent = fileName;
+});
+
+// For Attachment File
+document.getElementById('attachment').addEventListener('change', function(event) {
+    var fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
+    document.getElementById('attachmentFileName').textContent = fileName;
+});
+
+
+
+
+
         document.addEventListener("DOMContentLoaded", function () {
         // Select all lesson room items (existing activity/quiz rooms)
         const lessonRoomItems = document.querySelectorAll('.list-group-item'); // Room list
