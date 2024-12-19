@@ -4,33 +4,28 @@ const passport = require('passport');
 const rateLimit = require('express-rate-limit');
 
 
-
-
 router.post('/login', async (req, res, next) => {
     passport.authenticate('local', async (err, user, info) => {
         if (err) {
             console.error('Error during authentication:', err);
-            req.flash('error', 'An error occurred during login. Please try again.');
-            return res.redirect('/login');
+            return res.redirect('/login?error=An error occurred during login. Please try again.');
         }
 
         if (!user) {
-            req.flash('error', info.message || 'Invalid email or password.');
-            return res.redirect('/login');
+            const errorMessage = info.message || 'Invalid email or password.';
+            return res.redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
         }
 
         // Check if the email is verified
         if (!user.emailVerified) {
-            req.flash('error', 'Please verify your email before logging in.');
-            return res.redirect('/login');
+            return res.redirect('/login?error=Please verify your email before logging in.');
         }
 
         // If email is verified, proceed with login
         req.logIn(user, (err) => {
             if (err) {
                 console.error('Error logging in user:', err);
-                req.flash('error', 'An error occurred. Please try again.');
-                return res.redirect('/login');
+                return res.redirect('/login?error=An error occurred. Please try again.');
             }
 
             // Redirect based on role
@@ -49,8 +44,7 @@ router.post('/login', async (req, res, next) => {
                     </script>
                 `);
             } else {
-                req.flash('error', 'Unauthorized role.');
-                req.logout(() => res.redirect('/login'));
+                return res.redirect('/login?error=Unauthorized role.');
             }
         });
     })(req, res, next);

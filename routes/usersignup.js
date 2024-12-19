@@ -14,11 +14,15 @@ router.get('/signup', (req, res) => {
 
 // GET route for rendering login form
 router.get('/login', (req, res) => {
-    const successMessage = req.flash('success') || []; // Retrieve success messages
-    const error = req.flash('error') || []; // Retrieve error messages
-    res.render('login', { successMessage, error }); // Pass messages to the login page
+    const successMessage = req.flash('success') || [];
+    const errorMessage = req.flash('error') || [];
+    res.render('login', {
+        messages: {
+            success: successMessage,
+            error: errorMessage,
+        },
+    });
 });
-
 // POST route for handling signup form submission
 router.post('/signup', async (req, res) => {
     const { first_name, last_name, grade, section, email, age, password } = req.body;
@@ -27,11 +31,10 @@ router.post('/signup', async (req, res) => {
         // Check if a user with the same email already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            req.flash('error', 'Email already exists. Please choose a different email.');
-            return res.render('signup', { 
-                errorMessage: req.flash('error'), 
-                userData: { first_name, last_name, grade, section, email, age } // Retain user input
-            });
+            const errorMessage = 'Email already exists. Please choose a different email.';
+            return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}&userData=${encodeURIComponent(
+                JSON.stringify({ first_name, last_name, grade, section, email, age })
+            )}`);
         }
 
         // Hash the password before saving
@@ -61,16 +64,14 @@ router.post('/signup', async (req, res) => {
             <a href="${verificationUrl}">Verify Email</a>
         `;
         await sendEmail(email, 'Verify Your Email', emailContent);
-        
-        req.flash('success', 'Account created successfully! Please check your email to verify your account.');
-        res.redirect('/login'); // Redirect to the login page after success
+        const successMessage = 'Account created successfully! Please check your email to verify your account.';
+        res.redirect(`/login?success=${encodeURIComponent(successMessage)}`);
     } catch (error) {
         console.error(`Error creating user: ${error.message}`);
-        req.flash('error', 'Error creating account. Please try again.');
-        return res.render('signup', { 
-            errorMessage: req.flash('error'), 
-            userData: { first_name, last_name, grade, section, email, age } // Retain user input on error
-        });
+        const errorMessage = 'Error creating account. Please try again.';
+        return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}&userData=${encodeURIComponent(
+            JSON.stringify({ first_name, last_name, grade, section, email, age })
+        )}`);
     }
 });
 
@@ -81,20 +82,20 @@ router.get('/verify-email/:token', async (req, res) => {
     try {
         const user = await User.findOne({ verificationToken: token });
         if (!user) {
-            req.flash('error', 'Invalid or expired verification token.');
-            return res.redirect('/signup');
+            const errorMessage = 'Invalid or expired verification token.';
+            return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}`);
         }
 
         user.emailVerified = true; // Mark email as verified
         user.verificationToken = undefined; // Clear the token
         await user.save();
 
-        req.flash('success', 'Email verified successfully! You can now log in.');
-        res.redirect('/login');
+        const successMessage = 'Email verified successfully! You can now log in.';
+        res.redirect(`/login?success=${encodeURIComponent(successMessage)}`);
     } catch (error) {
         console.error('Error verifying email:', error);
-        req.flash('error', 'An error occurred during verification. Please try again.');
-        res.redirect('/signup');
+        const errorMessage = 'An error occurred during verification. Please try again.';
+        res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}`);
     }
 });
 
