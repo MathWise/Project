@@ -11,7 +11,9 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }, // Hashed and salted password
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
-  role: { type: String, default: 'student' }
+  role: { type: String, default: 'student' },
+  emailVerified: { type: Boolean, default: false }, // New field
+  verificationToken: { type: String } // New field
 });
 
 // Export the User model
