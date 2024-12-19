@@ -35,38 +35,37 @@ router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('at
             return res.redirect('/admin/activities');
         }
 
-        if (!req.file) {
-            req.flash('error', 'No file uploaded.');
-            return res.redirect('/admin/activities');
-        }
+        let fileAttachment = null;
+ // If a file is uploaded, process and save it in GridFS
+        if (req.file) {
+            const submissionBucket = getSubmissionBucket();
+            const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
+            uploadStream.end(req.file.buffer);
 
-        const submissionBucket = getSubmissionBucket();
-        const uploadStream = submissionBucket.openUploadStream(req.file.originalname);
-        uploadStream.end(req.file.buffer);
+            const uploadFinished = new Promise((resolve, reject) => {
+                uploadStream.on('finish', resolve);
+                uploadStream.on('error', reject);
+            });
+            await uploadFinished;
 
-        uploadStream.on('finish', async () => {
-            try {
-                // Retrieve the uploaded file's metadata from the GridFS bucket
-                const file = await submissionBucket.find({ filename: req.file.originalname }).toArray();
-
-                if (file.length === 0) {
-                    throw new Error('Uploaded file not found in GridFS.');
-                }
-
-                const fileAttachment = {
+            // Retrieve metadata for the uploaded file
+            const file = await submissionBucket.find({ filename: req.file.originalname }).toArray();
+            if (file.length > 0) {
+                fileAttachment = {
                     fileName: req.file.originalname,
-                    _id: file[0]._id, // Use the first file (should match the uploaded file)
+                    _id: file[0]._id, // Use the first file match
                 };
-
+            }
+        }
 
         const newActivity = new Activity({
             title,
             description,
             roomId: new mongoose.Types.ObjectId(aactivityRoomId),
-            fileAttachments: [fileAttachment],
-            points: parseInt(points, 10),
-            deadline: deadline ? new Date(deadline) : null, // Handle optional deadlines
-            isDraft: isDraft === 'true', // Convert draft flag to boolean
+            fileAttachments: fileAttachment ? [fileAttachment] : [], // Attach valid file if available
+            points: parseInt(points, 10) || 0,
+            deadline: deadline ? new Date(deadline) : null,
+            isDraft: isDraft === 'true',
         });
 
         await newActivity.save();
@@ -78,17 +77,6 @@ router.post('/activity/create', ensureAdminLoggedIn, uploadSubmission.single('at
         res.redirect('/admin/activities');
     }
 });
-uploadStream.on('error', (error) => {
-    console.error('Error uploading file to GridFS:', error);
-    req.flash('error', 'Failed to upload file.');
-    res.redirect('/admin/activities');
-});
-} catch (error) {
-console.error('Error creating activity:', error);
-res.status(500).json({ message: 'Failed to create activity' });
-}
-});
-
 
 router.get('/activities/data/:activityRoomId', ensureAdminLoggedIn, async (req, res) => {
     const { activityRoomId } = req.params;
@@ -190,42 +178,34 @@ router.post('/unarchive-activity/:activityId', ensureAdminLoggedIn, async (req, 
     }
 });
 
-
 router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
     const { id } = req.params;
-    
-    try {
 
-        const act = await Activity.findById(id).lean();
-        if (!act) {
-            req.flash('error', 'Quiz not found.');
+    try {
+        // Fetch activity details, including the associated ActivityRoom
+        const activity = await Activity.findById(id)
+            .populate('roomId') // Populate ActivityRoom
+            .lean();
+
+        if (!activity) {
+            req.flash('error', 'Activity not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        const activityRoom = await ActivityRoom.findById(act.roomId).lean();
+        // Fetch the parent room details for navigation
+        const activityRoom = await ActivityRoom.findById(activity.roomId).populate('roomId').lean();
         if (!activityRoom) {
             req.flash('error', 'Activity room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        const activity = await Activity.findById(req.params.id)
-            .populate({
-                path: 'roomId', // Populate ActivityRoom
-                populate: { path: 'roomId', model: 'Room' }, // Populate Room inside ActivityRoom
-            });
-
-        if (!activity) {
-            req.flash('error', 'Activity not found.');
-            return res.redirect('/admin/activities');
-        }
-
-        // Render template with activity and flash messages
+        // Render the activity details page
         res.render('admin/activityDetails', {
             activity,
             currentUser: req.user,
             successMessages: req.flash('success'),
             errorMessages: req.flash('error'),
-            roomId: activityRoom.roomId
+            roomId: activityRoom.roomId, // Pass the room ID for "Back to Activities" link
         });
     } catch (error) {
         console.error('Error fetching activity details:', error);
@@ -233,6 +213,7 @@ router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
         res.redirect('/admin/activities');
     }
 });
+
 
 
 
