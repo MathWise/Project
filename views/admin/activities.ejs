@@ -135,7 +135,10 @@
                     <div class="content-wrapper">
                         <div class="left-content">
                             
-                            <h1>Create a Quiz</h1>
+                            <h1>Create a Quiz 
+                                <button class="instructions-btn" onclick="openModal()">Instructions for Excel Import</button>
+                            </h1>
+                            
 
                             <form id="importQuizForm" enctype="multipart/form-data" method="POST" action="/admin/quiz/import">
                                 <label for="quizFile">Upload Quiz File (Excel):</label>
@@ -147,6 +150,14 @@
                                 </div>
 
                             </form>
+
+                            <!-- Modal -->
+                            <div id="instructionsModal" class="modal">
+                             <div class="modal-content">
+                                <span class="close-btn" onclick="closeModal()">&times;</span>
+                                 <embed src="/assets/Excel-Instructions.pdf" type="application/pdf" width="100%" height="500px">
+                             </div>
+                        </div>
                             
                             
                             <form id="quizForm" action="/admin/quiz/create" method="POST">
@@ -307,6 +318,15 @@
         </div>  
 
     <script>
+        //Modal
+        function openModal() {
+    document.getElementById("instructionsModal").style.display = "block";
+}
+
+function closeModal() {
+    document.getElementById("instructionsModal").style.display = "none";
+}
+
       // For Quiz File Attachment
 document.getElementById('quizFile').addEventListener('change', function(event) {
     var fileName = event.target.files[0] ? event.target.files[0].name : 'No file chosen';
