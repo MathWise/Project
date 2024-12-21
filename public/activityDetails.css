@@ -1,13 +1,5 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-}
-
 /* Apply background to the whole page */
-html, body {
+body {
     height: 100%; /* Ensure full height */
     margin: 0;
     background-image: url('/assets/bigbg.png'); /* New background image */
@@ -16,8 +8,11 @@ html, body {
     font-family: 'Baloo 2', sans-serif;
 }
 
-/* Container styling with background image */
+.layered-container {
+    border: 2px solid whitesmoke;
+}
 
+/* Container styling with background image */
 
 h1, h2, h3 {
     font-size: 1.8rem;
@@ -38,9 +33,6 @@ p {
     text-decoration: none;
 }
 
-.btn-secondary {
-    background-color: #2196F3;
-}
 
 button {
     padding: 10px 20px;
@@ -98,6 +90,18 @@ li {
     p, h1, h2, h3 {
         font-size: 0.9rem;
     }
+
+    .kebab-menu-btn {
+        font-size: 1.2em; /* Adjust size for smaller screens */
+        padding: 0.3em;
+    }
+
+    .kebab-menu-content {
+        min-width: 150px; /* Reduce width for smaller screens */
+        font-size: 0.9rem; /* Adjust font size */
+    }
+
+    
 }
 
 @media (max-width: 576px) {
@@ -116,6 +120,16 @@ li {
 
     .container {
         padding: 10px;
+    }
+
+    .kebab-menu-btn {
+        font-size: 1.2em; /* Adjust size for smaller screens */
+        padding: 0.3em;
+    }
+
+    .kebab-menu-content {
+        min-width: 150px; /* Reduce width for smaller screens */
+        font-size: 0.9rem; /* Adjust font size */
     }
 }
 
@@ -209,31 +223,6 @@ button:hover {
 /* Kebab Menu Forms */
 .kebab-menu-content form {
     margin: 0;
-}
-
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .kebab-menu-btn {
-        font-size: 1.2em; /* Adjust size for smaller screens */
-        padding: 0.3em;
-    }
-
-    .kebab-menu-content {
-        min-width: 150px; /* Reduce width for smaller screens */
-        font-size: 0.9rem; /* Adjust font size */
-    }
-}
-
-@media (max-width: 576px) {
-    .kebab-menu-btn {
-        font-size: 1em; /* Smaller size for very small screens */
-        padding: 0.2em;
-    }
-
-    .kebab-menu-content {
-        min-width: 120px; /* Further reduce width */
-        font-size: 0.8rem; /* Smaller font size */
-    }
 }
 
 .late {
