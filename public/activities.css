@@ -351,3 +351,59 @@ input[type="file"]::-webkit-file-upload-button {
     align-items: center;
     gap: 10px; /* Space between elements */
 }
+.instructions-btn {
+    background-color: #CECBEC;
+    color: black;
+    text-decoration: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 15px;
+    cursor: pointer;
+}
+
+.instructions-btn:hover {
+    background-color: #CECBEC;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto; /* Reduced margin for a larger modal */
+    padding: 20px;
+    border-radius: 5px;
+    width: 90%; /* Increased width */
+    max-width: 1200px; /* Allow for a larger maximum width */
+    height: 80%; /* Added height for a larger modal */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.25);
+    overflow: hidden; /* Ensure content stays within modal bounds */
+}
+
+.modal-content embed {
+    width: 100%;
+    height: 100%; /* Ensure the PDF fills the modal */
+}
+
+.close-btn {
+    color: black;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover {
+    color: red;
+}
