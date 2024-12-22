@@ -178,13 +178,17 @@ router.post('/unarchive-activity/:activityId', ensureAdminLoggedIn, async (req, 
     }
 });
 
+
 router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
     const { id } = req.params;
 
     try {
-        // Fetch activity details, including the associated ActivityRoom
+        // Fetch the activity by ID and populate its room relationship
         const activity = await Activity.findById(id)
-            .populate('roomId') // Populate ActivityRoom
+            .populate({
+                path: 'roomId', // Activity belongs to ActivityRoom
+                populate: { path: 'roomId', model: 'Room' }, // ActivityRoom belongs to Room
+            })
             .lean();
 
         if (!activity) {
@@ -192,20 +196,22 @@ router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Fetch the parent room details for navigation
-        const activityRoom = await ActivityRoom.findById(activity.roomId).populate('roomId').lean();
-        if (!activityRoom) {
-            req.flash('error', 'Activity room not found.');
+        // Ensure activityRoom and its parent Room exist
+        const activityRoom = activity.roomId;
+        const parentRoom = activityRoom?.roomId;
+
+        if (!activityRoom || !parentRoom) {
+            req.flash('error', 'Parent activity room or room not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Render the activity details page
+        // Pass the parent Room's ID to the view for pathing
         res.render('admin/activityDetails', {
             activity,
             currentUser: req.user,
             successMessages: req.flash('success'),
             errorMessages: req.flash('error'),
-            roomId: activityRoom.roomId, // Pass the room ID for "Back to Activities" link
+            roomId: parentRoom._id, // Use parent Room's ID for navigation
         });
     } catch (error) {
         console.error('Error fetching activity details:', error);
@@ -213,6 +219,7 @@ router.get('/activity/details/:id', ensureLoggedIn, async (req, res) => {
         res.redirect('/admin/activities');
     }
 });
+
 
 
 

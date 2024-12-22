@@ -22,6 +22,7 @@ async function loadActivitiesForRoom(activityRoomId) {
         if (data.activities && data.activities.length > 0) {
             data.activities.forEach(activity => {
                 const isDraftLabels = activity.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
+                const createdAt = new Date(activity.createdAt).toLocaleString();
                 const deadline = activity.deadline ? new Date(activity.deadline).toLocaleString() : 'No deadline';
                 const activityHtml = `
                 <li class="list-group-item d-flex align-items-center" id="activity-item-${activity._id}">
@@ -29,6 +30,7 @@ async function loadActivitiesForRoom(activityRoomId) {
                         <div>
                              <strong>${activity.title}</strong> ${isDraftLabels}
                             <p>${activity.description || 'No description provided'}</p>
+                              <p>Created on: ${createdAt}</p>
                             <p>Deadline: ${deadline}</p>
                         </div>
                     </a>
