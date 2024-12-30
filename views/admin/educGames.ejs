@@ -12,73 +12,69 @@
 </head>
 <body>
     <div class="container-fluid p-0">
-        <div class="upper-side row no-gutters p-3" style="background-color: #E0F4F9;">
-            <aside class="col-md-2 col-12 bg-sidebar section greeting-text font-weight-bold text-muted d-flex align-items-center position-relative">
-                <span>Hello <br> <%= room.name %></span>
-            
-                <!-- Dropdown Menu Trigger (Settings Icon) -->
-                <img src="/assets/settings-1.svg" alt="Settings" class="img-fluid settings-icon ml-2 dropdown-toggle" style="width: 30px; cursor: pointer;" onclick="toggleDropdownMenu()">
-            
+        <div class="upper-side row no-gutters p-3 align-items-center fixed-header">
+            <!-- Logo on the Top Left -->
+            <div class="col-md-4 col-4 d-flex align-items-center">
+                <img src="/assets/logo.png" alt="Logo" class="img-fluid logo" style="width: 110px;">
+            </div>
+    
+            <!-- Greetings in the Center -->
+            <div class="col-md-4 col-4 text-center">
+                <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
+                    Hello Teacher <%= room.teacherName %> <br> Welcome to <%= room.name %>
+                </span>
+            </div>
+    
+            <!-- Settings on the Top Right -->
+            <div class="col-md-4 col-4 d-flex justify-content-end align-items-center position-relative">
+                <img src="/assets/settings-1.svg" alt="Settings" 
+                     class="img-fluid settings-icon dropdown-toggle" 
+                     style="width: 50px; cursor: pointer;" 
+                     onclick="toggleDropdownMenu()">
+                
                 <!-- Dropdown Menu Content -->
-                <div class="dropdown-content position-absolute" id="dropdownMenu" style="display: none; top: 50px; right: 10px;">
+                <div class="dropdown-content position-absolute" id="dropdownMenu" 
+                     style="display: none; top: 50px; right: 10px;">
                     <a href="/admin/homeAdmin">Go back</a>
-                    <a href="/admin/lessonRoomArchive/<%= room._id %>">Lesson Room  Archive</a>
-                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>">Pdf and Video Archive</a>
-                    <a href="/admin/activitiesArchive/<%= room._id %>">Actvitiy Archive</a>
+                    <a href="/admin/lessonRoomArchive/<%= room._id %>">Lesson Room Archive</a>
+                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>">PDF and Video Archive</a>
+                    <a href="/admin/activitiesArchive/<%= room._id %>">Activity Archive</a>
                     <a href="/logout">Logout</a>
                 </div>
-            </aside>
-            <main class="col-md-8 bg-main section">
-                <select class="form-control mr-2">
-                    <option value="">Select Level</option>
-                    <script>
-                        for (let i = 1; i <= 30; i++) {
-                            document.write(`<option value="level${i}.html">Level ${i}</option>`);
-                        }
-                    </script>
-                </select>
-            </main>
-            <div class="col-md-2 bg-right-side section">
-                <select class="form-control">
-                    <option value="">Select Week</option>
-                    <script>
-                        for (let i = 1; i <= 6; i++) {
-                            document.write(`<option value="week${i}.html">Week ${i}</option>`);
-                        }
-                    </script>
-                </select>
             </div>
         </div>
+    </div>
 
         <div class="containers row">
             <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/dashboard/<%= room._id %>"  class="text-dark">
-                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
-                                Dashboard
-                            </a>
+                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
+                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
+                            Dashboard
+                            </span>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/lesson/<%= room._id %>" class="text-dark" style="padding: 10px; border-radius: 5px; display: block;">
+                            <a href="/admin/lesson/<%= room._id %>" class="text-dark">
                                 <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
                                 Lesson
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>"   class="text-dark">
+                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
-                            </a>
+                            </a >
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/educGames/<%= room._id %>" class="text-dark educational-games-button">
-                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">Educational Games</span>
+                            <a href="/admin/educGames/<%= room._id %>" class="text-dark game-button">
+                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
                                 <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
+                                Educational Games
+                                </span>
                             </a>
                         </li>
-                        
                     </ul>
                 </nav>
             </aside>
@@ -131,8 +127,8 @@
                             <!-- Thumbnail for the educational game -->
                             <div id="game-thumbnail" style="text-align: center; cursor: pointer;">
                                 <img src="/assets/ooth.jpg" alt="Educational Game Thumbnail" 
-                                     style="width: 700px; height: 300px; border: 1px solid #ddd; display: block; margin: 0 auto;">
-                                <p class="text-center mt-2 text-muted">Click to play the game</p>
+                                     style="width: 700px; height: 400px; border: 1px solid #ddd; display: block; margin: 0 auto;">
+                                <p class="text-center mt-2 text-muted">Click to play Operation Odessy</p>
                             </div>
 
                              <!-- Embedded iframe -->
