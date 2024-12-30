@@ -380,7 +380,7 @@ input[type="file"]::-webkit-file-upload-button {
 }
 
 .modal-content {
-    background-color: white;
+    background-color: #FFDF9F;
     margin: 5% auto; /* Reduced margin for a larger modal */
     padding: 20px;
     border-radius: 5px;
