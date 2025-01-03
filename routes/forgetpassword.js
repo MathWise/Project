@@ -49,7 +49,9 @@ router.post('/mail/forgetpassword', async (req, res) => {
       },
     });
 
-    const resetURL = `http://localhost:8080/reset-password/${resetToken}`; // Ensure the correct port is used
+    const baseURL = process.env.BASE_URL || 'http://localhost:8080'; // Ensure the correct port is used
+    const resetURL = `${baseURL}/reset-password/${resetToken}`;
+     
 
     const mailOptions = {
       to: user.email,
