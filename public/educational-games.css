@@ -6,6 +6,50 @@ body {
     margin: 0; /* Remove default margin */
 }
 
+/* Tooltip container */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    left: 125%; /* Position to the right of the icon */
+    top: 50%;  /* Vertically center the tooltip */
+    transform: translateY(-50%); /* Center it properly */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 14px;
+}
+
+/* Tooltip arrow */
+.tooltip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -5px;  /* Position the arrow at the left side of the tooltip */
+    transform: translateY(-50%); /* Vertically center the arrow */
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent transparent transparent #333; /* Arrow pointing to the icon */
+}
+
+/* Show tooltip when hovering over the container */
+.tooltip-container:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
 .container-fluid {
     padding-bottom: 20px; /* Added padding for bottom spacing */
 }
