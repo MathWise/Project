@@ -23,6 +23,8 @@ const Quiz = require('../models/QuizActivityRoom');
 const ActivityRoom = require('../models/activityRoom'); 
 const QuizResult = require('../models/QuizResult');
 const PdfProgress = require('../models/PdfProgress');
+const AuditLog = require('../models/auditLog');
+const socketIO = require('socket.io');
 const { ObjectId } = require('mongodb'); 
 const XLSX = require('xlsx');
 const { archiveItem, cascadeArchive, cascadeUnarchive } = require('../utils/archiveHelper');
@@ -72,7 +74,28 @@ router.get('/homeAdmin', ensureLoggedIn, async (req, res) => {
     }
 });
 
+let io;
 
+// Initialize socket.io
+const initializeSocket = (server) => {
+    io = socketIO(server);
+};
+
+// Upload PDF and Video with progress tracking
+const uploadFileWithProgress = (fileStream, uploadStream, fileName) => {
+    return new Promise((resolve, reject) => {
+        let uploadedBytes = 0;
+        fileStream.on('data', chunk => {
+            uploadedBytes += chunk.length;
+            const progress = Math.min(uploadedBytes / fileStream.length, 1) * 100;
+            io.emit('uploadProgress', { fileName, progress }); // Emit progress to client
+        });
+
+        fileStream.pipe(uploadStream)
+            .on('finish', resolve)
+            .on('error', reject);
+    });
+};
 
 // end of home Admin-----------------------------------------------------------------------------------------------------------------
 
@@ -122,6 +145,18 @@ router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
         console.error(err);
         req.flash('error', 'Error fetching users.');
         res.redirect('/admin/homeAdmin');
+    }
+});
+
+router.get('/audit-logs', ensureAdminLoggedIn, async (req, res) => {
+    try {
+        const logs = await AuditLog.find()
+            .sort({ timestamp: -1 }); // Sort by timestamp in descending order (latest first)
+
+        res.render('admin/auditLog', { logs });
+    } catch (error) {
+        console.error('Error fetching audit logs:', error);
+        res.status(500).send('Failed to fetch audit logs');
     }
 });
 
