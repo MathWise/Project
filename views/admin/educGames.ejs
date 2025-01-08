@@ -51,29 +51,28 @@
                 <nav>
                     <ul class="list-unstyled">
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark">
+                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark home-button">
                                 <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
                             Dashboard
-                            </span>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/lesson/<%= room._id %>" class="text-dark">
+                            <a href="/admin/lesson/<%= room._id %>" class="text-dark lesson-button">
                                 <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
                                 Lesson
                             </a>
                         </li>
                         <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
+                            <a href="/admin/activities/<%= room._id %>" class="text-dark activities-button">
+                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
                                 <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Activities
                             </a >
                         </li>
                         <li style="margin-bottom: 35px;">
                             <a href="/admin/educGames/<%= room._id %>" class="text-dark game-button">
-                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
+                                <span class="text-dark font-weight-bold" style="padding: 10px; display: block;"></span>
                                 <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                                 Educational Games
-                                </span>
                             </a>
                         </li>
                     </ul>
@@ -93,53 +92,37 @@
                 
 
                 <div class="d-flex flex-wrap mb-4">
-                    <a href="operations.html" class="btn button-card" style="background-color: #F9B4AB;">
-                        Operations
-                        <img src="/assets/english-4.svg" alt="English Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
+                    <a class="btn game" style="background-color: #F9B4AB;" onclick="toggleNewBigBox()">
+                        Operation Odyssey
+                        <br>
+                        <img src="/assets/game.png" id="game" alt="game Icon">
+                        <button class="btn btn-sm upcoming"></button>
+                    </a>                    
 
-                    <a href="fractions.html" class="btn button-card" style="background-color: #CECBEC;">
-                        Fractions
-                        <img src="/assets/layer-1.svg" alt="Layer Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
-
-                    <a href="additions.html" class="btn button-card" style="background-color: #FFDF9F;">
-                        Addition
-                        <img src="/assets/geography-1.svg" alt="Geography Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
-
-                    <a href="subtractions.html" class="btn button-card" style="background-color: #C1EAF4;">
-                        Subtraction
-                        <img src="/assets/socio-1.svg" alt="Socio Icon">
-                        <button class="btn btn-sm upcoming">upcoming</button>
-                    </a>
+                    <!-- Big-box content (initially hidden) -->
+                    <div class="newbig-box" id="newbig-box" style="display: none; justify-content: center; align-items: center; width: 100%;">
+                        <div class="content-wrapper">
+                            <div class="right-content">
+                                <div id="game-thumbnail" style="text-align: center; cursor: pointer;">
+                                    <img src="/assets/ooth.jpg" alt="Educational Game Thumbnail"  id="educgame"
+                                         style="width: 700px; height: 350px; border: 1px solid #ddd; display: block; margin: 0 auto;">
+                                    <p class="text-center mt-2 text-muted">Click to play Operation Odyssey</p>
+                                    <p class="text-center mt-2 text-muted">Click the " ? " at the top for Instruction</p>
+                                </div>
+                                <div id="game-iframe" style="display: none; text-align: center;">
+                                    <iframe height="300" frameborder="0" src="https://itch.io/embed/3088524" width="700" 
+                                            style="border: 1px solid #ddd; display: block; margin: 0 auto;"></iframe>
+                                    <p class="text-center mt-2">
+                                        <a href="https://kingmighty26.itch.io/mathwise" class="text-dark">Mathwise by KingMighty26</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="big-box" style="display: flex; justify-content: center; align-items: center;">
-                    <div class="content-wrapper">
-                        <div class="right-content">
-                            <!-- Thumbnail for the educational game -->
-                            <div id="game-thumbnail" style="text-align: center; cursor: pointer;">
-                                <img src="/assets/ooth.jpg" alt="Educational Game Thumbnail" 
-                                     style="width: 700px; height: 350px; border: 1px solid #ddd; display: block; margin: 0 auto;">
-                                <p class="text-center mt-2 text-muted">Click to play Operation Odessy</p>
-                                <p class="text-center mt-2 text-muted">Click the " ? " at the top for Instruction</p>
-                            </div>
-                
-
-                             <!-- Embedded iframe -->
-            <div id="game-iframe" style="display: none; text-align: center;">
-                <iframe height="300" frameborder="0" src="https://itch.io/embed/3088524" width="700" 
-                        style="border: 1px solid #ddd; display: block; margin: 0 auto;"></iframe>
-                <p class="text-center mt-2">
-                    <a href="https://kingmighty26.itch.io/mathwise" class="text-dark">Mathwise by KingMighty26</a>
-                </p>
-            </div>
-        </div>
-    </div>
+                    
 </div>
                     </div>
                 </div>
@@ -157,7 +140,6 @@
 
         <!-- Logo added outside the sidebar and positioned in the left corner -->
         <div class="container-fluid">
-            <img src="/assets/logo.png" alt="Logo" class="img-fluid text-left mt-2" style="width: 80px;">
             <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
         </div>
     </div>
@@ -201,6 +183,40 @@ function showInstructionsModal() {
 document.getElementById('close-modal').addEventListener('click', function() {
     document.getElementById('instructions-modal').style.display = 'none';
 });
+
+function toggleNewBigBox() {
+    const bigBox = document.querySelector('.big-box'); // Select the big-box element
+    const newBigBox = document.getElementById('newbig-box'); // Select the newbig-box element
+
+    // Hide the big-box and show the newbig-box
+    bigBox.style.display = 'none';
+    newBigBox.style.display = 'block'; // Toggle the newbig-box to show
+}
+
+
+// Add click event listener to the game-thumbnail
+document.getElementById('game-thumbnail').addEventListener('click', function() {
+    document.getElementById('game-thumbnail').style.display = 'none';
+    document.getElementById('game-iframe').style.display = 'block';
+});
+
+// Toggle the dropdown menu visibility
+function toggleDropdownMenu() {
+    const menu = document.getElementById("dropdownMenu");
+    menu.style.display = menu.style.display === "block" ? "none" : "block";
+}
+
+// Close dropdown when clicking outside
+document.addEventListener("click", function(event) {
+    const menu = document.getElementById("dropdownMenu");
+    const trigger = document.querySelector(".settings-icon");
+
+    if (!menu.contains(event.target) && event.target !== trigger) {
+        menu.style.display = "none";
+    }
+    
+});
+
 
     </script>
 </body>

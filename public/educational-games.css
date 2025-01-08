@@ -49,7 +49,10 @@ body {
     opacity: 1;
 }
 
-
+#game {
+    width: 50px;
+    height: 50px;
+}
 .container-fluid {
     padding-bottom: 20px; /* Added padding for bottom spacing */
 }
@@ -89,6 +92,22 @@ body {
     height: 100%; /* Ensure full height */
 }
 
+.newbig-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 450px; /* Adjusted height */
+    margin: 20px 0;
+    background-image: url('assets/bg.png'); /* Set background image */
+    background-size: cover; /* Cover the entire box */
+    background-position: center; /* Center the image */
+}
+
+.newbig-box > div {
+    flex: 1 1 100%; /* Responsive sizing for small screens */
+    margin: 10px; /* Margin for spacing */
+    height: 100%; /* Ensure full height */
+}
 .button-card {
     display: block; /* Ensures the button occupies the full area */
     height: 150px; /* Fixed height */
@@ -155,7 +174,60 @@ body {
         margin-right: 0; /* Remove right margin for mobile */
         margin-bottom: 20px; /* Add bottom margin for spacing */
     }
+
+    .button-card {
+        min-width: 100%; /* Full width for smaller screens */
+    }
+
+    .button-card img {
+        width: 70px;
+        height: 70px;
+    }
+
+    .fixed-header {
+        height: auto !important; /* Allow header to expand with content */
+        padding: 10px !important; /* Adjust padding for smaller screens */
+    }
+
+    .logo {
+        width: 70px !important;
+    }
+
+    .greeting-text {
+        font-size: 14px !important;
+    }
+
+    .settings-icon {
+        width: 30px !important;
+        margin-right: 25px !important;
+    }
+
+    .home-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .lesson-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .activities-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .game-button img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    #educgame {
+        width: 250px !important;
+        height: 350px !important;
+    }
 }
+
 
 /* Logs image style */
 .logs {
