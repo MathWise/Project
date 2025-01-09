@@ -120,6 +120,24 @@
                     <input type="text" name="teacherName" placeholder="Teacher Name" required>
                     <input type="email" name="email" placeholder="Email for Password Recovery" required>
                     <input type="password" name="roomPassword" placeholder="Room Password" required>
+                    <h3>Select Lessons</h3>
+                    <p>(You must select at least one lesson)</p>
+                    <div>
+                        <input type="checkbox" id="lesson1" name="lessons[]" value="Measures Time using 12-Hour and 24-Hour Clock">
+                        <label for="lesson1">Measures Time using 12-Hour and 24-Hour Clock</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="lesson2" name="lessons[]" value="Multiplication of Simple Fractions">
+                        <label for="lesson2">Multiplication of Simple Fractions</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="lesson3" name="lessons[]" value="Dividing Decimals with Up to 2 Decimal Places">
+                        <label for="lesson3">Dividing Decimals with Up to 2 Decimal Places</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="lesson4" name="lessons[]" value="Dividing Whole Numbers and Simple Fractions">
+                        <label for="lesson4">Dividing Whole Numbers and Simple Fractions</label>
+                    </div>
                     <button type="submit">Create Room</button>
                 </form>
             </div>

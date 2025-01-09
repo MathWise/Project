@@ -226,90 +226,90 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
 
 
 
-            //   // Step 3: Create a default LessonRoom
-            //   const defaultLessonRoom1 = new LessonRoom({
-            //     roomId: newRoom._id,
-            //     subject: "Default Subject",
-            //     topic: "Sample Topic",
-            //     archived: false,
-            // });
-            // await defaultLessonRoom1.save();
-            // console.log('Default LessonRoom created successfully:', defaultLessonRoom1);
+              // Step 3: Create a default LessonRoom
+              const defaultLessonRoom1 = new LessonRoom({
+                roomId: newRoom._id,
+                subject: "Default Subject",
+                topic: "Sample Topic",
+                archived: false,
+            });
+            await defaultLessonRoom1.save();
+            console.log('Default LessonRoom created successfully:', defaultLessonRoom1);
     
-            // // Step 4: Upload default PDF to GridFS
-            // const pdfPath1 = path.join(__dirname, '../public/defaults/sample.pdf'); // Path to default PDF
-            // const pdfBucket1 = getPdfBucket();
-            // const pdfStream1 = fs.createReadStream(pdfPath1);
+            // Step 4: Upload default PDF to GridFS
+            const pdfPath1 = path.join(__dirname, '../public/defaults/sample.pdf'); // Path to default PDF
+            const pdfBucket1 = getPdfBucket();
+            const pdfStream1 = fs.createReadStream(pdfPath1);
     
-            // const pdfUpload1 = new Promise((resolve, reject) => {
-            //     const uploadPdfStream1 = pdfBucket1.openUploadStream('sample.pdf', {
-            //         metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom1._id },
-            //     });
+            const pdfUpload1 = new Promise((resolve, reject) => {
+                const uploadPdfStream1 = pdfBucket1.openUploadStream('sample.pdf', {
+                    metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom1._id },
+                });
     
-            //     pdfStream1.pipe(uploadPdfStream1)
-            //         .on('finish', resolve)
-            //         .on('error', reject);
-            // });
+                pdfStream1.pipe(uploadPdfStream1)
+                    .on('finish', resolve)
+                    .on('error', reject);
+            });
     
-            // await pdfUpload1;
+            await pdfUpload1;
     
-            // const pdfFile1 = await pdfBucket1.find({ filename: 'sample.pdf' }).toArray();
-            // if (!pdfFile1.length) throw new Error('PDF upload failed');
+            const pdfFile1 = await pdfBucket1.find({ filename: 'sample.pdf' }).toArray();
+            if (!pdfFile1.length) throw new Error('PDF upload failed');
     
-            // console.log('Default PDF uploaded successfully:', pdfFile1[0]);
+            console.log('Default PDF uploaded successfully:', pdfFile1[0]);
     
-            // // Step 5: Create a Lesson associated with the default LessonRoom
-            // const defaultLesson1 = new Lesson({
-            //     roomId: defaultLessonRoom1._id,
-            //     pdfFiles: [
-            //         {
-            //             pdfFileId: pdfFile1[0]._id,
-            //             pdfFileName: 'sample.pdf',
-            //             archived: false,
-            //         },
-            //     ],
-            // });
+            // Step 5: Create a Lesson associated with the default LessonRoom
+            const defaultLesson1 = new Lesson({
+                roomId: defaultLessonRoom1._id,
+                pdfFiles: [
+                    {
+                        pdfFileId: pdfFile1[0]._id,
+                        pdfFileName: 'sample.pdf',
+                        archived: false,
+                    },
+                ],
+            });
     
-            // await defaultLesson1.save();
-            // console.log('Default Lesson created successfully:', defaultLesson1);
+            await defaultLesson1.save();
+            console.log('Default Lesson created successfully:', defaultLesson1);
     
-            // // Step 6: Upload default video to GridFS
-            // const videoPath1 = path.join(__dirname, '../public/defaults/sampleVideos.mp4');
-            // const videoBucket1 = getVideoBucket();
-            // const videoStream1 = fs.createReadStream(videoPath1);
+            // Step 6: Upload default video to GridFS
+            const videoPath1 = path.join(__dirname, '../public/defaults/sampleVideos.mp4');
+            const videoBucket1 = getVideoBucket();
+            const videoStream1 = fs.createReadStream(videoPath1);
     
-            // const videoUpload1 = new Promise((resolve, reject) => {
-            //     const uploadVideoStream1 = videoBucket1.openUploadStream('sampleVideos.mp4', {
-            //         metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom1._id },
-            //     });
+            const videoUpload1 = new Promise((resolve, reject) => {
+                const uploadVideoStream1 = videoBucket1.openUploadStream('sampleVideos.mp4', {
+                    metadata: { roomId: newRoom._id, lessonRoomId: defaultLessonRoom1._id },
+                });
     
-            //     videoStream1.pipe(uploadVideoStream1)
-            //         .on('finish', resolve)
-            //         .on('error', reject);
-            // });
+                videoStream1.pipe(uploadVideoStream1)
+                    .on('finish', resolve)
+                    .on('error', reject);
+            });
     
-            // await videoUpload1;
+            await videoUpload1;
     
-            // // Fetch the uploaded video file from GridFS
-            // const videoFile1 = await videoBucket1.find({ filename: 'sampleVideos.mp4' }).toArray();
-            // if (!videoFile1.length) throw new Error('Video upload failed');
+            // Fetch the uploaded video file from GridFS
+            const videoFile1 = await videoBucket1.find({ filename: 'sampleVideos.mp4' }).toArray();
+            if (!videoFile1.length) throw new Error('Video upload failed');
     
-            // console.log('Default video uploaded successfully:', videoFile1[0]);
+            console.log('Default video uploaded successfully:', videoFile1[0]);
     
-            // // Step 7: Create a Video document for the LessonRoom
-            // const defaultVideo1 = new Video({
-            //     roomId: defaultLessonRoom1._id,
-            //     videoFiles: [
-            //         {
-            //             videoFileId: videoFile1[0]._id,
-            //             videoFileName: 'sampleVideos.mp4',
-            //             archived: false,
-            //         },
-            //     ],
-            // });
+            // Step 7: Create a Video document for the LessonRoom
+            const defaultVideo1 = new Video({
+                roomId: defaultLessonRoom1._id,
+                videoFiles: [
+                    {
+                        videoFileId: videoFile1[0]._id,
+                        videoFileName: 'sampleVideos.mp4',
+                        archived: false,
+                    },
+                ],
+            });
     
-            // await defaultVideo1.save();
-            // console.log('Default Video created successfully:', defaultVideo1);
+            await defaultVideo1.save();
+            console.log('Default Video created successfully:', defaultVideo1);
 
 module.exports = router;
 

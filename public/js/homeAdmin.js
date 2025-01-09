@@ -200,15 +200,33 @@ searchInput.addEventListener('input', () => {
 
 
 
-// Select the Create Room form
-const createRoomForm = document.getElementById("createRoomModal");
 
-// Attach a submit event listener
-createRoomForm.addEventListener("submit", function (event) {
-   // Show the loading overlay
-   document.getElementById("loadingOverlay").style.display = "flex";
+
+// Ensure at least one lesson is selected before form submission
+function validateLessonSelection() {
+    const selectedLessons = document.querySelectorAll('input[name="lessons[]"]:checked');
+    if (selectedLessons.length === 0) {
+        alert('Please select at least one lesson for the room.');
+        return false;
+    }
+    return true;
+}
+
+// Attach validation to the Create Room form
+document.addEventListener("DOMContentLoaded", () => {
+    const createRoomForm = document.querySelector("#createRoomModal form");
+
+    if (createRoomForm) {
+        createRoomForm.addEventListener("submit", (event) => {
+            if (!validateLessonSelection()) {
+                event.preventDefault(); // Prevent form submission if validation fails
+            } else {
+                // Show loading overlay if validation passes
+                document.getElementById("loadingOverlay").style.display = "flex";
+            }
+        });
+    }
 });
-
 
 
 
