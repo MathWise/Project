@@ -213,6 +213,12 @@ h1 {
 .modal-content button:hover {
     background-color: #f0f0f0;
 }
+.modal-content div {
+    margin-bottom: 10px;
+}
+.modal-content label {
+    margin-left: 5px;
+}
 
    /* Modal background overlay */
 #passwordModal1 {
@@ -228,14 +234,7 @@ h1 {
     z-index: 9999;
 }
 
-/* Modal content box */
-.modal-content1 {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-}
+
 
 .alert-success {
 color: #155724;
@@ -295,35 +294,42 @@ opacity: 1; /* Ensure it's fully visible initially */
  .modal {
     display: none; /* Hidden by default */
     position: fixed;
-    top: 0;
+    z-index: 1000;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Black background with transparency */
-    z-index: 1000; /* Above other elements */
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+    display: flex;
     justify-content: center;
     align-items: center;
 }
 
+
 /* Modal content box */
 .modal-content {
-    background-color: #fff;
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 70%; /* Default width */
+    max-width: 700px; /* Maximum width */
     padding: 20px;
-    border-radius: 8px;
-    width: 400px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    position: relative;
+    transition: all 0.3s ease-in-out;
 }
-
 /* Close button */
 .modal-content .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
+    color: #333;
+    float: right;
     font-size: 24px;
     font-weight: bold;
     cursor: pointer;
+}
+@media screen and (max-width: 768px) {
+    .modal-content {
+        width: 90%; /* Adjust for smaller screens */
+        padding: 15px;
+    }
 }
 /* Notification Modal Styles */
 #notificationModal {
@@ -339,14 +345,6 @@ opacity: 1; /* Ensure it's fully visible initially */
     z-index: 1000;
 }
 
-.modal-content {
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    width: 300px;
-}
 
 .modal-content h3 {
     margin-bottom: 10px;
@@ -356,17 +354,32 @@ opacity: 1; /* Ensure it's fully visible initially */
     margin-bottom: 20px;
 }
 
+.modal-content input{
+width: 95%;
+margin-bottom: 10px;
+padding: 10px;
+font-size: 16px;
+border: 1px solid #ccc;
+border-radius: 5px;
+}
 .modal-content button {
-    padding: 10px 20px;
-    border: none;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
     border-radius: 5px;
-    background-color: #007bff;
-    color: #fff;
+}
+
+.modal-content button {
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
     cursor: pointer;
 }
 
 .modal-content button:hover {
-    background-color: #0056b3;
+    background-color: #CECBEC; /* Slightly darker on hover */
 }
 
 @media (max-width: 768px) {

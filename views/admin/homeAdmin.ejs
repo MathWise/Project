@@ -145,7 +145,16 @@
         
     </div>
 
-<script src="/js/homeAdmin.js"></script>
+<script src="/js/homeAdmin.js">
+
+document.getElementById("closeCreateRoomModal").addEventListener("click", function () {
+    document.getElementById("createRoomModal").style.display = "none";
+});
+
+function openCreateRoomModal() {
+    document.getElementById("createRoomModal").style.display = "flex";
+}
+</script>
 
 </body>
 </html>
