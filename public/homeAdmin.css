@@ -414,3 +414,57 @@ border-radius: 5px;
         padding: 10px;
     }
 }
+
+.checkbox-container {
+    max-height: 150px; /* Adjust height as needed */
+    overflow-y: scroll; /* Always show the scrollbar */
+    margin: 0; /* Remove margin */
+    padding: 0; /* Remove padding */
+    width: 100%; /* Ensure the container takes full width */
+    position: relative; /* Necessary for absolute positioning */
+}
+
+.checkbox-item {
+    display: flex; /* Use flexbox for alignment */
+    align-items: center; /* Center vertically */
+    margin: 0; /* Remove margins */
+    padding: 0; /* Remove padding */
+    width: 100%; /* Ensure full width */
+    position: relative; /* Ensure each item is positioned relative to its container */
+}
+
+input[type='checkbox'] {
+    position: absolute; /* Take the checkbox out of the normal document flow */
+    left: 15px; /* Adjust this value to move the checkbox to the right */
+    margin: 0; /* Remove default margin */
+}
+
+label {
+    text-align: left; /* Ensure label text is aligned to the left */
+    margin-left: 30px; /* Adjust the label to leave space for checkbox */
+    padding: 10px; /* Remove padding */
+    font-size: 14px;
+}
+
+/* Media query for mobile view */
+@media screen and (max-width: 600px) {
+    .checkbox-container {
+        max-height: 120px; /* Reduce height on mobile */
+    }
+
+    .checkbox-item {
+        flex-direction: column; /* Stack the checkbox and label vertically */
+        align-items: flex-start; /* Align the items to the left */
+    }
+
+    input[type='checkbox'] {
+        position: relative; /* Change to normal flow */
+        margin-bottom: 5px; /* Add space between checkbox and label */
+    }
+
+    label {
+        font-size: 12px; /* Adjust font size for mobile */
+        margin-left: 0; /* Remove left margin for better alignment */
+        padding: 5px; /* Reduce padding */
+    }
+}
