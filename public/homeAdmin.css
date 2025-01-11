@@ -449,22 +449,20 @@ label {
 /* Media query for mobile view */
 @media screen and (max-width: 600px) {
     .checkbox-container {
-        max-height: 120px; /* Reduce height on mobile */
+        max-height: 100px; /* Reduce height on mobile */
+        padding: 5px;
     }
 
     .checkbox-item {
-        flex-direction: column; /* Stack the checkbox and label vertically */
-        align-items: flex-start; /* Align the items to the left */
+        flex-wrap: wrap; /* Stack the checkbox and label vertically */
+        flex-direction: row; /* Align the items to the left */
     }
 
     input[type='checkbox'] {
-        position: relative; /* Change to normal flow */
-        margin-bottom: 5px; /* Add space between checkbox and label */
+        margin: 0 10px 0 20px; /* Move the checkbox to the right */
     }
 
     label {
-        font-size: 12px; /* Adjust font size for mobile */
-        margin-left: 0; /* Remove left margin for better alignment */
-        padding: 5px; /* Reduce padding */
+        font-size: 8px; /* Adjust font size for mobile */
     }
 }

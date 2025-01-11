@@ -122,45 +122,47 @@
                     <input type="password" name="roomPassword" placeholder="Room Password" required>
                     <h3>Select Lessons</h3>
                     <p>(You must select at least one lesson)</p>
-                    <div class="checkbox-container">
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="lesson1" name="lessons[]" value="Measures Time using 12-Hour and 24-Hour Clock">
-                            <label for="lesson1">Measures Time using 12-Hour and 24-Hour Clock</label>
+                    <div class="form-container">
+                        <fieldset class="checkbox-container">
+                            <legend>Select Lessons</legend>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson1" name="lessons[]" value="Measures Time using 12-Hour and 24-Hour Clock">
+                                <label for="lesson1">Measures Time using 12-Hour and 24-Hour Clock</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson2" name="lessons[]" value="Multiplication of Simple Fractions">
+                                <label for="lesson2">Multiplication of Simple Fractions</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson3" name="lessons[]" value="Dividing Decimals with Up to 2 Decimal Places">
+                                <label for="lesson3">Dividing Decimals with Up to 2 Decimal Places</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson4" name="lessons[]" value="Dividing Whole Numbers and Simple Fractions">
+                                <label for="lesson4">Dividing Whole Numbers and Simple Fractions</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson5" name="lessons[]" value="Multiplication of Decimals">
+                                <label for="lesson5">Multiplication of Decimals</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson6" name="lessons[]" value="Theoretical Probability">
+                                <label for="lesson6">Theoretical Probability</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson7" name="lessons[]" value="GMDAS">
+                                <label for="lesson7">GMDAS</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="lesson8" name="lessons[]" value="Visualizing and Describing Solid Figures">
+                                <label for="lesson8">Visualizing and Describing Solid Figures</label>
+                            </div>
+                        </fieldset>
+                        <div class="submit-container">
+                            <button type="submit">Create Room</button>
                         </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="lesson2" name="lessons[]" value="Multiplication of Simple Fractions">
-                            <label for="lesson2">Multiplication of Simple Fractions</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="lesson3" name="lessons[]" value="Dividing Decimals with Up to 2 Decimal Places">
-                            <label for="lesson3">Dividing Decimals with Up to 2 Decimal Places</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="checkbox" id="lesson4" name="lessons[]" value="Dividing Whole Numbers and Simple Fractions">
-                            <label for="lesson4">Dividing Whole Numbers and Simple Fractions</label>
-                        </div>
-                        <!-- Add more lessons as needed -->
                     </div>
-                    <div>
-                        <input type="checkbox" id="lesson5" name="lessons[]" value="Multiplication of Decimals">
-                        <label for="lesson5">Multiplication of Decimals</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="lesson6" name="lessons[]" value="Theoretical Probability">
-                        <label for="lesson6">Theoretical Probability</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="lesson7" name="lessons[]" value="GMDAS">
-                        <label for="lesson7">GMDAS</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="lesson8" name="lessons[]" value="Visualizing and Describing Solid Figures">
-                        <label for="lesson8">Visualizing and Describing Solid Figures</label>
-                    </div>
-                    <button type="submit">Create Room</button>
-                </form>
-            </div>
-        </div>
+                    
         
 
 <script src="/js/homeAdmin.js">
