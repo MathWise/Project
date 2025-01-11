@@ -206,6 +206,42 @@ function getLessonData(lessonTitle) {
             ],
             videoPath: { path: '../public/defaults/Q2/Dividing Simple Fraction, Whole Number by Fraction and Vice Versa.mp4', filename: 'Dividing Simple Fraction, Whole Number by Fraction and Vice Versa.mp4' }
         },
+        "Multiplication of Decimals": {
+            subject: "Math-3rd Quarter",
+            topic: "Multiplication of Decimals",
+            pdfPaths: [
+                { path: '../public/defaults/Q3/MODULE Multiplying Decimals.pdf', filename: 'MODULE Multiplying Decimals.pdf' },
+                { path: '../public/defaults/Q3/PPT Multiplying Decimals.pdf', filename: 'PPT Multiplying Decimals.pdf' },
+            ],
+            videoPath: { path: '../public/defaults/Q3/MULTIPLICATION OF DECIMALS.mp4', filename: 'MULTIPLICATION OF DECIMALS.mp4' }
+        },
+        "Theoretical Probability": {
+            subject: "Math-3rd Quarter",
+            topic: "Theoretical Probability",
+            pdfPaths: [
+                { path: '../public/defaults/Q3/MODULE Theoretical Probability.pdf', filename: 'MODULE Theoretical Probability.pdf' },
+                { path: '../public/defaults/Q3/PPT Theoretical Probability.pdf', filename: 'PPT Theoretical Probability.pdf' },
+            ],
+            videoPath: { path: '../public/defaults/Q3/Probability of Simple Events.mp4', filename: 'Probability of Simple Events.mp4' }
+        },
+        "GMDAS": {
+            subject: "Math-4th Quarter",
+            topic: "GMDAS",
+            pdfPaths: [
+                { path: '../public/defaults/Q4/MODULE GMDAS.pdf', filename: 'MODULE GMDAS.pdf' },
+                { path: '../public/defaults/Q4/PPT GMDAS.pdf', filename: 'PPT GMDAS.pdf' },
+            ],
+            videoPath: { path: '../public/defaults/Q4/GMDAS.mp4', filename: 'GMDAS.mp4' }
+        },
+        "Visualizing and Describing Solid Figures": {
+            subject: "Math-4th Quarter",
+            topic: "Visualizing and Describing Solid Figures",
+            pdfPaths: [
+                { path: '../public/defaults/Q4/MODULE Visualizing and Describing Solid Figures.pdf', filename: 'MODULE Visualizing and Describing Solid Figures.pdf' },
+                { path: '../public/defaults/Q4/PPT Visualizing and Describing Solid Figures.pdf', filename: 'PPT Visualizing and Describing Solid Figures.pdf' },
+            ],
+            videoPath: { path: '../public/defaults/Q4/Visualizing and Describing Solid Figures.mp4', filename: 'Visualizing and Describing Solid Figures.mp4' }
+        },
     };
 
     return lessons[lessonTitle];
