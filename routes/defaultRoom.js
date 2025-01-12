@@ -53,7 +53,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         // Step 2: Create a default ActivityRoom for quizzes
         const defaultActivityRoom = new ActivityRoom({
             roomId: newRoom._id,
-            subject: "Default Subject",
+            subject: "Math 1st-Quarter",
             activityType: "Quiz",
             createdAt: new Date(),
         });
@@ -70,7 +70,140 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
                 videoUploadTasks.push({ newRoom, lessonRoom, videoPath });
             }
         }
-        
+
+        //start creating quiz=======================================================================================
+
+        const quizzes = [
+            {
+                title: "Measures Time using 12-Hour and 24-Hour Clock - Easy",
+                roomId: defaultActivityRoom._id,
+                difficultyLevel: "easy",
+                isDraft: true, // Explicitly set to true
+                archived: false, // Explicitly set to false
+                questions: [
+                    {
+                        questionText: "1.	What time is 3:00 p.m. in 24-hour format?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: " A. 15:00 H", isCorrect: true },
+                            { text: " B. 13:00 H", isCorrect: false },
+                            { text: " C. 12:00 H", isCorrect: false },
+                            { text: " D. 14:00 H", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "2.	How many hours are there in one day? ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 12", isCorrect: false  },
+                            { text: "B. 24", isCorrect: true },
+                            { text: "C. 36", isCorrect: false },
+                            { text: "D. 48", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "3.	What is 7:30 a.m. in 24-hour format?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 19:30 H", isCorrect: false  },
+                            { text: "B. 07:30 H", isCorrect: true },
+                            { text: "C. 17:30 H", isCorrect: false },
+                            { text: "D. 12:30 H", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "4.	What time is 10:15 p.m. in 24-hour format?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 22:15 H", isCorrect: true },
+                            { text: "B. 21:15 H", isCorrect: false },
+                            { text: "C. 23:15 H", isCorrect: false },
+                            { text: "D. 20:15 H", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "5.	How many minutes are there in 1 hour?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 30", isCorrect: false  },
+                            { text: "B. 60", isCorrect: true },
+                            { text: "C. 90", isCorrect: false },
+                            { text: "D. 120", isCorrect: false }
+                        ]
+                    }                ],
+                timer: 10, // Easy quiz timer (in minutes)
+                maxAttempts: 3
+            },
+            {
+                title: "Measures Time using 12-Hour and 24-Hour Clock - Hard",
+                roomId: defaultActivityRoom._id,
+                difficultyLevel: "hard",
+                isDraft: true, // Explicitly set to true
+                archived: false, // Explicitly set to false
+                questions: [
+                
+                    {
+                        questionText: "1.	What is 2:45 p.m. in 24-hour format? ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 14:45 H", isCorrect: true },
+                            { text: "B. 15:45 H", isCorrect: false },
+                            { text: "C. 16:45 H", isCorrect: false },
+                            { text: "D. 12:45 H", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "2.	If it is 18:30 H, what time is it in the 12-hour format?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 6:30 a.m", isCorrect: false },
+                            { text: "B. 6:30 p.m.", isCorrect: true},
+                            { text: "C. 5:30 p.m.", isCorrect: false },
+                            { text: "D. 7:30 p.m.", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "3.	What time is 11:15 a.m. in 24-hour format?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 11:15 H", isCorrect: true },
+                            { text: "B. 23:15 H", isCorrect: false },
+                            { text: "C. 21:15 H", isCorrect: false },
+                            { text: "D. 01:15 H", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "4.	How many hours are there from 8:00 a.m. to 5:00 p.m.?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 8", isCorrect: false },
+                            { text: "B. 9", isCorrect: true },
+                            { text: "C. 10", isCorrect: false },
+                            { text: "D. 11", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "5.	What is 00:30 H in 12-hour format? ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. 12:30 a.m.", isCorrect:  false},
+                            { text: "B. 12:30 p.m.", isCorrect: true },
+                            { text: "C. 1:30 a.m.", isCorrect: false },
+                            { text: "D. 1:30 p.m.", isCorrect: false }
+                        ]
+                    }
+                ],
+                timer: 15, // Hard quiz timer (in minutes)
+                maxAttempts: 3
+            }
+        ];
+
+        for (const quizData of quizzes) {
+            const newQuiz = new Quiz(quizData);
+            await newQuiz.save({ session });
+            console.log(`Default Quiz - ${quizData.difficultyLevel} created successfully:`, newQuiz);
+        }
+
         // Commit the transaction
         await session.commitTransaction();
 

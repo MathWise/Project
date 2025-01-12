@@ -16,11 +16,16 @@ router.get('/signup', (req, res) => {
 router.get('/login', (req, res) => {
     const successMessage = req.flash('success') || [];
     const errorMessage = req.flash('error') || [];
+
+     // Extract email from query params or use an empty string if not provided
+     const email = req.query.email || '';
+
     res.render('login', {
         messages: {
             success: successMessage,
             error: errorMessage,
         },
+        email,
     });
 });
 // POST route for handling signup form submission
@@ -86,8 +91,20 @@ router.get('/verify-email/:token', async (req, res) => {
             return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}`);
         }
 
+        // Check if the token has expired
+        const tokenAge = Date.now() - new Date(user.tokenCreatedAt).getTime(); // Difference in milliseconds
+        if (tokenAge > 24 * 60 * 60 * 1000) { // 24 hours in milliseconds
+            user.verificationToken = undefined; // Clear the expired token
+            user.tokenCreatedAt = undefined; // Clear the token creation time
+            await user.save();
+            return res.redirect('/signup?error=Verification token expired. Please request a new one.');
+        }
+
+  
+
         user.emailVerified = true; // Mark email as verified
         user.verificationToken = undefined; // Clear the token
+        user.tokenCreatedAt = undefined; // Clear the token creation time
         await user.save();
 
         const successMessage = 'Email verified successfully! You can now log in.';
@@ -99,4 +116,41 @@ router.get('/verify-email/:token', async (req, res) => {
     }
 });
 
+
+// POST route to resend verification email
+router.post('/resend-verification', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).send('User not found.');
+        }
+
+        if (user.emailVerified) {
+            return res.status(400).send('Email is already verified.');
+        }
+
+        // Generate a new token and save it
+        const newVerificationToken = crypto.randomBytes(32).toString('hex');
+        user.verificationToken = newVerificationToken;
+        user.tokenCreatedAt = Date.now(); 
+        await user.save();
+
+        // Send a new verification email
+        const verificationUrl = `${req.protocol}://${req.get('host')}/verify-email/${newVerificationToken}`;
+        const emailContent = `
+            <h1>Email Verification</h1>
+            <p>Hello ${user.first_name},</p>
+            <p>Please verify your email by clicking the link below:</p>
+            <a href="${verificationUrl}">Verify Email</a>
+        `;
+        await sendEmail(user.email, 'Verify Your Email', emailContent);
+
+        res.status(200).send('A new verification email has been sent.');
+    } catch (error) {
+        console.error('Error resending verification email:', error);
+        res.status(500).send('An error occurred while resending the verification email.');
+    }
+});
 module.exports = router;

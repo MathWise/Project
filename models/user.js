@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
   role: { type: String, default: 'student' },
   emailVerified: { type: Boolean, default: false }, // New field
-  verificationToken: { type: String } // New field
+  verificationToken: { type: String }, // New field
+  tokenCreatedAt: { type: Date },
 });
 
 // Export the User model

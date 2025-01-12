@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
+const sendEmail = require('../routes/emailService');
+
 
 
 router.post('/login', async (req, res, next) => {
@@ -16,10 +19,32 @@ router.post('/login', async (req, res, next) => {
             return res.redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
         }
 
-        // Check if the email is verified
-        if (!user.emailVerified) {
-            return res.redirect('/login?error=Please verify your email before logging in.');
+      // Check if the email is verified
+      if (!user.emailVerified) {
+        try {
+            // Generate a new token
+            const newVerificationToken = crypto.randomBytes(32).toString('hex');
+            user.verificationToken = newVerificationToken;
+            await user.save();
+
+            // Resend the verification email
+            const verificationUrl = `${req.protocol}://${req.get('host')}/verify-email/${newVerificationToken}`;
+            const emailContent = `
+                <h1>Email Verification</h1>
+                <p>Hello ${user.first_name},</p>
+                <p>Please verify your email by clicking the link below:</p>
+                <a href="${verificationUrl}">Verify Email</a>
+            `;
+            await sendEmail(user.email, 'Verify Your Email', emailContent);
+
+            const message = 'Please verify your email before logging in. A new verification email has been sent.';
+            return res.redirect(`/login?error=${encodeURIComponent(message)}&email=${encodeURIComponent(user.email)}`);
+        } catch (error) {
+            console.error('Error resending verification email:', error);
+            const errorMessage = 'An error occurred while sending a new verification email. Please try again.';
+            return res.redirect(`/login?error=${encodeURIComponent(errorMessage)}`);
         }
+    }
 
         // If email is verified, proceed with login
         req.logIn(user, (err) => {
