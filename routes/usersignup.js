@@ -17,17 +17,20 @@ router.get('/login', (req, res) => {
     const successMessage = req.flash('success') || [];
     const errorMessage = req.flash('error') || [];
 
-     // Extract email from query params or use an empty string if not provided
-     const email = req.query.email || '';
+    // Extract email from query parameters or use an empty string if not provided
+    const email = req.query.email || '';
+
+    console.log('Email passed to login.ejs:', email); // Debug log for verification
 
     res.render('login', {
         messages: {
             success: successMessage,
             error: errorMessage,
         },
-        email,
+        email, // Pass email to the template
     });
 });
+
 // POST route for handling signup form submission
 router.post('/signup', async (req, res) => {
     const { first_name, last_name, grade, section, email, age, password } = req.body;

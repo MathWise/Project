@@ -60,7 +60,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         await defaultActivityRoom.save({ session });
         console.log('Default ActivityRoom created successfully:', defaultActivityRoom);
 
-     
+        
 
           // Step 3: Process the selected lessons
           for (const lessonTitle of lessons) {
@@ -134,6 +134,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
                 timer: 10, // Easy quiz timer (in minutes)
                 maxAttempts: 3
             },
+
             {
                 title: "Measures Time using 12-Hour and 24-Hour Clock - Hard",
                 roomId: defaultActivityRoom._id,
@@ -196,6 +197,9 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
                 timer: 15, // Hard quiz timer (in minutes)
                 maxAttempts: 3
             }
+
+            //start of 2nd quiz =========================================================================================================
+
         ];
 
         for (const quizData of quizzes) {
