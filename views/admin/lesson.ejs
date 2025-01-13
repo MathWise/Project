@@ -590,9 +590,19 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
                 event.preventDefault(); // Prevent default form submission
 
                 const submitButton = this.querySelector('button[type="submit"]');
+                const pdfInput = document.getElementById('pdfFile');
                 const formData = new FormData(this);
                 const roomId = document.getElementById('pdfRoomId').value;
                 const userId = '<%= currentUser._id %>'; // User ID for progress tracking
+
+                 // File size limit (200MB in bytes)
+                const maxSize = 200 * 1024 * 1024;
+                const selectedFile = pdfInput.files[0];
+
+                if (selectedFile && selectedFile.size > maxSize) {
+                alert('The file size exceeds the 200MB limit. Please upload a smaller file.');
+                return; // Stop form submission
+            }
 
                  // Disable the button to prevent double submissions
                 submitButton.disabled = true;
@@ -627,9 +637,19 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
             document.getElementById('uploadVideoForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
                 const submitButton = this.querySelector('button[type="submit"]');
+                const videoInput = document.getElementById('videoFile');
                 const formData = new FormData(this);
                 const roomId = document.getElementById('videoRoomId').value;
                 const userId = '<%= currentUser._id %>'; // For dynamic reloading
+
+                  // File size limit (300MB in bytes)
+        const maxSize = 300 * 1024 * 1024;
+        const selectedFile = videoInput.files[0];
+
+        if (selectedFile && selectedFile.size > maxSize) {
+            alert('The file size exceeds the 300MB limit. Please upload a smaller video.');
+            return; // Stop form submission
+        }
 
                  // Disable the button to prevent double submissions
                 submitButton.disabled = true;
