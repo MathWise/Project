@@ -484,32 +484,38 @@ border-radius: 5px;
 
 input[type='checkbox'] {
     position: static; /* Default position */
+    margin-left: -200px; /* Adjust the value as needed */
 }
 
 label {
     text-align: left; /* Ensure label text is aligned to the left */
-    margin-left: 30px; /* Adjust the label to leave space for checkbox */
+    margin-left: -200px; /* Adjust the label to leave space for checkbox 30*/
     padding: 10px; /* Remove padding */
     font-size: 14px;
 }
 
 /* Media query for mobile view */
-@media screen and (max-width: 600px) {
+@media (max-width: 768px) {
     .checkbox-container {
-        max-height: 100px; /* Reduce height on mobile */
-        padding: 5px;
+        max-height: 200px; /* Adjust height for mobile */
+        width: 100%; /* Ensure it takes full width on smaller screens */
+        padding: 5px; /* Add some padding for better spacing */
     }
 
-    .checkbox-item {
-        flex-wrap: wrap; /* Stack the checkbox and label vertically */
-        flex-direction: row; /* Align the items to the left */
+    .checkbox-item label {
+        flex-direction: row; /* Keep the checkbox and text inline */
+        gap: 10px; /* Slightly increase the gap for better readability */
+        margin-left: 0; /* Reset margin for proper alignment */
+        padding: 8px; /* Adjust padding for mobile view */
+        font-size: 16px; /* Slightly larger text for readability */
     }
 
     input[type='checkbox'] {
-        margin: 0 10px 0 20px; /* Move the checkbox to the right */
+        margin-left: 0; /* Align the checkbox properly */
     }
 
     label {
-        font-size: 8px; /* Adjust font size for mobile */
+        text-align: left; /* Keep text alignment */
+        margin-left: 0; /* Reset any unnecessary left margin */
     }
 }
