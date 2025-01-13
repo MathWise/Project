@@ -201,7 +201,83 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
                 ],
                 timer: 15, // Hard quiz timer (in minutes)
                 maxAttempts: 3
-            }
+            },
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //=====================================================================================================================================================
+            {
+                title: " - Hard",
+                roomId: defaultActivityRoom1._id,
+                difficultyLevel: "hard",
+                isDraft: true, // Explicitly set to true
+                archived: false, // Explicitly set to false
+                questions: [
+                
+                    {
+                        questionText: "1.	? ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. ", isCorrect: true },
+                            { text: "B. ", isCorrect: false },
+                            { text: "C. ", isCorrect: false },
+                            { text: "D. ", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "2.	?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. ", isCorrect: false },
+                            { text: "B. ", isCorrect: true},
+                            { text: "C. ", isCorrect: false },
+                            { text: "D. ", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "3.	?  ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. ", isCorrect: true },
+                            { text: "B. ", isCorrect: false },
+                            { text: "C. ", isCorrect: false },
+                            { text: "D. ", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "4.	?",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. ", isCorrect: false },
+                            { text: "B. ", isCorrect: true },
+                            { text: "C. ", isCorrect: false },
+                            { text: "D. ", isCorrect: false }
+                        ]
+                    },
+                    {
+                        questionText: "5.	 ",
+                        type: "multiple-choice",
+                        choices: [
+                            { text: "A. ", isCorrect:  false},
+                            { text: "B. ", isCorrect: true },
+                            { text: "C. ", isCorrect: false },
+                            { text: "D. .", isCorrect: false }
+                        ]
+                    }
+                ],
+                timer: 20, // Hard quiz timer (in minutes)
+                maxAttempts: 3
+            },
         ];
 
        
@@ -310,6 +386,8 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
     
             await defaultVideo1.save();
             console.log('Default Video created successfully:', defaultVideo1);
+
+            
 
 module.exports = router;
 
