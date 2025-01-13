@@ -99,11 +99,11 @@
         </div>
 
         <div id="passwordModal1" style="display: none;">
-            <div class="modal-content">
+            <div class="Archivemodal-content">
                 <label for="roomPassword1">Enter the room password to archive:</label>
                 <input type="password" id="roomPassword1" onkeydown="checkEnterKey1(event)" />
-                <button onclick="submitPassword1() ">Submit</button>
-                <button onclick="closeModal1()">Cancel</button>
+                <button id="Enterpassword1" onclick="submitPassword1() ">Submit</button>
+                <button id="Enterpassword1" onclick="closeModal1()">Cancel</button>
             </div>
         </div>
         
@@ -112,7 +112,7 @@
 
         <!-- Modal for creating a room -->
         <div id="createRoomModal" class="modal" style="display: none;">
-            <div class="modal-content">
+            <div class="modal-content ">
                 <span class="close" id="closeCreateRoomModal">&times;</span>
                 <h2>Create Room</h2>
                 <form action="/admin/homeAdmin" method="POST">

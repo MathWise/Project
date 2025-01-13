@@ -1,4 +1,4 @@
-html,body {
+body {
     height: 100%;
     font-family: 'Baloo 2', sans-serif;
     background-color: #E0F4F9; /* Set body background color */
@@ -168,6 +168,15 @@ html,body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    html, body {
+        height: 100%;
+        font-family: 'Baloo 2', sans-serif;
+        background-color: #E0F4F9; /* Set body background color */
+        padding-top: 150px; /* Adjust this value based on header height */
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden;
+    }
+    
     .big-box {
         flex-direction: column; /* Stack vertically on small screens */
     }

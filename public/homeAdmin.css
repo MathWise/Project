@@ -192,8 +192,89 @@ h1 {
     opacity: 1; /* Ensure it's fully visible initially */
 }
 
+/* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Button styles */
+.modal-content button {
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 70%; /* Default width */
+    max-width: 700px; /* Maximum width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+/* Close button */
+.modal-content .close {
+    color: #333;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+}
+
+.modal-content input{
+width: 95%;
+margin-bottom: 10px;
+padding: 10px;
+font-size: 16px;
+border: 1px solid #ccc;
+border-radius: 5px;
+}
+.modal-content button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content button {
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #CECBEC; /* Slightly darker on hover */
+}
+
   /* Modal background overlay */
-  #passwordModal {
+#passwordModal {
     position: fixed;
     top: 0;
     left: 0;
@@ -204,15 +285,6 @@ h1 {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-}
-
-/* Modal content box */
-.modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
 }
 
 .modalcontent {
@@ -238,15 +310,6 @@ h1 {
     cursor: pointer;
 }
 
-/* Button styles */
-.modal-content button {
-    margin: 10px 5px;
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
 .modalcontent input[type="password"] {
     width: 30%; /* Adjust the width of the input box */
     padding: 8px; /* Reduce padding for a smaller input */
@@ -255,7 +318,6 @@ h1 {
     border: 1px solid #ccc; /* Ensure input box has a border */
     border-radius: 4px; /* Match the rounded corners with the button */
 }
-
 
 .modalcontent button:hover {
     background-color: #f0f0f0;
@@ -281,7 +343,47 @@ h1 {
     z-index: 9999;
 }
 
+.Archivemodal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 30%; /* Default width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
 
+#Enterpassword1 {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.Archivemodal-content input[type="password"] {
+    width: 30%; /* Adjust the width of the input box */
+    padding: 8px; /* Reduce padding for a smaller input */
+    font-size: 14px; /* Optional: reduce font size for a more compact appearance */
+    margin-top: 10px; /* Add space between the label and input box */
+    border: 1px solid #ccc; /* Ensure input box has a border */
+    border-radius: 4px; /* Match the rounded corners with the button */
+}
+
+.Archivemodal-content button:hover {
+    background-color: #f0f0f0;
+}
+.Archivemodal-content div {
+    margin-bottom: 10px;
+}
+.Archivemodal-content label {
+    margin-left: 5px;
+}
 
 .alert-success {
 color: #155724;
@@ -336,48 +438,6 @@ opacity: 1; /* Ensure it's fully visible initially */
         transform: rotate(360deg);
     }
 }
-
- /* Modal background */
- .modal {
-    display: none; /* Hidden by default */
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; /* Enable scrolling if needed */
-    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-
-/* Modal content box */
-.modal-content {
-    background-color: #89D6F8; 
-    border-radius: 10px;
-    width: 70%; /* Default width */
-    max-width: 700px; /* Maximum width */
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease-in-out;
-}
-/* Close button */
-.modal-content .close {
-    color: #333;
-    float: right;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-}
-@media screen and (max-width: 768px) {
-    .modal-content {
-        width: 90%; /* Adjust for smaller screens */
-        padding: 15px;
-    }
-}
 /* Notification Modal Styles */
 #notificationModal {
     position: fixed;
@@ -392,6 +452,64 @@ opacity: 1; /* Ensure it's fully visible initially */
     z-index: 1000;
 }
 
+@media (max-width: 768px) {
+    .room-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 10px;
+    }
+
+    .room {
+        padding: 10px;
+    }
+
+    .dropdown-content {
+        min-width: 140px;
+    }
+
+    /* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Button styles */
+.modal-content button {
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 70%; /* Default width */
+    max-width: 700px; /* Maximum width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+/* Close button */
+.modal-content .close {
+    color: #333;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
 .modal-content h3 {
     margin-bottom: 10px;
@@ -429,23 +547,117 @@ border-radius: 5px;
     background-color: #CECBEC; /* Slightly darker on hover */
 }
 
-@media (max-width: 768px) {
-    .room-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 10px;
-    }
+  /* Modal background overlay */
+#passwordModal {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
 
-    .room {
-        padding: 10px;
-    }
+.modalcontent {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 90% !important; /* Default width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
 
-    .dropdown-content {
-        min-width: 140px;
-    }
+#Enterpassword {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
 
-    .modal-content {
-        padding: 15px;
-    }
+.modalcontent input[type="password"] {
+    width: 30%; /* Adjust the width of the input box */
+    padding: 8px; /* Reduce padding for a smaller input */
+    font-size: 14px; /* Optional: reduce font size for a more compact appearance */
+    margin-top: 10px; /* Add space between the label and input box */
+    border: 1px solid #ccc; /* Ensure input box has a border */
+    border-radius: 4px; /* Match the rounded corners with the button */
+}
+
+.modalcontent button:hover {
+    background-color: #f0f0f0;
+}
+.modalcontent div {
+    margin-bottom: 10px;
+}
+.modalcontent label {
+    margin-left: 5px;
+}
+
+   /* Modal background overlay */
+#passwordModal1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.Archivemodal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 90% !important; /* Default width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+
+#Enterpassword1 {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.Archivemodal-content input[type="password"] {
+    width: 70% !important; /* Adjust the width of the input box */
+    padding: 8px; /* Reduce padding for a smaller input */
+    font-size: 14px; /* Optional: reduce font size for a more compact appearance */
+    margin-top: 10px; /* Add space between the label and input box */
+    border: 1px solid #ccc; /* Ensure input box has a border */
+    border-radius: 4px; /* Match the rounded corners with the button */
+}
+
+.Archivemodal-content button:hover {
+    background-color: #f0f0f0;
+}
+.Archivemodal-content div {
+    margin-bottom: 10px;
+}
+.Archivemodal-content label {
+    margin-left: 5px;
+}
 }
 
 @media (max-width: 480px) {
@@ -457,9 +669,198 @@ border-radius: 5px;
         padding: 5px;
     }
 
-    .modal-content {
-        padding: 10px;
-    }
+    /* Modal background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto; /* Enable scrolling if needed */
+    background-color: rgba(0, 0, 0, 0.5); /* Black with opacity */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Button styles */
+.modal-content button {
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Modal content box */
+.modal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 70%; /* Default width */
+    max-width: 700px; /* Maximum width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+/* Close button */
+.modal-content .close {
+    color: #333;
+    float: right;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.modal-content h3 {
+    margin-bottom: 10px;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+}
+
+.modal-content input{
+width: 95%;
+margin-bottom: 10px;
+padding: 10px;
+font-size: 16px;
+border: 1px solid #ccc;
+border-radius: 5px;
+}
+.modal-content button {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.modal-content button {
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #CECBEC; /* Slightly darker on hover */
+}
+
+  /* Modal background overlay */
+#passwordModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modalcontent {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 30%; /* Default width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+
+#Enterpassword {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modalcontent input[type="password"] {
+    width: 30%; /* Adjust the width of the input box */
+    padding: 8px; /* Reduce padding for a smaller input */
+    font-size: 14px; /* Optional: reduce font size for a more compact appearance */
+    margin-top: 10px; /* Add space between the label and input box */
+    border: 1px solid #ccc; /* Ensure input box has a border */
+    border-radius: 4px; /* Match the rounded corners with the button */
+}
+
+.modalcontent button:hover {
+    background-color: #f0f0f0;
+}
+.modalcontent div {
+    margin-bottom: 10px;
+}
+.modalcontent label {
+    margin-left: 5px;
+}
+
+   /* Modal background overlay */
+#passwordModal1 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.Archivemodal-content {
+    background-color: #89D6F8; 
+    border-radius: 10px;
+    width: 30%; /* Default width */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease-in-out;
+    text-align: center;
+}
+
+#Enterpassword1 {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.Archivemodal-content input[type="password"] {
+    width: 30%; /* Adjust the width of the input box */
+    padding: 8px; /* Reduce padding for a smaller input */
+    font-size: 14px; /* Optional: reduce font size for a more compact appearance */
+    margin-top: 10px; /* Add space between the label and input box */
+    border: 1px solid #ccc; /* Ensure input box has a border */
+    border-radius: 4px; /* Match the rounded corners with the button */
+}
+
+.Archivemodal-content button:hover {
+    background-color: #f0f0f0;
+}
+.Archivemodal-content div {
+    margin-bottom: 10px;
+}
+.Archivemodal-content label {
+    margin-left: 5px;
+}
 }
 
 .checkbox-container {
@@ -482,9 +883,9 @@ border-radius: 5px;
     gap: 5px; /* Small gap between text and checkbox */
 }
 
-input[type='checkbox'] {
+check-item input[type='checkbox'] {
     position: static; /* Default position */
-    margin-left: -200px; /* Adjust the value as needed */
+   
 }
 
 label {
