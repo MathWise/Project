@@ -135,7 +135,10 @@
                         <div class="left-content">
                             
                             <h1>Create a Quiz 
+                                
                                 <button class="instructions-btn" onclick="openModal()">Instructions for Excel Import</button>
+                               
+                                <button class="instructions-btn" > <a href="/assets/excel-import-quiz.xlsx">Download Excel Import Template</a></button>
                             </h1>
                             
 
@@ -153,11 +156,14 @@
                             <!-- Modal -->
                             <div id="instructionsModal" class="modal">
                              <div class="modal-content">
+                               
                                 <span class="close-btn" onclick="closeModal()">&times;</span>
                                  <embed src="/assets/Excel-Instructions.pdf" type="application/pdf" width="100%" height="500px">
+                                    
                              </div>
-                        </div>
+                          </div>
                             
+                          
                             
                             <form id="quizForm" action="/admin/quiz/create" method="POST">
                                 <input type="hidden" name="activityRoomId" id="activityRoomId" value="">
@@ -183,7 +189,7 @@
                                         </select><br>
                                         
                                         <div class="form-group">
-                                            <label for="timer">Set Timer (Optional)</label>
+                                            <label for="timer">Set Timer</label>
                                             <select class="form-control" id="timer" name="timer">
                                                 <option value="">select Timer</option>
                                                 <option value="5">5 Minutes</option>
@@ -266,7 +272,7 @@
                             <label for="points">Points:</label>
                             <input type="number" name="points" id="points" required min="1"><br><br>
                             
-                            <label for="deadline">Deadline (optional):</label>
+                            <label for="deadline">Deadline :</label>
                             <input type="datetime-local" name="deadline" id="deadline"><br><br>
                             
                             <label for="isDraft">Save as Draft?</label>

@@ -3,117 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/modify.css">
     <title>Modify Quiz</title>
-    <style>
-        /* General Styles */
-        body {
-            font-family: 'Baloo 2', cursive; /* Set font to Baloo 2 */
-            background-color: #E0F4F9; /* Set background color */
-            margin: 0;
-            padding: 0;
-            position: relative; /* For positioning logos */
-        }
 
-        h1 {
-            color: #333;
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 40px auto;
-            background-image: url('/assets/bg.png'); /* Set background image */
-            background-size: cover;
-            background-position: center;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        form {
-            display: flex;
-            flex-direction: column;
-        }
-
-        label {
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-
-        input[type="text"], select {
-            margin-bottom: 15px;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .question {
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .choices input[type="text"], .choices label, .choices input[type="checkbox"] {
-            margin-bottom: 10px;
-        }
-
-        .choices {
-            margin-top: 10px;
-            padding-left: 20px;
-        }
-
-        button {
-            background-color: #6773FF;
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #5c64e8;
-        }
-
-        /* Logo positioning */
-        #logo {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            width: 120px;
-        }
-
-        #mw {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            width: 120px;
-        }
-
-        /* Responsive Styles */
-        @media only screen and (max-width: 768px) {
-            .container {
-                padding: 15px;
-                margin: 20px;
-            }
-
-            h1 {
-                font-size: 1.5em;
-            }
-
-            input[type="text"], select {
-                padding: 8px;
-            }
-
-            button {
-                padding: 10px;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Top-left logo -->
@@ -122,6 +14,22 @@
     <!-- Bottom-left logo -->
     <img src="/assets/mw.png" id="mw" alt="MW Logo">
 
+    <!-- Error Modal -->
+<div id="errorModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Error</h2>
+        <ul>
+            <% if (errors && errors.length > 0) { %>
+                <% errors.forEach(error => { %>
+                    <li><%= error %></li>
+                <% }); %>
+            <% } %>
+        </ul>
+    </div>
+</div>
+
+
     <div class="container">
         <h1>Modify Quiz</h1>
         <form action="/admin/quiz/modify/<%= quiz._id %>" method="POST">
@@ -129,12 +37,13 @@
                 <label for="title">Quiz Title:</label>
                 <input type="text" name="title" id="title" value="<%= quiz.title %>" required>
             </div>
+
             <div id="questions">
                 <% quiz.questions.forEach((question, index) => { %>
                     <div class="question">
                         <label>Question <%= index + 1 %>:</label>
                         <input type="text" name="questions[<%= index %>][questionText]" value="<%= question.questionText %>" required>
-                        <select name="questions[<%= index %>][type]" required>
+                        <select name="questions[<%= index %>][type]" required >
                             <option value="multiple-choice" <% if (question.type === 'multiple-choice') { %> selected <% } %>>Multiple Choice</option>
                             <option value="fill-in-the-blank" <% if (question.type === 'fill-in-the-blank') { %> selected <% } %>>Fill in the Blank</option>
                         </select>
@@ -142,12 +51,15 @@
                             <div class="choices">
                                 <% question.choices.forEach((choice, choiceIndex) => { %>
                                     <div>
-                                        <input type="text" name="questions[<%= index %>][choices][<%= choiceIndex %>][text]" value="<%= choice.text %>" required>
+                                        <input type="text" name="questions[<%= index %>][choices][<%= choiceIndex %>][text]" 
+                                               value="<%= choice.text %>" required>
                                         <label>Correct?</label>
-                                        <input type="checkbox" name="questions[<%= index %>][choices][<%= choiceIndex %>][isCorrect]" <% if (choice.isCorrect) { %> checked <% } %>>
+                                        <input type="checkbox" name="questions[<%= index %>][choices][<%= choiceIndex %>][isCorrect]" 
+                                               <% if (choice.isCorrect) { %> checked <% } %>>
                                     </div>
                                 <% }) %>
                             </div>
+                            
                         <% } else if (question.type === 'fill-in-the-blank') { %>
                             <label>Correct Answer:</label>
                             <input type="text" name="questions[<%= index %>][correctAnswer]" value="<%= question.correctAnswer %>" required>
@@ -155,8 +67,91 @@
                     </div>
                 <% }) %>
             </div>
-            <button type="submit">Save Changes</button>
+            <button type="submit">Save Changes</button> 
+            <div style="text-align: center; margin-top: 20px;">
+                <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Go Back</a>
+            </div>
+
         </form>
     </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const modal = document.getElementById("errorModal");
+        const closeBtn = document.querySelector(".modal .close");
+
+        <% if (errors && errors.length > 0) { %>
+            // Show modal if there are errors
+            modal.style.display = "block";
+        <% } %>
+
+        // Close modal on clicking the "X" button
+        closeBtn.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+
+        // Close modal when clicking outside the modal
+        window.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        });
+    });
+</script>
+
+<style>
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-content {
+        background-color: #fff;
+        margin: 15% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+        margin-top: 0;
+    }
+
+    .modal-content ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .modal-content li {
+        margin: 10px 0;
+        color: #d9534f; /* Error color */
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: #000;
+        text-decoration: none;
+        cursor: pointer;
+    }
+</style>
+
+
 </body>
 </html>

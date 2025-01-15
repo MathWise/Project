@@ -60,7 +60,13 @@
             <h3><%= frequencyData[questionId].questionText %></h3>
             <p><strong>Total Answers:</strong> <%= frequencyData[questionId].total %></p>
             <p><strong>Correct Answer:</strong> <%= frequencyData[questionId].correctAnswer %></p>
-            <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
+            <p><strong>Answer Distribution:</strong></p>
+
+            <% if (frequencyData[questionId].total === 0) { %>
+                <p>No responses yet.</p>
+            <% } else { %>
+                <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
+            <% } %>
         <% }) %>
     </div>
 
@@ -96,7 +102,7 @@
                         legend: {
                             position: 'top',
                             labels: {
-                                color: 'white', // Legend text color
+                                color: 'black', // Changed legend text color
                                 font: {
                                     size: 14 // Optional: Adjust font size
                                 }
@@ -118,4 +124,5 @@
         });
     </script>
 </body>
+
 </html>

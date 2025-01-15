@@ -874,33 +874,28 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
     const { quizId } = req.params;
 
     try {
-        // Fetch quiz details and populate questions
         const quiz = await Quiz.findById(quizId).lean();
         if (!quiz) {
             req.flash('error', 'Quiz not found.');
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Check if the quiz has questions
         if (!quiz.questions || quiz.questions.length === 0) {
             req.flash('error', 'No questions found for this quiz.');
             return res.redirect(`/admin/overallSummary/${quizId}`);
         }
 
-        // Map question details (including correctAnswer for multiple-choice and fill-in-the-blank)
         const questionDetails = quiz.questions.reduce((acc, question) => {
             if (question.type === 'multiple-choice') {
-                // For multiple-choice, find the correct choice(s)
                 const correctChoices = question.choices
                     .filter(choice => choice.isCorrect)
                     .map(choice => choice.text)
-                    .join(', '); // Join multiple correct answers if applicable
+                    .join(', ');
                 acc[question._id.toString()] = {
                     questionText: question.questionText || 'No question text available',
                     correctAnswer: correctChoices || 'N/A'
                 };
             } else if (question.type === 'fill-in-the-blank') {
-                // For fill-in-the-blank, use the correctAnswer field
                 acc[question._id.toString()] = {
                     questionText: question.questionText || 'No question text available',
                     correctAnswer: question.correctAnswer || 'N/A'
@@ -909,28 +904,24 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
             return acc;
         }, {});
 
-        console.log('Question Details:', questionDetails); // Debugging
-
-        // Fetch all results for the quiz
         const quizResults = await QuizResult.find({ quizId }).lean();
         if (!quizResults.length) {
             req.flash('error', 'No results found for this quiz.');
             return res.redirect(`/admin/overallSummary/${quizId}`);
         }
 
-        // Calculate frequency of responses for each question
         const frequencyData = {};
         quizResults.forEach(result => {
             result.answers.forEach(answer => {
                 const questionId = answer.questionId.toString();
-                const userAnswer = answer.userAnswer;
+                const userAnswer = answer.userAnswer || 'No Answer';
 
                 if (!frequencyData[questionId]) {
                     frequencyData[questionId] = {
                         questionText: questionDetails[questionId]?.questionText || 'No question text available',
                         correctAnswer: questionDetails[questionId]?.correctAnswer || 'N/A',
-                        choices: {}, // To store frequencies of each choice
-                        total: 0 // To track the total answers for the question
+                        choices: {}, 
+                        total: 0 
                     };
                 }
 
@@ -939,13 +930,10 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
                 }
 
                 frequencyData[questionId].choices[userAnswer]++;
-                frequencyData[questionId].total++; // Increment total for the question
+                frequencyData[questionId].total++;
             });
         });
 
-        console.log('Frequency Data:', frequencyData); // Debugging
-
-        // Render the frequency view
         res.render('admin/responseFrequencies', {
             quiz,
             frequencyData
@@ -957,7 +945,6 @@ router.get('/responseFrequencies/:quizId', ensureAdminLoggedIn, async (req, res)
         res.redirect(`/admin/overallSummary/${quizId}`);
     }
 });
-
 
 
 
@@ -1547,6 +1534,7 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
         console.log('Activity Room ID received:', activityRoomId);
 
         const fileBuffer = req.file.buffer;
+        const fileName = req.file.originalname.replace(/\.[^/.]+$/, ''); // Remove file extension
         console.log('File uploaded successfully. Parsing Excel file...');
 
         const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
@@ -1628,9 +1616,23 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
 
         console.log('Constructed quiz questions:', quizQuestions);
 
+
+        // Ensure unique title for the imported quiz
+        let uniqueTitle = fileName;
+        let quizExists = await Quiz.findOne({ roomId: activityRoomId, title: uniqueTitle });
+
+        if (quizExists) {
+            let count = 1;
+            // Append number to the title (e.g., "Imported Quiz (1)", "Imported Quiz (2)")
+            while (quizExists) {
+                uniqueTitle = `${fileName} (${count})`;
+                quizExists = await Quiz.findOne({ roomId: activityRoomId, title: uniqueTitle });
+                count++;
+            }
+        }
         // Save the quiz
         const newQuiz = new Quiz({
-            title: 'Imported Quiz',
+            title: uniqueTitle,
             roomId: new mongoose.Types.ObjectId(activityRoomId),
             timer: quizTimer,
             maxAttempts: quizMaxAttempts,
@@ -1648,7 +1650,10 @@ router.post('/quiz/import', ensureAdminLoggedIn, upload.single('file'), async (r
     }
 });
 
+
 //example
+
+
 // Route to submit a new quiz
 router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
 
@@ -1718,8 +1723,22 @@ router.post('/quiz/create', ensureAdminLoggedIn, async (req, res) => {
             throw new Error('Invalid deadline format. Please enter a valid date.');
         }
 
+           // Check if a quiz with the same title already exists in the same activity room
+           let uniqueTitle = title;
+           let quizExists = await Quiz.findOne({ roomId: activityRoomId, title: uniqueTitle });
+   
+           if (quizExists) {
+               let count = 1;
+               // Append number to the title (e.g., "Quiz (1)", "Quiz (2)")
+               while (quizExists) {
+                   uniqueTitle = `${title} (${count})`;
+                   quizExists = await Quiz.findOne({ roomId: activityRoomId, title: uniqueTitle });
+                   count++;
+               }
+           }
+   
         const newQuiz = new Quiz({
-            title,
+            title: uniqueTitle,
             roomId: new mongoose.Types.ObjectId(activityRoomId),  // Ensures ObjectId format
             questions,
             timer: timer ? parseInt(timer, 10) : null,
@@ -1816,7 +1835,8 @@ router.get('/quizzes/start/:id', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/quizzes/result/' + id);
         }
 
-        // Always reset quizStartTime and currentQuizId for a new attempt
+        
+        // Set session data for this specific quiz attempt
         req.session.quizStartTime = Date.now();
         req.session.currentQuizId = id;
 
@@ -2109,6 +2129,7 @@ router.post('/unarchive-quiz/:quizId', ensureAdminLoggedIn, async (req, res) => 
     }
 });
 
+
 router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
     try {
@@ -2122,7 +2143,7 @@ router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
             req.flash('error', 'Activity room not found.');
             return res.redirect('/admin/homeAdmin');
         }
-        res.render('quizzes/modify', { quiz });
+        res.render('quizzes/modify', { quiz,roomId: activityRoom.roomId, errors:[]});
     } catch (err) {
         console.error('Error fetching quiz for modification:', err);
         req.flash('error', 'Error fetching quiz for modification.');
@@ -2133,36 +2154,49 @@ router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
 router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
     const { title, questions } = req.body;
-    try {
+    const errors = []; // Initialize an errors array
 
+    try {
         const quiz = await Quiz.findById(quizId).lean();
         if (!quiz) {
-            req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin/homeAdmin');
+            errors.push('Quiz not found.');
+            return res.render('quizzes/modify', { quiz: {}, roomId: null, errors });
         }
 
         const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
         if (!activityRoom) {
-            req.flash('error', 'Activity room not found.');
-            return res.redirect('/admin/homeAdmin');
+            errors.push('Activity room not found.');
+            return res.render('quizzes/modify', { quiz, roomId: null, errors });
         }
 
         if (!questions || questions.length === 0) {
-            throw new Error('At least one question is required.');
+            errors.push('At least one question is required.');
+        } else {
+            questions.forEach((question, index) => {
+                // Normalize and validate the question
+                if (question.type === 'multiple-choice') {
+                    question.choices = question.choices.map(choice => {
+                        return {
+                            text: choice.text || '',
+                            isCorrect: choice.isCorrect === 'on', // Convert "on" to boolean
+                        };
+                    });
+
+                    const correctChoices = question.choices.filter(choice => choice.isCorrect);
+                    if (correctChoices.length !== 1) {
+                        errors.push(`Question ${index + 1} must have exactly one correct answer.`);
+                    }
+                } else if (question.type === 'fill-in-the-blank') {
+                    if (!question.correctAnswer || question.correctAnswer.trim() === '') {
+                        errors.push(`Question ${index + 1} must have a correct answer.`);
+                    }
+                }
+            });
         }
 
-        // Validate and process questions
-        questions.forEach((question, index) => {
-            if (question.type === 'multiple-choice') {
-                question.choices.forEach(choice => {
-                    choice.isCorrect = !!choice.isCorrect; // Convert checkbox value to boolean
-                });
-            } else if (question.type === 'fill-in-the-blank') {
-                if (!question.correctAnswer || question.correctAnswer.trim() === '') {
-                    throw new Error(`Question ${index + 1} must have a correct answer.`);
-                }
-            }
-        });
+        if (errors.length > 0) {
+            return res.render('quizzes/modify', { quiz, roomId: activityRoom.roomId, errors });
+        }
 
         // Update the quiz and get the updated document
         const updatedQuiz = await Quiz.findByIdAndUpdate(
@@ -2176,15 +2210,13 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
-        // Render the modified quiz details page
-        res.render('quizzes/modify-result', { quiz: updatedQuiz, roomId: activityRoom.roomId  });
+        res.render('quizzes/modify-result', { quiz: updatedQuiz, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error updating quiz:', err);
         req.flash('error', `Error updating quiz: ${err.message}`);
         res.redirect(`/admin/quiz/modify/${quizId}`);
     }
 });
-
 
 
 
