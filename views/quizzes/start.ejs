@@ -12,7 +12,7 @@
  body {
     background-color: #E0F4F9;
     font-family: 'Baloo 2', cursive; 
-    background-image: url('/assets/bg.png');
+    background-image: url('/assets/bigbg.png');
     background-repeat: no-repeat;    
     background-size: cover;         
     background-position: center;   
@@ -31,16 +31,17 @@
     width: 90%;
     max-width: 800px;
     margin: 20px auto;
-    padding: 20px;
+    padding: 50px 20px 20px 20px; /* Added padding-top to move content down */
     background-color: #E0F4F9;
     background-image: url('/assets/qm.png');
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background-size: cover;
     background-position: center;
-    position: relative; /* Positioning context for the gl.png and other images */
+    position: relative;
     text-align: center;
 }
+
 
 /* Positioning the images */
 .big-box img {
@@ -95,33 +96,6 @@ button:hover {
     background-color: #45a049;
 }
 
-/* Media Queries for small screens */
-@media only screen and (max-width: 768px) {
-    .big-box {
-        padding: 15px;
-    }
-
-    form {
-        max-width: 100%;
-        padding: 10px;
-    }
-
-    .question p {
-        font-size: 16px;
-        color: #680A76;
-    }
-
-    button {
-        font-size: 16px;
-    }
-}
-
-@media only screen and (max-width: 480px) {
-    button {
-        font-size: 14px;
-        padding: 8px;
-    }
-}
 /* Adjust size of the fixed logos */
 #logo {
     position: fixed;
@@ -137,6 +111,64 @@ button:hover {
     width: 120px; /* Adjust the size as needed */
 }
 
+/* Media Queries for small screens */
+@media only screen and (max-width: 768px) {
+    body {
+        height: auto; /* Allow body height to adjust based on content */
+    }
+
+    .big-box {
+        padding: 40px 15px 15px 15px; /* Reduce padding on smaller screens */
+        width: 95%; /* Make the big-box take more width on smaller screens */
+        max-width: 100%;
+        margin: 10px auto;
+    }
+
+    .big-box img.top-right,
+    .big-box img.top-left,
+    .big-box img.bottom-left {
+        width: 70px; /* Reduce the size of images */
+    }
+
+    .question p {
+        font-size: 1em; /* Smaller text size for smaller screens */
+    }
+
+    button {
+        font-size: 16px; /* Smaller button text */
+        padding: 8px 15px; /* Reduce button padding */
+    }
+    #mw {
+        display: none;
+    }
+}
+
+/* Media Queries for extra small screens */
+@media only screen and (max-width: 480px) {
+    .big-box {
+        padding: 30px 10px 10px 10px; /* Further reduce padding */
+        width: 100%; /* Full width on small screens */
+    }
+
+    .big-box img.top-right,
+    .big-box img.top-left,
+    .big-box img.bottom-left {
+        width: 60px; /* Even smaller image size */
+    }
+
+    .question p {
+        font-size: 0.9em; /* Further reduce font size */
+    }
+
+    button {
+        font-size: 14px; /* Even smaller button text */
+        padding: 6px 12px; /* Smaller button padding */
+    }
+    #mw {
+        display: none;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -146,7 +178,7 @@ button:hover {
     
     <div class="big-box">
         <!-- GL image positioned inside the container -->
-        <img src="/assets/gl.png" alt="GL Icon" class="top-right">
+        <img src="/assets/gl.png" alt="GL Icon" class="top-right" style="top: 80px;">
         
         <h2><%= quiz.title %></h2>
         <p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>

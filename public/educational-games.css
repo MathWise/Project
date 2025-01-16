@@ -335,3 +335,47 @@ body {
     color: red;
 }
 
+/* Style for buttons on larger screens */
+.d-flex .btn {
+    display: inline-block;
+    margin-right: 20px;
+    text-align: center;
+}
+
+/* Media query for smaller screens (e.g., tablets and mobile devices) */
+@media (max-width: 768px) {
+    .d-flex {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .d-flex .btn {
+        margin: 10px;
+        width: 90%; /* Adjust width to make buttons fit within the screen */
+    }
+
+    .d-flex .btn img {
+        width: 80px; /* Reduce image size for smaller screens */
+        height: 80px;
+    }
+}
+@media (max-width: 768px) {
+    #game-thumbnail-img {
+        width: 100%; /* Make the thumbnail responsive */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    #game-iframe-src {
+        width: 300px; /* Smaller width for mobile */
+        height: 200px; /* Smaller height for mobile */
+    }
+
+    .newbig-box {
+        height: auto; /* Allow box to grow vertically */
+        padding: 20px; /* Optional padding for better appearance */
+    }
+
+    .mw {
+        display: none; /* Hide mw element on mobile devices */
+    }
+}

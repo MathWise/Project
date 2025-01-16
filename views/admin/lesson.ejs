@@ -338,22 +338,24 @@ if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
         const pdfUrl = `/admin/pdf/${pdfFileId}`; // URL to the PDF file
         const listItem = document.createElement('li');
         listItem.innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: space-between; position: relative;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <canvas id="thumbnail_${pdfFileId}" style="cursor: pointer; width: 50px; height: 50px;"></canvas> <!-- Canvas for the thumbnail -->
-                    <div>
-                        <strong>${pdf.pdfFileName}</strong>
-                        <span id="progress_${pdfFileId}" style="display: block; font-size: 0.9em; color: #666;">Loading progress...</span>
-                    </div>
-                </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+            <canvas id="thumbnail_${pdfFileId}" style="cursor: pointer; width: 50px; height: 50px;"></canvas> <!-- Canvas for the thumbnail -->
+            <div style="display: flex; align-items: center;">
+                <strong>${pdf.pdfFileName}</strong>
+                <!-- Kebab Menu positioned right next to PDF File Name -->
                 <div class="kebab-menu" onclick="togglePdfMenu('${pdfFileId}'); event.stopPropagation();" style="cursor: pointer; margin-left: 10px;">
                     &#x22EE;
                 </div>
-                <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                    <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
-                </div>
             </div>
-        `;
+            <span id="progress_${pdfFileId}" style="font-size: 0.9em; color: #666;">Loading progress...</span>
+        </div>
+        <div class="dropdown-menu" id="pdfMenu-${pdfFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+            <a href="#" onclick="archivePdf('${pdfFileId}'); return false;">Archive</a>
+        </div>
+    </div>
+`;
+
         pdfList.appendChild(listItem);
 
         try {
@@ -415,28 +417,26 @@ if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
 
             const listItem = document.createElement('li');
             listItem.innerHTML = `
-                <div class="video-item" style="display: flex; align-items: center; position: relative; width: 100%; margin-bottom: 20px;">
-    <!-- Video Thumbnail -->
-    <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" onclick="openVideoModal('${videoUrl}')" style="cursor: pointer;" />
+    <div class="video-item" style="display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; margin-bottom: 20px;">
+        <!-- Video Thumbnail -->
+        <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" onclick="openVideoModal('${videoUrl}')" style="cursor: pointer;" />
 
-    <!-- Video Info and Kebab Menu -->
-    <div class="video-info" style="display: flex; justify-content: space-between; align-items: center; margin-left: 20px; flex-grow: 1;">
         <!-- Video Name -->
-        <div class="video-file-name" style="font-weight: bold; color: #333; flex-grow: 1; text-align: left;">
-            ${videoFileName}
-        </div>
-
-        <!-- Kebab Menu -->
-        <div class="kebab-menu" style="position: relative; cursor: pointer;" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();">
-            &#x22EE;
-            <!-- Dropdown Menu -->
-            <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+        <div class="video-file-name" style="font-weight: bold; color: #333; text-align: center; margin-top: 5px; width: 100%; display: flex; justify-content: center; align-items: center; position: relative;">
+            <span>${videoFileName}</span>
+            <!-- Kebab Menu -->
+            <div class="kebab-menu" style="position: absolute; right: 0; cursor: pointer;" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();">
+                &#x22EE;
+                <!-- Dropdown Menu -->
+                <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                    <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+                </div>
             </div>
         </div>
+
     </div>
-</div>
-            `;
+`;
+
             videoList.appendChild(listItem);
         };
     });
