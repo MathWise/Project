@@ -2210,6 +2210,9 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
             return res.redirect('/admin/homeAdmin');
         }
 
+        // Delete all quiz results associated with this quiz
+        await QuizResult.deleteMany({ quizId });
+
         res.render('quizzes/modify-result', { quiz: updatedQuiz, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error updating quiz:', err);

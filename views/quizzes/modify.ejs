@@ -29,76 +29,115 @@
     </div>
 </div>
 
-
-    <div class="container">
-        <h1>Modify Quiz</h1>
-        <form action="/admin/quiz/modify/<%= quiz._id %>" method="POST">
-            <div>
-                <label for="title">Quiz Title:</label>
-                <input type="text" name="title" id="title" value="<%= quiz.title %>" required>
-            </div>
-
-            <div id="questions">
-                <% quiz.questions.forEach((question, index) => { %>
-                    <div class="question">
-                        <label>Question <%= index + 1 %>:</label>
-                        <input type="text" name="questions[<%= index %>][questionText]" value="<%= question.questionText %>" required>
-                        <select name="questions[<%= index %>][type]" required >
-                            <option value="multiple-choice" <% if (question.type === 'multiple-choice') { %> selected <% } %>>Multiple Choice</option>
-                            <option value="fill-in-the-blank" <% if (question.type === 'fill-in-the-blank') { %> selected <% } %>>Fill in the Blank</option>
-                        </select>
-                        <% if (question.type === 'multiple-choice') { %>
-                            <div class="choices">
-                                <% question.choices.forEach((choice, choiceIndex) => { %>
-                                    <div>
-                                        <input type="text" name="questions[<%= index %>][choices][<%= choiceIndex %>][text]" 
-                                               value="<%= choice.text %>" required>
-                                        <label>Correct?</label>
-                                        <input type="checkbox" name="questions[<%= index %>][choices][<%= choiceIndex %>][isCorrect]" 
-                                               <% if (choice.isCorrect) { %> checked <% } %>>
-                                    </div>
-                                <% }) %>
-                            </div>
-                            
-                        <% } else if (question.type === 'fill-in-the-blank') { %>
-                            <label>Correct Answer:</label>
-                            <input type="text" name="questions[<%= index %>][correctAnswer]" value="<%= question.correctAnswer %>" required>
-                        <% } %>
-                    </div>
-                <% }) %>
-            </div>
-            <button type="submit">Save Changes</button> 
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Go Back</a>
-            </div>
-
-        </form>
+  <!-- Confirmation Modal -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+        <h2>Are you sure?</h2>
+        <p>
+            Modifying this quiz will delete all existing results for this quiz. 
+            This action cannot be undone. Do you want to continue?
+        </p>
+        <button id="confirmBtn" class="btn btn-danger">Yes, Save Changes</button>
+        <button id="cancelBtn" class="btn btn-secondary">Cancel</button>
     </div>
+</div>
+
+
+<div class="container">
+    <h1>Modify Quiz</h1>
+    <form id="modifyQuizForm" action="/admin/quiz/modify/<%= quiz._id %>" method="POST">
+        <div>
+            <label for="title">Quiz Title:</label>
+            <input type="text" name="title" id="title" value="<%= quiz.title %>" required>
+        </div>
+
+        <div id="questions">
+            <% quiz.questions.forEach((question, index) => { %>
+                <div class="question">
+                    <label>Question <%= index + 1 %>:</label>
+                    <input type="text" name="questions[<%= index %>][questionText]" value="<%= question.questionText %>" required>
+                    <select name="questions[<%= index %>][type]" required>
+                        <option value="multiple-choice" <% if (question.type === 'multiple-choice') { %> selected <% } %>>
+                            Multiple Choice
+                        </option>
+                        <option value="fill-in-the-blank" <% if (question.type === 'fill-in-the-blank') { %> selected <% } %>>
+                            Fill in the Blank
+                        </option>
+                    </select>
+                    <% if (question.type === 'multiple-choice') { %>
+                        <div class="choices">
+                            <% question.choices.forEach((choice, choiceIndex) => { %>
+                                <div>
+                                    <input type="text" name="questions[<%= index %>][choices][<%= choiceIndex %>][text]" 
+                                           value="<%= choice.text %>" required>
+                                    <label>Correct?</label>
+                                    <input type="checkbox" name="questions[<%= index %>][choices][<%= choiceIndex %>][isCorrect]" 
+                                           <% if (choice.isCorrect) { %> checked <% } %>>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else if (question.type === 'fill-in-the-blank') { %>
+                        <label>Correct Answer:</label>
+                        <input type="text" name="questions[<%= index %>][correctAnswer]" value="<%= question.correctAnswer %>" required>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
+        <button type="button" id="saveChangesBtn">Save Changes</button> <!-- Trigger modal -->
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="/admin/activities/<%= roomId %>" class="btn btn-primary">Go Back</a>
+        </div>
+    </form>
+</div>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const modal = document.getElementById("errorModal");
+        // Error Modal Logic
+        const errorModal = document.getElementById("errorModal");
         const closeBtn = document.querySelector(".modal .close");
 
         <% if (errors && errors.length > 0) { %>
-            // Show modal if there are errors
-            modal.style.display = "block";
+            errorModal.style.display = "block";
         <% } %>
 
-        // Close modal on clicking the "X" button
-        closeBtn.addEventListener("click", () => {
-            modal.style.display = "none";
+        if (closeBtn) {
+            closeBtn.addEventListener("click", () => {
+                errorModal.style.display = "none";
+            });
+        }
+
+        window.addEventListener("click", (event) => {
+            if (event.target === errorModal) {
+                errorModal.style.display = "none";
+            }
         });
 
-        // Close modal when clicking outside the modal
+        // Confirmation Modal Logic
+        const confirmModal = document.getElementById("confirmModal");
+        const saveChangesBtn = document.getElementById("saveChangesBtn");
+        const confirmBtn = document.getElementById("confirmBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        const form = document.getElementById("modifyQuizForm");
+
+        saveChangesBtn.addEventListener("click", () => {
+            confirmModal.style.display = "block";
+        });
+
+        confirmBtn.addEventListener("click", () => {
+            form.submit(); // Submit the form if user confirms
+        });
+
+        cancelBtn.addEventListener("click", () => {
+            confirmModal.style.display = "none"; // Close modal on cancel
+        });
+
         window.addEventListener("click", (event) => {
-            if (event.target === modal) {
-                modal.style.display = "none";
+            if (event.target === confirmModal) {
+                confirmModal.style.display = "none";
             }
         });
     });
 </script>
-
 <style>
     .modal {
         display: none; /* Hidden by default */
