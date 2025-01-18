@@ -371,63 +371,81 @@ body {
         cursor: pointer;
     }
 
-        /* Full-screen modal styling */
-        #pdfModal {
-            display: none;
-            position: fixed;
-            z-index: 9999;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            
-        }
+      /* Full-screen modal styling */
+#pdfModal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    overflow: auto; /* Allow modal content to scroll */
+}
 
-        #pdfModal .modal-content {
-            position: relative;
-            width: 90%;
-            height: 90%;
-            margin: auto;
-            padding: 20px;
-            background-color: white;
-            
-        }
-    
-        #pdfModal .close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 30px;
-            color: black;
-            cursor: pointer;
-        }
-        .arrow-box-container {
-            text-align: right; /* Align the arrow box to the right */
-            padding: 20px;
-        }
-        
-        .arrow-text {
-            display: inline-block;
-            position: relative;
-            padding: 10px 20px;
-            background-color: #1e90ff; /* Arrow body color */
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            margin-right: 20px; /* Add some margin from the right edge */
-        }
-        
-        .arrow-text::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-          
-            transform: translateY(-50%); /* Center the arrow vertically */
-            border-width: 10px;
-            border-style: solid;
-            border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
-        }
+#pdfModal .modal-content {
+    position: absolute;  /* Make the modal content position absolute */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Shift the content by 50% of its size to center it */
+    width: 90%;  /* Adjust the width as needed */
+    height: 90%; /* Adjust the height as needed */
+    padding: 10px;
+    background-color: white;
+    overflow: hidden;
+}
+
+#pdfViewer {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+#pdfModal .close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 30px;
+    color: black;
+    cursor: pointer;
+}
+@media (max-width: 768px) {
+    #pdfModal .modal-content {
+        width: 95%;
+        height: 80%;
+    }
+}
+.arrow-box-container {
+    position: fixed;
+    bottom: 20px; /* Adjust the distance from the bottom */
+    right: 20px;  /* Adjust the distance from the right */
+    padding: 20px;
+    text-align: right;
+    z-index: 9999; /* Make sure it stays on top of other content */
+}
+
+.arrow-text {
+    display: inline-block;
+    position: relative;
+    padding: 10px 20px;
+    background-color: #1e90ff; /* Arrow body color */
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-right: 20px; /* Add some margin from the right edge */
+}
+
+.arrow-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Center the arrow vertically */
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
+}
+
         .rounded-sidebar {
             border-radius: 15px; /* Adjust the radius as needed */
         }
@@ -438,6 +456,9 @@ body {
             border-radius: 5px; /* Round the corners of the Lesson button */
             display: block;
         }
+
+
+        
       /* Styling for the video inside the modal */
       video {
         display: block;
@@ -524,6 +545,83 @@ body {
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
+}
+
+/* Media query for tablets and smaller screens */
+@media (max-width: 1024px) {
+    #videoModal {
+        width: 80%; /* Reduce modal width */
+        padding: 15px; /* Adjust padding */
+    }
+
+    #videoModal button {
+        font-size: 1.5rem; /* Slightly smaller close button */
+    }
+
+    #videoViewer {
+        max-width: 80%; /* Reduce maximum width */
+        max-height: 70vh; /* Adjust height to fit better */
+    }
+
+    #videoViewer video {
+        max-height: 70%; /* Further limit the video size */
+    }
+}
+
+/* Media query for mobile devices */
+@media (max-width: 768px) {
+    #videoModal {
+        width: 95%; /* Make modal almost full-width */
+        padding: 10px; /* Adjust padding for smaller screens */
+        border-radius: 5px; /* Reduce corner radius */
+    }
+
+    #videoModal button {
+        font-size: 1.2rem; /* Smaller close button */
+        top: 10px; /* Adjust position */
+        right: 10px;
+    }
+
+    #videoViewer {
+        max-width: 100%; /* Use full width */
+        max-height: 60vh; /* Reduce max height */
+    }
+
+    #videoViewer video {
+        max-width: 95%; /* Ensure the video fits within the modal */
+        max-height: 60vh;
+    }
+
+    .video-controls {
+        bottom: 5px; /* Adjust control placement */
+    }
+}
+
+/* Media query for very small screens (extra-small devices) */
+@media (max-width: 480px) {
+    #videoModal {
+        width: 100%; /* Use full width */
+        padding: 5px; /* Minimize padding */
+        border-radius: 0; /* Remove rounded corners */
+    }
+
+    #videoModal button {
+        font-size: 1rem; /* Smaller close button */
+    }
+
+    #videoViewer {
+        max-width: 100%; /* Full width */
+        max-height: 50vh; /* Adjust height for extra-small screens */
+    }
+
+    #videoViewer video {
+        max-height: 50vh; /* Limit video size further */
+    }
+
+    .video-controls {
+        bottom: 5px; /* Minimal space for controls */
+        transform: translateX(-50%); /* Keep centered */
+    }
 }
         
 /* Adjust dropdown menu styling to align with existing layout */

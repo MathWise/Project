@@ -169,8 +169,16 @@
                             <div id="pdfModal" class="modal" style="display: none;">
                                 <div class="modal-content">
                                     <span class="close" onclick="closePdfModal()">&times;</span>
-                                        <iframe id="pdfViewer" src="" width="100%" height="100%"></iframe>
+                                    <div id="pageNumberDisplay" style="text-align: center; font-size: 16px; margin-bottom: 10px;">
+                                        Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
+                                    </div>
+                                    <div id="pdfViewer" style="width: 100%; height: 100%; overflow: auto;"></div>
                                 </div>
+
+                                <div style="text-align: center; margin-top: 10px;">
+                                    <button id="prevPageBtn" class="btn btn-primary">Previous</button>
+                                    <button id="nextPageBtn" class="btn btn-primary">Next</button>
+                                    </div>
                                 <div class="arrow-box-container">
                                     <a href="/admin/activities/<%= room._id %>" class="arrow-text">Would you like to take a Quiz?</a>
                                 </div>
@@ -513,61 +521,132 @@ async function renderPdfThumbnail(pdfUrl, pdfFileId, pdfFileName) {
     }
 }
 
-             // Function to open the PDF modal and track progress by scrolling
-             function openPdfModal(pdfUrl, pdfFileId, userId) {
-                // Display the modal with the PDF content
-                const pdfViewer = document.getElementById("pdfViewer");
-                pdfViewer.src = pdfUrl;
-                document.getElementById("pdfModal").style.display = "block";
-    
-                // Save initial progress as 100% upon opening if it’s not already full
-                savePdfProgress(userId, pdfFileId, 100);
-    
-                // Track scroll progress within the modal
-                pdfViewer.onload = function () {
-                    const scrollHandler = () => {
-                        const totalHeight = pdfViewer.contentDocument.documentElement.scrollHeight - pdfViewer.clientHeight;
-                        const scrolled = pdfViewer.contentDocument.documentElement.scrollTop;
-                        const progress = Math.min((scrolled / totalHeight) * 100, 100); // Cap at 100%
-    
-                        // Save and update display if scrolled to 100%
-                        if (progress === 100) {
-                            savePdfProgress(userId, pdfFileId, 100).then(() => {
-                                pdfViewer.removeEventListener('scroll', scrollHandler);
-                            });
-                        }
-                    };
-    
-                    // Attach the scroll event handler to track progress
-                    pdfViewer.contentDocument.addEventListener('scroll', scrollHandler);
-                };
-            }
-    
-            // Function to close the PDF modal
-            function closePdfModal() {
-                document.getElementById("pdfModal").style.display = "none";
-                document.getElementById("pdfViewer").src = ""; // Clear src to stop loading
-            }
+let pdfDoc = null;
+let currentPage = 1; // Initialize current page
+let totalPages = 0;  // Initialize total pages
 
-            // Function to send PDF progress to the server and update display in real-time
-            function savePdfProgress(userId, pdfFileId, progress) {
-                return fetch('/admin/lesson/pdf-progress', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId, pdfFileId, progress })
-                })
-                .then(response => response.ok ? response.json() : Promise.reject('Failed to save progress'))
-                .then(data => {
-                    if (data.success) {
-                        // Update the progress display in the list immediately
-                        const progressElement = document.getElementById(`progress_${pdfFileId}`);
-                        if (progressElement) {
-                            progressElement.textContent = `Progress: ${progress}%`;
-                        }
-                    }
-                })
-                .catch(error => console.error('Error saving progress:', error));
+// Function to open the PDF modal and track progress by scrolling
+function openPdfModal(pdfUrl, pdfFileId, userId) {
+    console.log("Opening PDF Modal...");
+    console.log("PDF URL:", pdfUrl);
+
+    const pdfViewer = document.getElementById("pdfViewer");
+    pdfViewer.src = pdfUrl;
+
+    // Make sure the modal is visible
+    document.getElementById("pdfModal").style.display = "block";
+    
+    // Save initial progress as 100% upon opening if it’s not already full
+    savePdfProgress(userId, pdfFileId, 100);
+
+    // Load the PDF
+    pdfjsLib.getDocument(pdfUrl).promise.then(function(doc) {
+        pdfDoc = doc;
+        totalPages = pdfDoc.numPages;
+        document.getElementById("totalPages").textContent = totalPages;
+
+        // Render the first page
+        renderPage(currentPage);
+
+        // Track scroll progress within the modal
+        pdfViewer.onload = function () {
+            const scrollHandler = () => {
+                const modalContent = document.querySelector('#pdfModal .modal-content');
+                const totalHeight = modalContent.scrollHeight - modalContent.clientHeight;
+                const scrolled = modalContent.scrollTop;
+                const progress = Math.min((scrolled / totalHeight) * 100, 100); // Cap at 100%
+
+                // Save and update display if scrolled to 100%
+                if (progress === 100) {
+                    savePdfProgress(userId, pdfFileId, 100).then(() => {
+                        modalContent.removeEventListener('scroll', scrollHandler);
+                    });
+                }
+            };
+
+            document.querySelector('#pdfModal .modal-content').addEventListener('scroll', scrollHandler);
+        };
+    }).catch(function(error) {
+        console.log("Error loading PDF:", error);
+    });
+
+    pdfViewer.onerror = function () {
+        console.log("Error loading PDF file.");
+        alert("There was an error loading the PDF.");
+    };
+}
+
+// Render a specific page
+function renderPage(pageNum) {
+    pdfDoc.getPage(pageNum).then(function(page) {
+        console.log("Rendering page:", pageNum);
+
+        const scale = 2.0;  // Adjust scale to ensure the page fits well on screen
+        const viewport = page.getViewport({ scale: scale });
+
+        // Set up the canvas for rendering
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const pdfViewer = document.getElementById("pdfViewer");
+        pdfViewer.innerHTML = '';  // Clear any previous content
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+        pdfViewer.appendChild(canvas);
+
+        // Render the page
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: viewport
+        };
+        page.render(renderContext);
+
+        // Update the current page number
+        document.getElementById("currentPage").textContent = pageNum;
+    });
+}
+
+// Function to go to the next page
+function nextPage() {
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPage(currentPage);
+    }
+}
+
+// Function to go to the previous page
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPage(currentPage);
+    }
+}
+document.getElementById('nextPageBtn').addEventListener('click', nextPage);
+document.getElementById('prevPageBtn').addEventListener('click', prevPage);
+// Function to close the PDF modal
+function closePdfModal() {
+    document.getElementById("pdfModal").style.display = "none";
+    document.getElementById("pdfViewer").src = ""; // Clear src to stop loading
+}
+
+// Function to send PDF progress to the server and update display in real-time
+function savePdfProgress(userId, pdfFileId, progress) {
+    return fetch('/user/lesson/pdf-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, pdfFileId, progress })
+    })
+    .then(response => response.ok ? response.json() : Promise.reject('Failed to save progress'))
+    .then(data => {
+        if (data.success) {
+            // Update the progress display in the list immediately
+            const progressElement = document.getElementById(`progress_${pdfFileId}`);
+            if (progressElement) {
+                progressElement.textContent = `Progress: ${progress}%`;
             }
+        }
+    });
+}
+
             function openVideoModal(videoUrl) {
             const modalVideo = document.getElementById("modalVideo");
             const videoSource = document.getElementById("videoSource");
