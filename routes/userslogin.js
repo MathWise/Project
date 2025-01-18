@@ -7,7 +7,32 @@ const sendEmail = require('../routes/emailService');
 
 
 
-router.post('/login', async (req, res, next) => {
+// Rate limiter for login route
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,  // 15-minute window
+    max: 5,  // Limit each IP to 5 login attempts per windowMs
+    message: 'Too many login attempts from this IP, please try again after 15 minutes.'
+});
+
+router.post('/login',loginLimiter, async (req, res, next) => {
+
+    const { email, password } = req.body;
+
+    // Server-side validation for email and password length
+    if (!email || email.length > 255) {
+        return res.redirect('/login?error=Email is too long. Maximum length is 255 characters.');
+    }
+
+    if (!password || password.length < 5 || password.length > 64) {
+        return res.redirect('/login?error=Password must be between 8 and 64 characters.');
+    }
+
+       // Validate password for special characters (at least one special character required)
+       const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+       if (!specialCharRegex.test(password)) {
+           return res.redirect('/login?error=Password must contain at least one special character.');
+       }
+       
     passport.authenticate('local', async (err, user, info) => {
         if (err) {
             console.error('Error during authentication:', err);

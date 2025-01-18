@@ -212,21 +212,48 @@ function validateLessonSelection() {
     return true;
 }
 
-// Attach validation to the Create Room form
 document.addEventListener("DOMContentLoaded", () => {
     const createRoomForm = document.querySelector("#createRoomModal form");
 
     if (createRoomForm) {
-        createRoomForm.addEventListener("submit", (event) => {
-            if (!validateLessonSelection()) {
-                event.preventDefault(); // Prevent form submission if validation fails
-            } else {
-                // Show loading overlay if validation passes
-                document.getElementById("loadingOverlay").style.display = "flex";
+        createRoomForm.addEventListener("submit", async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            if (!validateLessonSelection()) return; // Stop if validation fails
+
+            // Show loading overlay
+            document.getElementById("loadingOverlay").style.display = "flex";
+
+            // Collect form data
+            const formData = new FormData(createRoomForm);
+            const data = Object.fromEntries(formData.entries());
+            data.lessons = formData.getAll("lessons[]"); // Handle multiple lessons
+
+            try {
+                const response = await fetch(createRoomForm.action, {
+                    method: createRoomForm.method,
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                document.getElementById("loadingOverlay").style.display = "none";
+
+                if (response.ok && result.success) {
+                    alert(result.message || "Room created successfully!");
+                    window.location.reload(); // Refresh the page to show changes
+                } else {
+                    alert(result.message || "Failed to create room.");
+                }
+            } catch (error) {
+                console.error("Error creating room:", error);
+                document.getElementById("loadingOverlay").style.display = "none";
+                alert("An unexpected error occurred.");
             }
         });
     }
 });
+
 
 
 

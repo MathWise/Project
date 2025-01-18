@@ -65,7 +65,10 @@
                             <!-- Password field with toggle visibility functionality -->
                             <div class="form-group mb-2" style="font-size: 15px;">
                                 <div class="input-group">
-                                    <input type="password" id="password" name="password" class="form-control small-input" placeholder="Password" required oninput="validatePassword(this)">
+                                    <input type="password" id="password" name="password" class="form-control small-input" placeholder="Password" required minlength="8" maxlength="64"
+                                    pattern="^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;,.?/-]*$"
+                                    title="Password must only contain alphanumeric characters and the following special characters: ! @ # $ % ^ & * ( ) _ + = { } [ ] : ; , . ? / -"
+                                     oninput="validatePassword(this)">
                                     <span class="input-group-text" style="cursor:pointer;" onclick="togglePasswordVisibility('password', 'togglePasswordIcon')">
                                         <i class="bi bi-eye" id="togglePasswordIcon"></i>
                                     </span>
@@ -75,7 +78,9 @@
                             <!-- Confirm password field with toggle visibility functionality -->
                             <div class="form-group mb-2" style="font-size: 15px;">
                                 <div class="input-group">
-                                    <input type="password" id="password2" class="form-control small-input" placeholder="Confirm Password" required>
+                                    <input type="password" id="password2" class="form-control small-input" placeholder="Confirm Password" required minlength="8" maxlength="64"
+                                    pattern="^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;,.?/-]*$"
+                                    title="Password must only contain alphanumeric characters and the following special characters: ! @ # $ % ^ & * ( ) _ + = { } [ ] : ; , . ? / -">
                                     <span class="input-group-text" style="cursor:pointer;" onclick="togglePasswordVisibility('password2', 'toggleConfirmPasswordIcon')">
                                         <i class="bi bi-eye" id="toggleConfirmPasswordIcon"></i>
                                     </span>
@@ -159,7 +164,7 @@
             var isValid = passwordRegex.test(password);
 
             if (!isValid) {
-                input.setCustomValidity("Password must contain at least one uppercase letter, one lowercase letter, 8characterone number, and one special character.");
+                input.setCustomValidity("Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
             } else {
                 input.setCustomValidity("");
             }

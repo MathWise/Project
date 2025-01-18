@@ -22,22 +22,16 @@ const mime = require('mime-types');
 router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
     const { name, gradeLevel, teacherName, email, roomPassword, lessons } = req.body;
 
-    // Basic Validation for required fields
     if (!name || !gradeLevel || !teacherName || !email || !roomPassword) {
-        req.flash('error', 'All fields are required to create a room.');
-        return res.redirect('/admin/homeAdmin');
+        return res.status(400).json({ success: false, message: 'All fields are required to create a room.' });
     }
 
-    // Validate email format
     if (!/\S+@\S+\.\S+/.test(email)) {
-        req.flash('error', 'Invalid email address.');
-        return res.redirect('/admin/homeAdmin');
+        return res.status(400).json({ success: false, message: 'Invalid email address.' });
     }
 
-    // Validate selected lessons
     if (!Array.isArray(lessons) || lessons.length === 0) {
-        req.flash('error', 'Please select at least one lesson.');
-        return res.redirect('/admin/homeAdmin');
+        return res.status(400).json({ success: false, message: 'Please select at least one lesson.' });
     }
 
     const session = await mongoose.startSession();
@@ -1206,8 +1200,7 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
             }
         }
 
-        req.flash('success', 'Room, default quizzes, and selected lessons created successfully!');
-        res.redirect('/admin/homeAdmin');
+        return res.json({ success: true, message: 'Room created successfully!', roomId: newRoom._id });
     } catch (err) {
         console.error('Error creating room and associated resources:', err);
 
@@ -1218,8 +1211,10 @@ router.post('/homeAdmin', ensureAdminLoggedIn, async (req, res) => {
         }
 
     
-        req.flash('error', 'Error creating room and associated resources. Please try again.');
-        res.redirect('/admin/homeAdmin');
+        return res.status(500).json({
+            success: false,
+            message: 'An error occurred while creating the room. Please try again.',
+        });
     } finally {
         session.endSession();
     }

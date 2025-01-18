@@ -31,7 +31,7 @@
                                 <div class="modal-dialog modal-dialog-centered"> <!-- Add 'modal-dialog-centered' here -->
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5 class="modal-title" id="notificationModalLabel">Error</h5>
+                                            <h5 class="modal-title" id="notificationModalLabel"></h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body">
@@ -49,10 +49,16 @@
                 <div class="col-lg-6">
                     <form action="/login" method="post" id="loginForm">
                         <div class="form-group mb-3">
-                            <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+                            <input type="email" id="email" name="email" class="form-control" placeholder="Email" 
+                                   required maxlength="255" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                   title="Please enter a valid email address.">
                         </div>
                         <div class="form-group mb-3 position-relative">
-                            <input type="password" id="password" name="password" class="form-control" placeholder="Enter Password" required>
+                            <input type="password" id="password" name="password" class="form-control" 
+                              placeholder="Enter Password" required minlength="5" maxlength="64"
+                              pattern="^[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;,.?/-]*$"
+                            title="Password must only contain alphanumeric characters and the following special characters: ! @ # $ % ^ & * ( ) _ + = { } [ ] : ; , . ? / -">
+
                             <span class="toggle-password position-absolute end-0 top-0 mt-2 me-3" style="cursor: pointer;">
                                 <i class="bi bi-eye" id="togglePasswordIcon"></i>
                             </span>
@@ -74,23 +80,7 @@
         </div>
     </div>
     
-        <!-- Modal for Notifications -->
-<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="notificationModalLabel">Notification</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Content will be dynamically injected by JavaScript -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -122,6 +112,20 @@
 
         // Show loading overlay when the form is submitted
         loginForm.addEventListener('submit', () => {
+            const emailField = document.getElementById('email');
+        const passwordField = document.getElementById('password');
+
+        if (emailField.value.length > 255) {
+            alert("Email is too long. Maximum length is 255 characters.");
+            event.preventDefault();
+            return;
+        }
+
+        if (passwordField.value.length < 5 || passwordField.value.length > 64) {
+            alert("Password must be between 8 and 64 characters.");
+            event.preventDefault();
+            return;
+        }
             loadingOverlay.style.display = 'flex';
         });
 
@@ -152,6 +156,7 @@
 };
 
     </script>
+    
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {

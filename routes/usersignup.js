@@ -32,9 +32,25 @@ router.get('/login', (req, res) => {
 });
 
 // POST route for handling signup form submission
-router.post('/signup', async (req, res) => {
+router.post('/signup',[check('first_name').notEmpty().withMessage('First name is required'),
+    check('last_name').notEmpty().withMessage('Last name is required'),
+    check('email').isEmail().withMessage('Please provide a valid email address'),
+    check('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
+                      .matches(/[a-zA-Z0-9!@#$%^&*()_+={}\[\]:;,.?/-]/).withMessage('Password contains invalid characters'),
+    check('age').isNumeric().withMessage('Age must be a number').optional(),
+    ] ,async (req, res) => {
     const { first_name, last_name, grade, section, email, age, password } = req.body;
 
+     // Validate input data
+     const errors = validationResult(req);
+     if (!errors.isEmpty()) {
+         // If validation fails, redirect back with the error messages
+         const errorMessage = errors.array().map(err => err.msg).join(', ');
+         return res.redirect(`/signup?error=${encodeURIComponent(errorMessage)}&userData=${encodeURIComponent(
+             JSON.stringify({ first_name, last_name, grade, section, email, age })
+         )}`);
+     }
+     
     try {
         // Check if a user with the same email already exists
         const existingUser = await User.findOne({ email });
