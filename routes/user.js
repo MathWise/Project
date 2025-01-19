@@ -26,6 +26,7 @@ const Activity = require('../models/activityM.js');
 const { archiveItem, cascadeArchive, cascadeUnarchive, cascadeDelete } = require('../utils/archiveHelper');
 
 
+
 // Route to grant access to a specific room
 router.post('/grant-access/:roomId', ensureLoggedIn, (req, res) => {
     const { roomId } = req.params;
@@ -85,6 +86,10 @@ router.get('/dashboard/:roomId', ensureStudentLoggedIn, async (req, res) => {
             return res.redirect('/user/homeUser');
         }
 
+        if (!mongoose.Types.ObjectId.isValid(roomId)) {
+            req.flash('error', 'Invalid Room ID.');
+            return res.redirect('/user/homeUser');
+        }
 
         // Fetch the latest PDF completion progress
         const latestCompletedPdfProgress = await PdfProgress.findOne({ userId, progress: 100 })
@@ -196,16 +201,66 @@ router.get('/dashboard/:roomId', ensureStudentLoggedIn, async (req, res) => {
             })
         );
 
+        const userQuizResults = await QuizResult.find({ userId })
+        .populate({
+            path: 'quizId',
+            select: 'title',
+        })
+        .sort({ submittedAt: -1 })
+        .lean();
+    
+
         quizAnalytics.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-        res.render('user/dashboard', { room, quizAnalytics, latestPdf, latestVideo, latestCompletedPdf, latestQuiz });
+        res.render('user/dashboard', { room, quizAnalytics, latestPdf, latestVideo, latestCompletedPdf, latestQuiz, userQuizResults  });
         
     } catch (err) {
-
+        console.error('Error accessing the dashboard:', err);
         req.flash('error', 'Error accessing the dashboard.');
         res.redirect('/user/homeUser');
     }
 });
+
+// Get quiz result details for a specific result ID
+router.get('/quiz/results/:id', ensureStudentLoggedIn, async (req, res) => {
+    const { id } = req.params;
+    const userId = new mongoose.Types.ObjectId(req.user._id);
+    
+
+    try {
+        // Fetch the quiz result by ID
+        const quizResult = await QuizResult.findById(id).populate({
+            path: 'quizId',
+            select: 'title roomId questions', // Include roomId
+        });
+
+        
+        if (!quizResult) {
+            req.flash('error', 'Quiz result not found.');
+            return res.redirect('/user/homeUser');
+        }
+        // Ensure roomId exists in the quiz and fetch the ActivityRoom
+        const quiz = quizResult.quizId;
+        if (!quiz.roomId) {
+            req.flash('error', 'Quiz does not have an associated room.');
+            return res.redirect('/user/homeUser');
+        }
+
+        const activityRoom = await ActivityRoom.findById(quiz.roomId).lean();
+        if (!activityRoom) {
+            req.flash('error', 'Activity room not found.');
+            return res.redirect('/user/homeUser');
+        }
+
+        // Render the quiz result details page
+        res.render('user/quizResultDetails', { quizResult, roomId: activityRoom.roomId });
+    } catch (err) {
+        console.error('Error fetching quiz result:', err);
+        req.flash('error', 'Error fetching quiz result.');
+        res.redirect('/user/homeUser');
+    }
+});
+
 
 //end of user dashboard --------------------------------------------------------------------------
 

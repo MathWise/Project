@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 
 const quizResultSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
-    quizId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'QuizActivity' },
+    quizId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Quiz' },
     answers: [{
         questionId: { type: mongoose.Schema.Types.ObjectId, required: true },
         questionText: { type: String, required: true },

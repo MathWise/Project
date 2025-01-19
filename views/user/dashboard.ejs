@@ -88,18 +88,47 @@
                         </nav>
                     </aside>
         
-                    <!-- Main Content Area -->
-                    <main class="col-md-9 col-12 bg-main section">
-                        <!-- <div class="big-box1 p-3 bg-main section d-flex justify-content-center align-items-center">
-                            <img src="/assets/girl.png" alt="Girl" class="girl-image img-fluid">
-                            
-                        </div> -->
+                        
+            <!-- Main Content Area -->
+            <main class="col-md-9 col-12 bg-main section">
+                <!-- Test Results Section -->
+                <section class="test-results my-4">
+                    <h2>Your Test Results</h2>
+                    <!-- Scrollable Table -->
+                    <div class="table-container">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Quiz Title</th>
+                                    <th>Score</th>
+                                    <th>Submitted At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% if (userQuizResults && userQuizResults.length > 0) { %>
+                                    <% userQuizResults.forEach(result => { %>
+                                        <tr>
+                                            <td><%= result.quizId?.title || 'Untitled Quiz' %></td>
+                                            <td><%= result.score %></td>
+                                            <td><%= new Date(result.submittedAt).toLocaleString() %></td>
+                                            <td>
+                                                <!-- Updated URL -->
+                                                <a href="/user/quiz/results/<%= result._id %>" class="btn btn-primary btn-sm">View Details</a>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                <% } else { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center">No test results available.</td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
 
-                      
-                        
-                        
-                    </main>
-                    
         
                     <!-- Right Sidebar -->
                     <aside class="col-md-2 col-12 section p-0">
@@ -237,5 +266,25 @@
 </script>
     
     <script src="/js/dashboard.js"></script>
+
+    <!-- Add Custom CSS -->
+<style>
+    .test-results h2,
+    .test-results table {
+        color: white;
+    }
+
+    .test-results td, .test-results th {
+        color: white;
+    }
+
+    /* Add this to your stylesheet or inside <style> tag */
+.table-container {
+    max-height: 400px;  /* Adjust the height as needed */
+    overflow-y: auto;   /* Make the table scrollable vertically */
+}
+
+</style>
+
 </body>
 </html>
