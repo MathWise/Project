@@ -23,7 +23,7 @@
             <!-- Greetings in the Center -->
             <div class="col-md-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    <br> Welcome to <%= room.name %>
+                    <br> Hello, Student! Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -63,14 +63,14 @@
                         </a>
                     </li>
                     <li style="margin-bottom: 35px;">
-                        <a href="/user/activities/<%= room._id %>" class="text-dark activities-button">
+                        <a href="/user/activities/<%= room._id %>" class="text-dark">
                             <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
                             <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                             Activities
                         </a >
                     </li>
                     <li style="margin-bottom: 35px;">
-                        <a href="/user/educGames/<%= room._id %>" class="text-dark">
+                        <a href="/user/educGames/<%= room._id %>" class="text-dark game-button" style="font-weight: bold;">
                             <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
                             Educational Games
                         </a>
@@ -256,8 +256,8 @@ function toggleNewBigBox(game) {
     },
     calbomba: {
         title: "Cal & Bomba",
-        objectives: "• Solve the equations to defuse the bomb before time runs out.",
-        instructions: "1. Enter the correct answer for each equation.<br>2. Be quick before the timer runs out!",
+        objectives: "• In Cal & Bomba, you play as Cal and Bomba. Your job is to solve math problems and use percentages to figure out how far the cannon should fire. After solving the math, you will use tools to change the cannon’s power and direction. Then, you fire the cannon and try to hit the target. Each level gets harder, and you will need to solve more math problems to move to the next level.",
+        instructions: "1. <b> Start:</b> Choose a level and get ready to solve math problems.<br>2. <b> Calculate Percentages:</b> Solve the math problem to find the right percentage (for example, 50% of the cannon’s power)<br>3. <b> Adjust the Cannon:</b> Use the tools to change the cannon’s strength or angle.<br> 4. <b>Fire the Cannon:</b> After adjusting, fire and see if you hit the target!<br>5. <b>Progress:</b> If you hit the target, move to the next level. If not, try again with new calculations.",
         thumbnail: "/assets/cbth.png",
         iframeSrc: "https://itch.io/embed/2485333",
         link: "https://filiokusgames.itch.io/cal-bomba"

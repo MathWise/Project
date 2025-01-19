@@ -11,11 +11,28 @@
     >
     <style>
         body {
-            background-color: #f8f9fa;
-            font-family: 'Arial', sans-serif;
-        }
+            background-color: #E0F4F9;
+    font-family: 'Baloo 2', cursive; 
+    background-image: url('/assets/bg.png');
+    background-repeat: no-repeat;    
+    background-size: cover;         
+    background-position: center;   
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;                 
+    margin: 0;                     
+    position: relative;
+    color: #000000;
+    font-weight: bold;
+}
         .container {
             margin-top: 40px;
+            background-image: url('/assets/mr.png');
+            background-size: cover;
+            background-position: center;
+            padding: 20px;
+            border-radius: 8px;;
         }
         .card {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -31,9 +48,89 @@
             border: none;
             padding: 15px 10px;
         }
+        #logo {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+
+        #mw {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            width: 120px; 
+        }
+        @media (max-width: 768px) {
+    body {
+        background-size: contain; /* Adjust background size on smaller screens */
+        height: auto; /* Allow height to adjust */
+        padding: 10px; /* Add some padding for better spacing */
+    }
+
+    .container {
+        margin-top: 20px; /* Reduce margin */
+        padding: 15px; /* Adjust padding */
+    }
+
+    .card {
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Lighter shadow for smaller screens */
+    }
+
+    .btn-primary {
+        padding: 10px 20px; /* Adjust button padding */
+        font-size: 0.9rem; /* Adjust button font size */
+    }
+
+    ul.list-group li {
+        padding: 12px 8px; /* Adjust padding for list items */
+    }
+
+    #logo,
+    #mw {
+        display: none; 
+    }
+
+}
+
+@media (max-width: 576px) {
+    body {
+        background-size: cover; /* Keep full background size on extra small screens */
+        padding: 5px; /* Reduce padding */
+    }
+
+    .container {
+        margin-top: 15px; /* Reduce top margin */
+        padding: 10px; /* Smaller padding */
+    }
+
+    .card {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Even lighter shadow for extra small screens */
+    }
+
+    .btn-primary {
+        padding: 8px 16px; /* Adjust button size */
+        font-size: 0.8rem; /* Smaller button font */
+    }
+
+    ul.list-group li {
+        padding: 10px 6px; /* Smaller padding for list items */
+    }
+    
+    #logo,
+    #mw {
+        display: none; 
+    }
+}
     </style>
 </head>
 <body>
+     <!-- Top-left logo -->
+     <img src="/assets/logo.png" id="logo" alt="Logo">
+
+     <!-- Bottom-left logo -->
+     <img src="/assets/mw.png" id="mw" alt="MW Logo">
+ 
     <div class="container">
         <!-- Quiz Title Card -->
         <div class="card mb-4">

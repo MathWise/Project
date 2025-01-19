@@ -72,6 +72,26 @@
             left: 10px;
             width: 120px; 
         }
+
+        @media (max-width: 768px) {
+    body {
+        background-image: url('/assets/bg-mobile.png'); /* Use a different background for mobile */
+        background-size: cover; /* Ensure full coverage */
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+
+    .container {
+        padding: 15px;
+        background-size: contain; /* Adjust background image */
+    }
+    #logo,
+    #mw {
+        display: none; 
+    }
+}
+
     </style>
 </head>
 <body>
