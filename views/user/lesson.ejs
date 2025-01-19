@@ -17,14 +17,13 @@
         <div class="upper-side row no-gutters p-3 align-items-center fixed-header">
             <!-- Logo on the Top Left -->
             <div class="col-md-4 col-4 d-flex align-items-center">
-                <img src="/assets/logo.png" alt="Logo" class="img-fluid" style="width: 100px;">
+                <img src="/assets/logo.png" alt="Logo" class="img-fluid logo" style="width: 110px;">
             </div>
     
             <!-- Greetings in the Center -->
-            <div class="col-md-4 col-4 text-center">
+            <div class="col-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    <!-- Hello Teacher <%= room.teacherName %> <br> -->
-                     Hello, Student! <br> Welcome to <%= room.name %>
+                  Hello, Student! <br> Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -38,8 +37,7 @@
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu" 
                      style="display: none; top: 50px; right: 10px;">
-                    <a href="/user/homeUser">Go back</a>
-
+                    <a href="/admin/homeAdmin">Go back</a>
                     <a href="/logout">Logout</a>
                 </div>
             </div>
@@ -637,14 +635,10 @@ function savePdfProgress(userId, pdfFileId, progress) {
     const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload section
     const lessonElement = document.querySelector('.lesson'); // Lesson container to hide background
 
-    // Hide the lesson background image
-    function hideLessonBg() {
-        lessonElement.style.backgroundImage = 'none'; // Removes the background image
-    }
-
+    
     // Show the lesson background image again
     function showLessonBg() {
-        lessonElement.style.backgroundImage = 'url("/assets/classroom.png")'; // Replace with your original image URL
+        lessonElement.style.backgroundImage = 'url("/assets/cl.jpg")'; // Replace with your original image URL
     }
 
     lessonRoomItems.forEach(item => {

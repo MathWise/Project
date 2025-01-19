@@ -23,10 +23,6 @@ body {
     background-color: #E0F4F9;
 }
 
-.greeting-text {
-    font-size: 18px;
-}
-
 .form-control {
     border-radius: 10px;
 }
@@ -94,8 +90,13 @@ body {
 }
 
 @media (max-width: 768px) {
-    body {
-        padding-top: 200px; /* Adjust this value based on header height */
+    html, body {
+        height: 100%;
+        font-family: 'Baloo 2', sans-serif;
+        background-color: #E0F4F9; /* Set body background color */
+        padding-top: 45px !important; /* Adjust this value based on header height */
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden;
     }
 
     .dropdown-content {
@@ -107,8 +108,8 @@ body {
     }
 
     .fixed-header {
-        height: auto; /* Allow header to expand with content */
-        padding: 10px; /* Adjust padding for smaller screens */
+        height: auto !important; /* Allow header to expand with content */
+        padding: 10px !important; /* Adjust padding for smaller screens */
     }
 
     .logo {
@@ -146,6 +147,15 @@ body {
 }
 
 @media (max-width: 480px) {
+    html, body {
+        height: 100%;
+        font-family: 'Baloo 2', sans-serif;
+        background-color: #E0F4F9; /* Set body background color */
+        padding-top: 45px !important; /* Adjust this value based on header height */
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden;
+    }
+    
     body {
         padding-top: 200px; /* Adjust this value based on header height */
     }

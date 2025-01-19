@@ -178,6 +178,15 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    html, body {
+        height: 100%;
+        font-family: 'Baloo 2', sans-serif;
+        background-color: #E0F4F9; /* Set body background color */
+        padding-top: 45px !important; /* Adjust this value based on header height */
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden;
+    }
+
     .big-box {
         flex-direction: column; /* Stack vertically on small screens */
     }
@@ -198,8 +207,8 @@ body {
     }
 
     .fixed-header {
-        height: auto; /* Allow header to expand with content */
-        padding: 10px; /* Adjust padding for smaller screens */
+        height: auto !important; /* Allow header to expand with content */
+        padding: 10px !important; /* Adjust padding for smaller screens */
     }
 
     .logo {
@@ -234,6 +243,7 @@ body {
         width: 40px !important;
         height: 40px !important;
     }
+    
 }
 
 /* MW image style */

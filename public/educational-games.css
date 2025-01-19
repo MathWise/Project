@@ -7,49 +7,6 @@ body {
     overflow-x: hidden;
 }
 
-/* Tooltip container */
-.tooltip-container {
-    position: relative;
-    display: inline-block;
-}
-
-/* Tooltip text */
-.tooltip {
-    visibility: hidden;
-    width: 200px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    border-radius: 5px;
-    padding: 5px;
-    position: absolute;
-    z-index: 1;
-    left: 125%; /* Position to the right of the icon */
-    top: 50%;  /* Vertically center the tooltip */
-    transform: translateY(-50%); /* Center it properly */
-    opacity: 0;
-    transition: opacity 0.3s;
-    font-size: 14px;
-}
-
-/* Tooltip arrow */
-.tooltip::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: -5px;  /* Position the arrow at the left side of the tooltip */
-    transform: translateY(-50%); /* Vertically center the arrow */
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent transparent #333; /* Arrow pointing to the icon */
-}
-
-/* Show tooltip when hovering over the container */
-.tooltip-container:hover .tooltip {
-    visibility: visible;
-    opacity: 1;
-}
-
 #game {
     width: 50px;
     height: 50px;
@@ -170,10 +127,9 @@ body {
 @media (max-width: 768px) {
     html, body {
         height: 100%;
-        font-family: 'Baloo 2', sans-serif;
-        background-color: #E0F4F9; /* Set body background color */
-        padding-top: 150px; /* Adjust this value based on header height */
-        margin: 0; /* Remove default margin */
+        font-family: 'Baloo 2', sans-serif !important;
+        background-color: #E0F4F9 !important; /* Set body background color */
+        padding-top: 45px !important; /* Adjust this value based on header height */
         overflow-x: hidden;
     }
     
@@ -237,6 +193,35 @@ body {
     #educgame {
         width: 250px !important;
         height: 350px !important;
+    }
+
+    .d-flex .btn {
+        margin: 5px;
+        width: 90%; /* Adjust width to make buttons fit within the screen */
+    }
+
+    .d-flex .btn img {
+        width: 80px; /* Reduce image size for smaller screens */
+        height: 80px;
+    }
+
+    #game-thumbnail-img {
+        width: 100%; /* Make the thumbnail responsive */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    #game-iframe-src {
+        width: 300px; /* Smaller width for mobile */
+        height: 200px; /* Smaller height for mobile */
+    }
+
+    .newbig-box {
+        height: auto; /* Allow box to grow vertically */
+        padding: 20px; /* Optional padding for better appearance */
+    }
+
+    .mw {
+        display: none; /* Hide mw element on mobile devices */
     }
 }
 
@@ -340,42 +325,4 @@ body {
     display: inline-block;
     margin-right: 20px;
     text-align: center;
-}
-
-/* Media query for smaller screens (e.g., tablets and mobile devices) */
-@media (max-width: 768px) {
-    .d-flex {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    .d-flex .btn {
-        margin: 5px;
-        width: 90%; /* Adjust width to make buttons fit within the screen */
-    }
-
-    .d-flex .btn img {
-        width: 80px; /* Reduce image size for smaller screens */
-        height: 80px;
-    }
-}
-@media (max-width: 768px) {
-    #game-thumbnail-img {
-        width: 100%; /* Make the thumbnail responsive */
-        height: auto; /* Maintain aspect ratio */
-    }
-
-    #game-iframe-src {
-        width: 300px; /* Smaller width for mobile */
-        height: 200px; /* Smaller height for mobile */
-    }
-
-    .newbig-box {
-        height: auto; /* Allow box to grow vertically */
-        padding: 20px; /* Optional padding for better appearance */
-    }
-
-    .mw {
-        display: none; /* Hide mw element on mobile devices */
-    }
 }

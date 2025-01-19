@@ -7,8 +7,8 @@ body {
 }
 
 .lesson {
-    background-image: url('/assets/classroom.png');
-    background-size: contain; /* Ensures the image fits within the container without stretching */
+    background-image: url('/assets/cl.jpg');
+    background-size: cover; /* Ensures the image fits within the container without stretching */
     background-repeat: no-repeat; /* Prevents tiling of the image */
     background-position: center; /* Centers the image within the container */
     height: auto; /* Adjusts height automatically */
@@ -166,6 +166,15 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    html, body {
+        height: 100%;
+        font-family: 'Baloo 2', sans-serif;
+        background-color: #E0F4F9; /* Set body background color */
+        padding-top: 45px !important; /* Adjust this value based on header height */
+        margin: 0; /* Remove default margin */
+        overflow-x: hidden;
+    }
+
     .newbigbox {
         padding: 3%; /* Reduce padding on smaller screens */
     }
@@ -195,8 +204,9 @@ body {
     }
 
     .fixed-header {
-        height: auto; /* Allow header to expand with content */
-        padding: 10px; /* Adjust padding for smaller screens */
+        height: auto !important; /* Allow header to expand with content */
+        padding: 10px !important; /* Adjust padding for smaller screens */
+        
     }
 
     .module-button {
