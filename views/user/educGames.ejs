@@ -37,48 +37,47 @@
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu" 
                      style="display: none; top: 50px; right: 10px;">
-                    <a href="/admin/homeAdmin">Go back</a>
-                    <a href="/admin/lessonRoomArchive/<%= room._id %>">Lesson Room Archive</a>
-                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>">PDF and Video Archive</a>
-                    <a href="/admin/activitiesArchive/<%= room._id %>">Activity Archive</a>
-                    <a href="/logout">Logout</a>
+                     <a href="/user/homeUser">Go back</a>
+
+                     <a href="/logout">Logout</a>
                 </div>
             </div>
         </div>
     </div>
 
-        <div class="containers row">
-            <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
-                <nav>
-                    <ul class="list-unstyled">
-                        <li style="margin-bottom: 35px;">
-                            <a href="/admin/dashboard/<%= room._id %>" class="text-dark home-button">
-                                <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
-                            Dashboard
-                        </li>
-                        <li style="margin-bottom: 35px;">
-                            <a href="/admin/lesson/<%= room._id %>" class="text-dark lesson-button">
-                                <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
-                                Lesson
-                            </a>
-                        </li>
-                        <li style="margin-bottom: 35px;">
-                            <a href="/admin/activities/<%= room._id %>" class="text-dark">
-                                <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
-                                Activities
-                            </a >
-                        </li>
-                        <li style="margin-bottom: 35px;">
-                            <a href="/admin/educGames/<%= room._id %>" class="text-dark game-button" style="font-weight: bold;">
-                                <span class="text-dark" style="padding: 10px; display: block;"></span>
-                                <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
-                                Educational Games
-                            </a>
-                        </li>
-                        
-                    </ul>
-                </nav>
-            </aside>
+    <div class="containers row">
+        <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
+            <nav>
+                <ul class="list-unstyled">
+                    <li style="margin-bottom: 35px;">
+                        <a href="/user/dashboard/<%= room._id %>" class="text-dark">
+                            <img src="/assets/homebut.png" alt="Home Button" style="width: 60px; height: 60px; display: block; margin:  0 auto;">
+                        Dashboard
+                        </span>
+                    </li>
+                    <li style="margin-bottom: 35px;">
+                        <a href="/user/lesson/<%= room._id %>" class="text-dark">
+                            <img src="/assets/lessonbut.png" alt="Lesson Button" style="width: 60px; height: 60px; display: block; margin: 0 auto;">
+                            Lesson
+                            </span>
+                        </a>
+                    </li>
+                    <li style="margin-bottom: 35px;">
+                        <a href="/user/activities/<%= room._id %>" class="text-dark activities-button">
+                            <span class="text-dark font-weight-bold" style="padding: 10px; display: block;">
+                            <img src="/assets/activitiesbut.png" alt="Activities Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
+                            Activities
+                        </a >
+                    </li>
+                    <li style="margin-bottom: 35px;">
+                        <a href="/user/educGames/<%= room._id %>" class="text-dark">
+                            <img src="/assets/educgamesbut.png" alt="Educational Games Button" style="width: 70px; height: 70px; display: block; margin: 0 auto;">
+                            Educational Games
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
             <main class="col-md-11">
                 <div class="d-flex align-items-center mb-4">

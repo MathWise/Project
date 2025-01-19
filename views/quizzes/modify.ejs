@@ -51,6 +51,28 @@
             <input type="text" name="title" id="title" value="<%= quiz.title %>" required>
         </div>
 
+        <div>
+            <label for="deadline">Deadline:</label>
+            <input 
+            type="datetime-local" 
+            name="deadline" 
+            id="deadline" 
+            value="<%= quiz.deadline ? new Date(quiz.deadline).toISOString().split('Z')[0] : '' %>">
+            <!-- Format date for the input -->
+        </div>
+
+        <div>
+            <label for="maxAttempts">Max Attempts:</label>
+            <input 
+                type="number" 
+                name="maxAttempts" 
+                id="maxAttempts" 
+                value="<%= quiz.maxAttempts %>" 
+                min="1" 
+                max="10" 
+                required>
+        </div>
+
         <div id="questions">
             <% quiz.questions.forEach((question, index) => { %>
                 <div class="question">

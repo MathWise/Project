@@ -749,5 +749,24 @@ router.get('/quizzes/userResult/:quizId', ensureStudentLoggedIn, async (req, res
 //end of user activity-----------------------------------------------------------------------------------------
 
 
+router.get('/educGames/:roomId', ensureStudentLoggedIn, async (req, res) => {
+    const roomId = req.params.roomId;
+
+    try {
+        const room = await Room.findById(roomId);
+        if (!room) {
+            req.flash('error', 'Room not found.');
+            return res.redirect('/user/homeUser');
+        }
+
+        const lesson = await Lesson.findOne({ roomId }); // Fetch lesson associated with the room
+        res.render('user/educGames', { room, lesson }); // Pass lesson data to the view
+    } catch (err) {
+        console.error(err);
+        req.flash('error', 'Error accessing the room.');
+        res.redirect('/user/homeUser');
+    }
+});
+
 
 module.exports = router;

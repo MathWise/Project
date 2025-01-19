@@ -31,7 +31,7 @@
             <!-- Greetings in the Center -->
             <div class="col-md-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    Hello Teacher <%= room.teacherName %> <br> Welcome to <%= room.name %>
+                     <br> Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -175,7 +175,33 @@
                                     Save as Draft (Quiz will not be visible to students)
                                 </label>
                                 <br><br>
-            
+                                
+                                <!-- Quiz Settings: Timer, Attempts, Deadline -->
+                                <div id="quizSettings">
+                                    <div class="form-group">
+                                        <label for="timer">Set Timer</label>
+                                        <select class="form-control" id="timer" name="timer">
+                                            <option value="">Select Timer</option>
+                                            <option value="5">5 Minutes</option>
+                                            <option value="10">10 Minutes</option>
+                                            <option value="30">30 Minutes</option>
+                                            <option value="60">1 Hour</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <label for="maxAttempts">Maximum Attempts:</label>
+                                    <select name="maxAttempts" id="maxAttempts" required>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                        <option value="5">5</option>
+                                    </select><br><br>
+                            
+                                    <label for="deadline">Set Deadline</label>
+                                    <input type="datetime-local" id="deadline" name="deadline"><br><br>
+                                </div>
+
                                 <div id="questions">
                                     <div class="question" data-question-index="0">
                                         <label>Question 1:</label>
@@ -187,29 +213,7 @@
                                             <option value="multiple-choice">Multiple Choice</option>
                                             <option value="fill-in-the-blank">Fill in the Blank</option>
                                         </select><br>
-                                        
-                                        <div class="form-group">
-                                            <label for="timer">Set Timer</label>
-                                            <select class="form-control" id="timer" name="timer">
-                                                <option value="">select Timer</option>
-                                                <option value="5">5 Minutes</option>
-                                                <option value="10">10 Minutes</option>
-                                                <option value="30">30 Minutes</option>
-                                                <option value="60">1 Hour</option>
-                                            </select>
-                                        </div>
-                                        <label for="maxAttempts">Maximum Attempts:</label>
-                                        <select name="maxAttempts" id="maxAttempts" required>
-                                            <option value="1">1</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                        </select><br><br>
-            
-                                        <label for="deadline">Set Deadline</label>
-                                        <input type="datetime-local" id="deadline" name="deadline"><br><br>
-                                        
+                                    
                                         <div class="choices" style="display: none;">
                                             <label>Choices:</label>
                                             <div class="choice" data-choice-index="0">
@@ -226,11 +230,11 @@
                                             <input type="text" name="questions[0][correctAnswer]" required><br>
                                         </div>
             
-                                        <button type="button" class="removeQuestion btn" style="background-color: #FFDF9F; color: black;">Remove Question</button><br><br>
+                                        <button type="button" class="removeQuestion btn" style="background-color: rgb(212, 139, 97); color: black;">Remove Question</button><br><br>
                                     </div>
                                 </div>
             
-                                        <button type="button" id="addQuestion" class="btn" style="background-color: #FFDF9F; color: black;">Add Question</button><br> <br>
+                                        <button type="button" id="addQuestion" class="btn" style="background-color: #da7b2d; color: black;">Add Question</button><br> <br>
                                         <button type="submit" class="btn submit-btn">Submit Quiz</button>
                   
                             </form>

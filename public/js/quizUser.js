@@ -23,13 +23,14 @@ async function loadQuizzesForRoom(activityRoomId) {
                 const publishOption = quiz.isDraft
                                 ? `<a href="#" onclick="publishQuiz('${quiz._id}'); return false;">Publish</a>`
                 : '';
+                const maxAttempts = quiz.maxAttempts !== undefined ? quiz.maxAttempts : 'undefine'; // Display maxAttempts
                 const quizHtml = `
                     <li class="list-group-item" id="quiz-item-${quiz._id}">
                       ${isDraftLabel}
                         <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
-
+                          <p>Max Attempts: ${maxAttempts}</p>
                     </li>`;
                 quizList.insertAdjacentHTML('beforeend', quizHtml);
             });

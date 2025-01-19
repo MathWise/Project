@@ -2143,6 +2143,12 @@ router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
             req.flash('error', 'Activity room not found.');
             return res.redirect('/admin/homeAdmin');
         }
+
+         // Adjust deadline to local timezone for display
+         if (quiz.deadline) {
+            quiz.deadline = DateTime.fromJSDate(quiz.deadline).toISO({ suppressSeconds: true, includeOffset: false });
+        }
+
         res.render('quizzes/modify', { quiz,roomId: activityRoom.roomId, errors:[]});
     } catch (err) {
         console.error('Error fetching quiz for modification:', err);
@@ -2151,9 +2157,10 @@ router.get('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
+
 router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
     const { quizId } = req.params;
-    const { title, questions } = req.body;
+    const { title, questions, deadline, maxAttempts } = req.body;
     const errors = []; // Initialize an errors array
 
     try {
@@ -2169,6 +2176,10 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
             return res.render('quizzes/modify', { quiz, roomId: null, errors });
         }
 
+         // Adjust deadline to local timezone for display
+         if (quiz.deadline) {
+            quiz.deadline = DateTime.fromJSDate(quiz.deadline).toISO({ suppressSeconds: true, includeOffset: false });
+        }
         if (!questions || questions.length === 0) {
             errors.push('At least one question is required.');
         } else {
@@ -2184,30 +2195,49 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
 
                     const correctChoices = question.choices.filter(choice => choice.isCorrect);
                     if (correctChoices.length !== 1) {
-                        errors.push(`Question ${index + 1} must have exactly one correct answer.`);
+                        errors.push(`Question ${index + 1} must have exactly one correct answer or check the question type if it correctly choose.`);
                     }
                 } else if (question.type === 'fill-in-the-blank') {
                     if (!question.correctAnswer || question.correctAnswer.trim() === '') {
                         errors.push(`Question ${index + 1} must have a correct answer.`);
                     }
                 }
+                
             });
         }
 
-        if (errors.length > 0) {
-            return res.render('quizzes/modify', { quiz, roomId: activityRoom.roomId, errors });
+        // Parse deadline
+        let deadlineUTC = quiz.deadline;
+        if (deadline) {
+            deadlineUTC = DateTime.fromISO(deadline, { zone: 'Asia/Manila' }).toUTC().toJSDate();
+            if (isNaN(deadlineUTC)) {
+                errors.push('Invalid deadline format. Please enter a valid date.');
+            } else if (deadlineUTC <= new Date()) {
+                errors.push('Deadline must be a future date.');
+            }
         }
 
-        // Update the quiz and get the updated document
+        // Validate maxAttempts
+        let validatedMaxAttempts = parseInt(maxAttempts, 6);
+        if (isNaN(validatedMaxAttempts) || validatedMaxAttempts < 1 || validatedMaxAttempts > 6) {
+            errors.push('Max attempts must be a number between 1 and 5.');
+        }
+
+        if (errors.length > 0) {
+            // Pass current input values back to the form
+            return res.render('quizzes/modify', { quiz, roomId: activityRoom.roomId, errors });
+        }
+       
+        // Update the quiz
         const updatedQuiz = await Quiz.findByIdAndUpdate(
             quizId,
-            { title, questions },
-            { new: true } // Return the updated document
+            { title, questions, deadline: deadlineUTC, maxAttempts: validatedMaxAttempts },
+            { new: true }
         );
 
         if (!updatedQuiz) {
-            req.flash('error', 'Quiz not found.');
-            return res.redirect('/admin/homeAdmin');
+            errors.push('Quiz not found.');
+            return res.render('quizzes/modify', { quiz, roomId: activityRoom.roomId, errors });
         }
 
         // Delete all quiz results associated with this quiz
@@ -2216,8 +2246,12 @@ router.post('/quiz/modify/:quizId', ensureAdminLoggedIn, async (req, res) => {
         res.render('quizzes/modify-result', { quiz: updatedQuiz, roomId: activityRoom.roomId });
     } catch (err) {
         console.error('Error updating quiz:', err);
-        req.flash('error', `Error updating quiz: ${err.message}`);
-        res.redirect(`/admin/quiz/modify/${quizId}`);
+    errors.push(`Error updating quiz: ${err.message}`);
+    return res.render('quizzes/modify', { 
+        quiz: req.body, // Preserve the user inputs
+        roomId: null, 
+        errors 
+    });
     }
 });
 

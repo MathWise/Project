@@ -8,8 +8,9 @@ const quizId = quizForm.action.split('/').pop(); // Extract the quiz ID from the
 let startTime = parseInt(localStorage.getItem(`quizStartTime_${quizId}`), 10);
 const quizDuration = parseInt(timerDisplayElement.getAttribute('data-timer'), 10) * 60 * 1000; // in milliseconds
 
-if (!startTime) {
-    // If no start time in localStorage, set a new start time
+
+if (!startTime || Date.now() > startTime + quizDuration) {
+    // Reset the timer if there's no start time or if the timer has expired
     startTime = Date.now();
     localStorage.setItem(`quizStartTime_${quizId}`, startTime);
 }
@@ -33,7 +34,7 @@ function updateTimer() {
         const seconds = Math.floor((remainingTime / 1000) % 60);
         timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
         // Save remaining time in localStorage for persistence
-        localStorage.setItem(`quizRemainingTime_${quizId}`, remainingTime);
+     
     }
 }
 
@@ -69,10 +70,11 @@ function loadProgress() {
     }
 }
 
-// Clear any old localStorage data for this quiz when the page loads
-localStorage.removeItem(`quizStartTime_${quizId}`);
-localStorage.removeItem(`quizRemainingTime_${quizId}`);
-localStorage.removeItem(`quizProgress_${quizId}`);
+// Clear localStorage only when the quiz is submitted
+function clearLocalStorage() {
+    localStorage.removeItem(`quizStartTime_${quizId}`);
+    localStorage.removeItem(`quizProgress_${quizId}`);
+}
 
 function confirmSubmission() {
     const confirmation = confirm("Are you sure you want to submit the quiz? Once submitted, you cannot change your answers.");
@@ -82,12 +84,7 @@ function confirmSubmission() {
     return confirmation; // If true, the form will submit; otherwise, submission is canceled
 }
 
-// Clear localStorage when the quiz is submitted
-function clearLocalStorage() {
-    localStorage.removeItem(`quizStartTime_${quizId}`);
-    localStorage.removeItem(`quizRemainingTime_${quizId}`);
-    localStorage.removeItem(`quizProgress_${quizId}`);
-}
+
 
 // Event listeners to save progress
 quizForm.addEventListener('input', saveProgress);

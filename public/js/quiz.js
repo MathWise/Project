@@ -20,12 +20,14 @@ async function loadQuizzesForRoom(activityRoomId) {
                 const createdAt = new Date(quiz.createdAt).toLocaleString();
                 const deadline = quiz.deadline ? new Date(quiz.deadline).toLocaleString() : 'No deadline';
                 const isDraftLabel = quiz.isDraft ? '<span class="badge badge-warning">Draft</span>' : '';
+                const maxAttempts = quiz.maxAttempts !== undefined ? quiz.maxAttempts : 'undefine'; // Display maxAttempts
                 const quizHtml = `
                     <li class="list-group-item" id="quiz-item-${quiz._id}">
                         <a href="#" onclick="confirmStartQuiz('${quiz._id}', '${quiz.title}')">${quiz.title}</a>
                         ${isDraftLabel}
                         <p>Created on: ${createdAt}</p>
                         <p>Deadline: ${deadline}</p>
+                         <p>Max Attempts: ${maxAttempts}</p>
                         <div class="kebab-menu" onclick="toggleQuizMenu('${quiz._id}')">&#x22EE;</div>
                         <div class="dropdown-menu quiz-menu" id="quiz-menu-${quiz._id}" style="display: none;">
                             <a href="#" onclick="archiveQuiz('${quiz._id}'); return false;">Archive</a>
@@ -212,54 +214,103 @@ function confirmStartQuiz(quizId, quizTitle) {
     }
 }
 
-let questionCount = 1;
+const quizManager = (() => {
+    let questionCount = 0;
 
-// Add new question dynamically
-document.getElementById('addQuestion').addEventListener('click', function() {
-    const questionIndex = questionCount;
-    const newQuestionHTML = `
-        <div class="question" data-question-index="${questionIndex}">
-            <label>Question ${questionIndex + 1}:</label>
-            <input type="text" name="questions[${questionIndex}][questionText]" required><br>
+    return {
+        // Add a new question dynamically
+        addQuestion: () => {
+            // Dynamically count the number of questions in the DOM
+            const questions = document.querySelectorAll('.question');
+            const questionIndex = questions.length; // Use the current number of questions as the index
+        
+            const newQuestionHTML = `
+                <div class="question" data-question-index="${questionIndex}">
+                    <label>Question ${questionIndex + 1}:</label>
+                    <input type="text" name="questions[${questionIndex}][questionText]" required><br>
+        
+                    <label>Question Type:</label>
+                    <select name="questions[${questionIndex}][type]" class="questionType" required>
+                        <option value="">Choose a Question Type</option>
+                        <option value="multiple-choice">Multiple Choice</option>
+                        <option value="fill-in-the-blank">Fill in the Blank</option>
+                    </select><br>
+        
+                    <div class="choices" style="display: none;">
+                        <label>Choices:</label>
+                        <div class="choice" data-choice-index="0">
+                            <input type="text" name="questions[${questionIndex}][choices][0][text]" required>
+                            <label>Correct?</label>
+                            <input type="checkbox" name="questions[${questionIndex}][choices][0][isCorrect]"><br>
+                        </div>
+                        <button type="button" class="addChoice btn" style="background-color: #FFDF9F; color: black;">Add Choice</button><br><br>
+                    </div>
+        
+                    <div class="fill-in-the-blank" style="display: none;">
+                        <label>Correct Answer:</label>
+                        <input type="text" name="questions[${questionIndex}][correctAnswer]" required><br>
+                    </div>
+        
+                    <button type="button" class="removeQuestion btn" style="background-color:rgb(212, 139, 97); color: black;">Remove Question</button><br><br>
+                </div>`;
+            
+            document.getElementById('questions').insertAdjacentHTML('beforeend', newQuestionHTML);
+        },
+        
 
-            <label>Question Type:</label>
-            <select name="questions[${questionIndex}][type]" class="questionType" required>
-                <option value="multiple-choice">Choose a Question Type</option>
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="fill-in-the-blank">Fill in the Blank</option>
-            </select><br>
+        // Remove a question and update indices
+        removeQuestion: (questionElement) => {
+            questionElement.remove();
+            quizManager.updateIndices();
+        },
 
-            <div class="choices" style="display: none;">
-                <label>Choices:</label>
-                <div class="choice" data-choice-index="0">
-                    <input type="text" name="questions[${questionIndex}][choices][0][text]" required>
-                    <label>Correct?</label>
-                    <input type="checkbox" name="questions[${questionIndex}][choices][0][isCorrect]"><br>
-                </div>
-                <button type="button" class="addChoice">Add Choice</button><br>
-            </div>
+        // Update question indices after removal
+        updateIndices: () => {
+            const questions = document.querySelectorAll('.question');
+            questions.forEach((question, index) => {
+                question.setAttribute('data-question-index', index);
+                question.querySelector('label').textContent = `Question ${index + 1}:`;
+        
+                // Update input names dynamically
+                const questionInput = question.querySelector('input[name*="[questionText]"]');
+                if (questionInput) {
+                    questionInput.setAttribute('name', `questions[${index}][questionText]`);
+                }
+        
+                const choices = question.querySelectorAll('.choice');
+                choices.forEach((choice, choiceIndex) => {
+                    choice.setAttribute('data-choice-index', choiceIndex);
+                    const textInput = choice.querySelector('input[name*="[text]"]');
+                    const checkboxInput = choice.querySelector('input[name*="[isCorrect]"]');
+                    textInput.setAttribute('name', `questions[${index}][choices][${choiceIndex}][text]`);
+                    checkboxInput.setAttribute('name', `questions[${index}][choices][${choiceIndex}][isCorrect]`);
+                });
+        
+                const fillBlankInput = question.querySelector('.fill-in-the-blank input[type="text"]');
+                if (fillBlankInput) {
+                    fillBlankInput.setAttribute('name', `questions[${index}][correctAnswer]`);
+                }
+            });
+        },
+        
+    };
+})();
 
-            <div class="fill-in-the-blank" style="display: none;">
-                <label>Correct Answer:</label>
-                <input type="text" name="questions[${questionIndex}][correctAnswer]" required><br>
-            </div>
-
-            <button type="button" class="removeQuestion">Remove Question</button><br><br>
-        </div>`;
-    document.getElementById('questions').insertAdjacentHTML('beforeend', newQuestionHTML);
-    questionCount++;
+// Attach event listener for Add Question button
+document.getElementById('addQuestion').addEventListener('click', () => {
+    quizManager.addQuestion();
 });
 
-// Event listener for dynamically added choices and questions
-document.addEventListener('click', function(event) {
+// Event delegation for dynamically added choices and questions
+document.getElementById('questions').addEventListener('click', (event) => {
     if (event.target && event.target.classList.contains('addChoice')) {
         const questionDiv = event.target.closest('.question');
         const questionIndex = questionDiv.getAttribute('data-question-index');
         const choicesDiv = questionDiv.querySelector('.choices');
         const choiceCount = choicesDiv.querySelectorAll('.choice').length;
 
-          // Restrict to a maximum of 4 choices
-          if (choiceCount >= 4) {
+        // Restrict to a maximum of 4 choices
+        if (choiceCount >= 4) {
             alert("You can only add up to 4 choices per question.");
             return;
         }
@@ -275,10 +326,29 @@ document.addEventListener('click', function(event) {
 
     if (event.target && event.target.classList.contains('removeQuestion')) {
         const questionDiv = event.target.closest('.question');
-        questionDiv.remove();
-        updateQuestionIndices();
+        quizManager.removeQuestion(questionDiv);
     }
 });
+
+// Show or hide choice fields based on question type
+document.getElementById('questions').addEventListener('change', (event) => {
+    if (event.target && event.target.classList.contains('questionType')) {
+        const questionDiv = event.target.closest('.question');
+        const choicesDiv = questionDiv.querySelector('.choices');
+        const fillBlankDiv = questionDiv.querySelector('.fill-in-the-blank');
+
+        if (event.target.value === 'multiple-choice') {
+            choicesDiv.style.display = 'block';
+            fillBlankDiv.style.display = 'none';
+        } else if (event.target.value === 'fill-in-the-blank') {
+            choicesDiv.style.display = 'none';
+            fillBlankDiv.style.display = 'block';
+        }
+    }
+});
+
+
+
 
 // Show or hide choice fields based on question type
 document.addEventListener('change', function(event) {
@@ -399,31 +469,7 @@ function validateQuestions(questions) {
 }
 
 
-// Update question indices to maintain order
-function updateQuestionIndices() {
-    const questions = document.querySelectorAll('.question');
-    questions.forEach((question, index) => {
-        question.setAttribute('data-question-index', index);
-        question.querySelector('label').textContent = `Question ${index + 1}:`;
 
-        const questionInput = question.querySelector('input[type="text"]');
-        questionInput.setAttribute('name', `questions[${index}][questionText]`);
-
-        const choices = question.querySelectorAll('.choice');
-        choices.forEach((choice, choiceIndex) => {
-            choice.setAttribute('data-choice-index', choiceIndex);
-            const textInput = choice.querySelector('input[type="text"]');
-            const checkboxInput = choice.querySelector('input[type="checkbox"]');
-            textInput.setAttribute('name', `questions[${index}][choices][${choiceIndex}][text]`);
-            checkboxInput.setAttribute('name', `questions[${index}][choices][${choiceIndex}][isCorrect]`);
-        });
-
-        const fillBlankInput = question.querySelector('.fill-in-the-blank input[type="text"]');
-        if (fillBlankInput) {
-            fillBlankInput.setAttribute('name', `questions[${index}][correctAnswer]`);
-        }
-    });
-}
 // Toggle the main dropdown menu
 function toggleDropdownMenu() {
     const menu = document.getElementById("dropdownMenu");

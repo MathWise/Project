@@ -204,13 +204,13 @@ button:hover {
                     <% if (question.type === 'multiple-choice') { %>
                         <% question.choices.forEach((choice) => { %>
                             <label>
-                                <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>">
+                                <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>"  required>
                                 <%= choice.text %>
                             </label><br>
                         <% }); %>
                     <% } else if (question.type === 'fill-in-the-blank') { %>
                         <label>
-                            <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer">
+                            <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer" required>
                         </label><br>
                     <% } %>
                 </div>
