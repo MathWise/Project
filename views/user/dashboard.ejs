@@ -7,12 +7,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap" rel="stylesheet"> <!-- Baloo 2 font -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet"> <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/homepage.css">
-    <title>Student Dashboard</title>
+    <title>Admin Dashboard</title>
     <head>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
 </head>
 <body >
+      <!-- Loading Animation Overlay -->
+      <div id="loadingOverlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
     <div class="container-fluid p-0" >        
         <div class="upper-side row no-gutters p-3 align-items-center fixed-header">
             <!-- Logo on the Top Left -->
@@ -23,7 +28,7 @@
             <!-- Greetings in the Center -->
             <div class="col-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    Hello, Student!  <br> Welcome to <%= room.name %>
+                    <br> Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -37,6 +42,9 @@
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu">
                     <a href="/admin/homeAdmin" onclick="showLoadingOverlay()">Go back</a>
+                    <a href="/admin/lessonRoomArchive/<%= room._id %>" onclick="showLoadingOverlay()">Lesson Room Archive</a>
+                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>" onclick="showLoadingOverlay()">PDF and Video Archive</a>
+                    <a href="/admin/activitiesArchive/<%= room._id %>" onclick="showLoadingOverlay()">Activity Archive</a>
                     <a href="/logout">Logout</a>
                 </div>
             </div>
@@ -46,10 +54,9 @@
         <!-- Main Content and Sidebars -->
         <div >
 
-            <form action="/user/dashboard/{{roomId}}" method="POST" >
+            <form action="/admin/dashboard/{{roomId}}" method="POST" >
                 <div class="containers row">
-                   
-                    <aside class="col-xl-1 bg-info text-center p-3 rounded-sidebar">
+                    <aside class="col-md-1 bg-info text-center p-3 rounded-sidebar">
                         <nav>
                             <ul class="list-unstyled">
                                 <li style="margin-bottom: 35px;">
@@ -78,10 +85,12 @@
                                 </li>
                             </ul>
                         </nav>
+                        <div class="container-fluid">
+                            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+                        </div>
                     </aside>
         
-                        
-            <!-- Main Content Area -->
+                    <!-- Main Content Area -->
             <main class="col-md-9 col-12 bg-main section">
                 <!-- Test Results Section -->
                 <section class="test-results my-4">
@@ -121,9 +130,10 @@
                 </section>
             </main>
 
+                    
         
-                    <!-- Right Sidebar -->
-                    <aside class="col-md-2 col-12 section p-0">
+                     <!-- Right Sidebar -->
+                     <aside class="col-md-2 col-12 section p-0">
                         <div class="d-flex flex-column h-100">
                             <div class="updates-container flex-fill p-3 mt-3">
                                 <div class="updates-header d-flex align-items-center mb-2">
@@ -209,11 +219,6 @@
             </form>
         </div>
         
-   
-        
-
-
-
     <script>
         function loadLevelContent(level) {
             if (level) {
@@ -256,27 +261,21 @@
         loadingOverlay.style.display = 'flex';
     }
 </script>
-    
-    <script src="/js/dashboard.js"></script>
 
-    <!-- Add Custom CSS -->
-<style>
-    .test-results h2,
-    .test-results table {
-        color: white;
-    }
+<script>
+   window.addEventListener('resize', adjustBodyPadding);
 
-    .test-results td, .test-results th {
-        color: white;
-    }
-
-    /* Add this to your stylesheet or inside <style> tag */
-.table-container {
-    max-height: 400px;  /* Adjust the height as needed */
-    overflow-y: auto;   /* Make the table scrollable vertically */
+function adjustBodyPadding() {
+    const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+    document.body.style.paddingTop = `${headerHeight}px`;
 }
 
-</style>
+// Call the function on page load to set initial padding
+adjustBodyPadding();
 
+</script>
+    
+    <script src="/js/dashboard.js"></script>
+</div>
 </body>
 </html>

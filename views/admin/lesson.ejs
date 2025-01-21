@@ -80,6 +80,10 @@
                         </li>
                     </ul>
                 </nav>
+
+                <div class="container-fluid">
+                    <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+                </div>
             </aside>
 
             <main class="col-md-11 lesson">
@@ -87,6 +91,25 @@
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Lesson</h4>
                 </div>
+
+                 <!-- Lesson Room Creation Form -->
+                 <div id="createActivityForm" class="layered-container">
+                    <div class="card-body">
+                            <h5 class="card-title">Create a New Lesson Room</h5>
+                            <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
+                                <div class="form-group">
+                                    <label for="subject">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="topic">Topic</label>
+                                    <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Create Room</button>
+                            </form>
+                    </div>
+                </div>
+                
                 <!-- Display existing lesson rooms dynamically -->
                 <div id="lessonRoomList" class="mb-2">
                     <h4 class="center-text">Existing Lesson Rooms</h4>
@@ -208,27 +231,6 @@
                         </div>
                     </div>
                 </div>
-
-                 <!-- Lesson Room Creation Form -->
-                 <div class="layered-container">
-                    <div class="background-image">
-                        <div class="form-overlay">
-                            <h5>Create a New Lesson Room</h5>
-                            <form id="createLessonRoomForm" action="/admin/create-lesson-room/<%= room._id %>" method="POST">
-                                <div class="form-group">
-                                    <label for="subject">Subject</label>
-                                    <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="topic">Topic</label>
-                                    <input type="text" class="form-control" id="topic" name="topic" placeholder="Enter topic" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">Create Room</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
             </main>
         </div>
 
@@ -831,11 +833,6 @@ function savePdfProgress(userId, pdfFileId, progress) {
     const uploadVideoSection = document.getElementById('uploadVideoSection'); // Video upload section
     const lessonElement = document.querySelector('.lesson'); // Lesson container to hide background
 
-    // Hide the lesson background image
-    function hideLessonBg() {
-        lessonElement.style.backgroundImage = 'none'; // Removes the background image
-    }
-
     // Show the lesson background image again
     function showLessonBg() {
         lessonElement.style.backgroundImage = 'url("/assets/cl.jpg")'; // Replace with your original image URL
@@ -862,7 +859,6 @@ function savePdfProgress(userId, pdfFileId, progress) {
         newBigBox.style.display = 'none';
         uploadPdfSection.style.display = 'block';
         uploadVideoSection.style.display = 'none';
-        hideLessonBg(); // Hide the lesson background
     });
 
     // Show Video section on Video button click
@@ -870,7 +866,6 @@ function savePdfProgress(userId, pdfFileId, progress) {
         newBigBox.style.display = 'none';
         uploadPdfSection.style.display = 'none';
         uploadVideoSection.style.display = 'block';
-        hideLessonBg(); // Hide the lesson background
     });
 });
 </script>
@@ -887,11 +882,6 @@ function savePdfProgress(userId, pdfFileId, progress) {
  adjustBodyPadding();
  
  </script>
-
-        <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
-        </div>
     </div>
 </body>
 </html>

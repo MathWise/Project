@@ -1,9 +1,8 @@
-body {
+html,body {
     height: 100%;
     font-family: 'Baloo 2', sans-serif;
-    background-color: #E0F4F9; /* Set body background color */
-    padding-top: 150px; /* Adjust this value based on header height */
-    
+    background-color: #E0F4F9;
+    padding-top: 5px; /* Adjust this value based on header height */
 }
 
 .lesson {
@@ -130,15 +129,17 @@ body {
     border-radius: 8px; /* Optional: add rounded corners */
 }
 
-/* Existing CSS */
-.form-overlay {
+.card-body {
     position: relative;
     padding: 20px; /* Add padding for the form */
-    z-index: 1; /* Ensure form is above the background */
-    color: white; /* Change text color for visibility */
+    z-index: 1; /* Ensure content is above the background */
+    color: black; /* Change text color for visibility */
+    text-align: center; /* Center text content for smaller screens */
+    background-color: transparent; /* Remove the default background color */
+    overflow: hidden; /* Ensure the pseudo-element stays within the bounds */
 }
 
-.form-overlay h5, .form-overlay label {
+.card-body h5, .card-body label {
     font-weight: bold;
 }
 

@@ -86,12 +86,38 @@
                         </li>
                     </ul>
                 </nav>
+
+                <!-- Logo added outside the sidebar and positioned in the left corner -->
+        <div class="container-fluid">
+            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+        </div>
             </aside>
 
             <main class="col-md-11 activity">
                 <div class="d-flex align-items-center mb-4">
                     <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
                     <h4 class="font-weight-bold mb-0 text-dark">Activities</h4>
+                </div>
+
+                <!-- Card for Create Activity/Quiz Room Form -->
+                <div id="createActivityForm" class="layered-container">
+                    <div class="card-body">
+                        <h5 class="card-title">Create a New Activity/Quiz Room</h5>
+                        <form action="/admin/create-activity-room/<%= room._id %>" method="POST">
+                            <div class="form-group">
+                                <label for="subject">Subject</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="activityType">Activity Type</label>
+                                <select class="form-control" id="activityType" name="activityType" required>
+                                    <option value="Activity">Activity</option>
+                                    <option value="Quiz">Quiz</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Create Room</button>
+                        </form>
+                    </div>
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
@@ -327,32 +353,6 @@
                     </div>
                 </div>
             </div>
-
-                
-    
-            
-                <!-- Card for Create Activity/Quiz Room Form -->
-                <div id="createActivityForm" class="layered-container">
-                    <div class="card-body">
-                        <h5 class="card-title">Create a New Activity/Quiz Room</h5>
-                        <form action="/admin/create-activity-room/<%= room._id %>" method="POST">
-                            <div class="form-group">
-                                <label for="subject">Subject</label>
-                                <input type="text" class="form-control" id="subject" name="subject" placeholder="Enter subject" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="activityType">Activity Type</label>
-                                <select class="form-control" id="activityType" name="activityType" required>
-                                    <option value="Activity">Activity</option>
-                                    <option value="Quiz">Quiz</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Create Room</button>
-                        </form>
-                    </div>
-                </div>
-
-
             </main>            
         </div>  
 
@@ -488,10 +488,7 @@ function showRoomContent(roomId) {
         <script src="/js/quiz.js"></script> 
         <script src="/js/activity.js"></script>
         
-        <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
-        </div>
+        
     </div>
 </body>
 </html>

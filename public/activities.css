@@ -1,9 +1,8 @@
-body {
+html,body {
     height: 100%;
     font-family: 'Baloo 2', sans-serif;
-    background-color: #E0F4F9; /* Set body background color */
-    padding-top: 150px; /* Adjust this value based on header height */
-    margin: 0; /* Remove default margin */
+    background-color: #E0F4F9;
+    padding-top: 5px; /* Adjust this value based on header height */
 }
 
 .fixed-header {
@@ -32,6 +31,7 @@ body {
     background-repeat: no-repeat;
     background-position: center; /* Centers the image within the container */
     height: auto; /* Adjusts height automatically */
+    opacity: 0.1px;
 }
 
 .layered-container {
@@ -46,10 +46,25 @@ body {
 .card-body {
     position: relative;
     padding: 20px; /* Add padding for the form */
-    z-index: 1; /* Ensure form is above the background */
-    color: white; /* Change text color for visibility */
+    z-index: 1; /* Ensure content is above the background */
+    color: black; /* Change text color for visibility */
     text-align: center; /* Center text content for smaller screens */
+    background-color: transparent; /* Remove the default background color */
+    overflow: hidden; /* Ensure the pseudo-element stays within the bounds */
 }
+
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white; /* Background color */
+    opacity: 0.5; /* Apply transparency only to the background */
+    z-index: -1; /* Place the background behind the content */
+}
+
 
 
 .card-body h5, .card-body label {

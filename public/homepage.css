@@ -1,9 +1,9 @@
 /* General Styling */
-body {
+html,body {
     height: 100%;
     font-family: 'Baloo 2', sans-serif;
     background-color: #E0F4F9;
-    padding-top: 150px; /* Adjust this value based on header height */
+    padding-top: 5px; /* Adjust this value based on header height */
 }
 
 .home-button {
