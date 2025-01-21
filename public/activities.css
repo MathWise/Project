@@ -55,22 +55,36 @@ body {
 .card-body h5, .card-body label {
     font-weight: bold;
 }
-
-.color-1 {
-    background-color: #F9B4AB;
+.color-activity {
+    background-color: #FFDF9F; 
 }
 
-.color-2 {
-    background-color: #CECBEC;
+.color-quiz {
+    background-color: #F9B4AB; /* Light Pink */
 }
 
-.color-3 {
-    background-color: #FFDF9F;
+
+/* Hover Effect */
+.color-activity:hover {
+    background-color: #97845e; 
+    color: white; /* Change text to white */
 }
 
-.color-4 {
-    background-color: #C1EAF4;
+.color-quiz:hover {
+    background-color: #976a64; /* Dark Pink */
+    color: white; /* Change text to white */
 }
+
+/* Ensure the text inside the button also turns white */
+.color-activity:hover strong, 
+.color-activity:hover span,
+.color-quiz:hover strong, 
+.color-quiz:hover span {
+    color: white;
+}
+
+
+
 
 .container-fluid {
     padding-bottom: 20px; /* Added padding for bottom spacing */
@@ -437,4 +451,79 @@ input[type="file"]::-webkit-file-upload-button {
 
 .close-btn:hover {
     color: red;
+}
+.btn-act {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 250px; /* Adjust as needed */
+    min-height: 60px;
+    padding: 10px;
+    margin: 5px;
+    border-radius: 8px;
+    text-align: left;
+    word-wrap: break-word;
+    white-space: normal;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+/* Force exactly 2 lines of text */
+.act-content strong, .act-content span {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* Ensures only 2 lines */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 14px;
+    color: #333;
+}
+
+
+.act-icon {
+    width: 40px;
+    height: auto;
+    margin-left: 10px;
+}
+
+.kebab-menu {
+    cursor: pointer;
+    margin-left: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .btn-act {
+        max-width: 100%; 
+        flex-direction: column; 
+        align-items: flex-start;
+    }
+    .act-content {
+        max-width: 100%;
+    }
+    .act-icon {
+        align-self: flex-end;
+    }
+}
+/* For Activity rooms */
+.color-activity {
+    background-color: #FFDF9F;  /* Example color for Activity */
+    color: black;
+}
+
+.color-activity:hover {
+    background-color: #cfb683;  /* Darker color on hover */
+    color: white;
+}
+
+/* For Quiz rooms */
+.color-quiz {
+    background-color: #F9B4AB;  /* Example color for Quiz */
+    color: black;
+}
+
+.color-quiz:hover {
+    background-color: #926f69;  /* Darker color on hover */
+    color: white;
 }

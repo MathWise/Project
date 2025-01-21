@@ -92,33 +92,29 @@
                     <h4 class="center-text">Existing Lesson Rooms</h4>
                     <ul class="list-group d-flex flex-row flex-wrap">
                         <% 
-                        const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
-                        const imgSources = [
-                            "/assets/english-4.svg",
-                            "/assets/layer-1.svg",
+                        const imgSources = [             
                             "/assets/geography-1.svg",
                             "/assets/socio-1.svg"
                         ];
                     
                         lessonRooms.forEach(function(lessonRoom, index) { 
-                            const colorClass = buttonColors[index % buttonColors.length];
                             const imgSrc = imgSources[index % imgSources.length];
                         %>
                         
-                        <li class="list-group-item lesson-room d-flex align-items-center mr-2 clickable <%= colorClass %>" 
-                            data-room-id="<%= lessonRoom._id %>">
+                        <li class="list-group-item lesson-room btn-act color-lesson d-flex align-items-center mr-2 clickable"
+                            data-room-id="<%= lessonRoom._id %>" onclick="showRoomContent('<%= lessonRoom._id %>')">
                             
                             <div class="d-flex align-items-center justify-content-between w-100">
                                 <div class="lesson-details">
                                     <strong class="mr-2"><%= lessonRoom.subject %></strong> <%= lessonRoom.topic %>
                                     <img src="<%= imgSrc %>" alt="<%= lessonRoom.subject %> Icon" class="ml-2" style="width: 40px;">
                                 </div>
-                
+                    
                                 <!-- Kebab Menu Icon and Dropdown for Archiving -->
                                 <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= lessonRoom._id %>');">
                                     &#x22EE;
                                 </div>
-                
+                    
                                 <!-- Dropdown Menu for each room -->
                                 <div class="dropdown-menu" id="menu-<%= lessonRoom._id %>" style="display: none;">
                                     <a href="#" onclick="archiveLessonRoom('<%= lessonRoom._id %>'); event.stopPropagation();">Archive</a>
@@ -128,7 +124,7 @@
                         <% }); %>
                     </ul>
                 </div>
-
+                
                 <!-- New big box section -->
                 <div class="newbigbox" style="display: none;"> <!-- Initially hidden -->
                     <div class="d-flex justify-content-center align-items-center mt-3">
@@ -581,7 +577,7 @@ function renderPage(pageNum) {
     pdfDoc.getPage(pageNum).then(function(page) {
         console.log("Rendering page:", pageNum);
 
-        const scale = 2.0;  // Adjust scale to ensure the page fits well on screen
+        const scale = 1.5;  // Adjust scale to ensure the page fits well on screen
         const viewport = page.getViewport({ scale: scale });
 
         // Set up the canvas for rendering

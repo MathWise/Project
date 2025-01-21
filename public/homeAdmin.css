@@ -35,19 +35,19 @@ h1 {
 
 .room-button {
     width: 100%;
-    padding: 10px 20px;
-    background-color: #C1EAF4;
+    padding: 20px 40px;
+    background-color: #fff9f9;
     color: black;
     border: none;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 1.5rem;
     cursor: pointer;
     text-align: center;
     margin-bottom: 20px;
 }
 
 .room-button:hover {
-    background-color: #0056b3;
+    background-color: #1a738a;
 }
 
 .room-grid {

@@ -726,3 +726,96 @@ canvas {
     color: #333;
     font-size: 14px;
 }
+/* Ensure the list items are aligned */
+#lessonRoomList .list-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;  /* Adds spacing between buttons */
+    justify-content: flex-start; /* Aligns buttons to the left */
+}
+
+/* Ensure each lesson button has the same size */
+#lessonRoomList .list-group-item {
+    flex: 1 0 48%; /* Makes buttons take 48% of the container's width, with 2 buttons per row */
+    min-width: 200px; /* Ensures a minimum width for the buttons */
+    max-width: 48%;  /* Avoids buttons stretching more than 48% */
+    box-sizing: border-box; /* Ensures padding is included in width calculation */
+}
+
+/* Ensure buttons are aligned correctly and the content fits */
+#lessonRoomList .list-group-item .btn-act {
+    width: 100%; /* Makes sure buttons expand to fill their container */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: left;
+}
+
+/* Button Colors */
+.color-lesson {
+    background-color: #CECBEC;
+    color: black;
+}
+
+/* Hover Effect */
+.color-lesson:hover {
+    background-color: #716e8b;
+    color: white;
+}
+
+/* Change text color to white on hover */
+.color-lesson:hover strong, 
+.color-lesson:hover span { 
+    color: white;
+}
+
+/* Ensure the lesson content fits properly */
+.lesson-details {
+    display: flex;
+    align-items: center;
+}
+
+.lesson-details img {
+    width: 40px;
+    margin-left: 10px;
+}
+
+/* Dropdown menu and kebab menu styles */
+.kebab-menu {
+    cursor: pointer;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* Make buttons wrap on smaller screens */
+@media (max-width: 600px) {
+    #lessonRoomList .list-group-item {
+        flex: 1 0 48%; /* Maintain 2 buttons per row but allow wrapping */
+        max-width: 100%; /* Allow buttons to stretch to full width */
+    }
+    
+    /* Allow buttons to wrap neatly by setting width to 100% on very small screens */
+    #lessonRoomList .list-group {
+        justify-content: space-between;
+    }
+}
+
+/* Styling for headings and labels */
+h5, label {
+    color: black;
+}
+
+/* Styling for form controls */
+.form-control {
+    color: black;
+    border-color: #ccc; /* Optional: to make the input borders lighter */
+}

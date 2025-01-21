@@ -34,17 +34,21 @@
         <% } %>
     
               <!-- Search Bar -->
-    <form action="/admin/homeAdmin" method="GET" style="margin-bottom: 20px;">
-        <label for="search-input" style="margin-right: 10px;">Search Rooms:</label>
-        <input 
-            type="text" 
-            id="search-input" 
-            name="search" 
-            placeholder="Search by room name or teacher" 
-            value="<%= searchQuery || '' %>" 
-            style="padding: 5px; width: 300px; margin-right: 10px;"
-        >
-        <button type="submit" class="btn btn-primary">Search</button> <br> <br> 
+              <div style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                <form action="/admin/homeAdmin" method="GET" style="margin-bottom: 20px;">
+                    <label for="search-input" style="margin-right: 10px;">Search Rooms:</label>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        name="search" 
+                        placeholder="Search by room name or teacher" 
+                        value="<%= searchQuery || '' %>" 
+                        style="padding: 5px; width: 300px; margin-right: 10px;"
+                    >
+                    <button type="submit" class="btn btn-primary">Search</button> <br> <br>
+                </form>
+            </div>
+            
        
     </form>
     <button class="room-button" id="openCreateRoomModal">Create Room</button>

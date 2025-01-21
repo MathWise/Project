@@ -95,39 +95,69 @@
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
-                <h5>Existing Activity/Quiz Rooms</h5>
+                <h5>Existing Activity Rooms</h5>
                 <ul class="list-group d-flex flex-row flex-wrap">
                     <% 
-                    const buttonColors = ["color-1", "color-2", "color-3", "color-4"];
-                    const imgSources = [
-                        "/assets/english-4.svg",
-                        "/assets/layer-1.svg",
-                        "/assets/geography-1.svg",
-                        "/assets/socio-1.svg"
-                    ];
-            
-                    activityRooms.forEach(function(activityRoom, index) { 
-                        const colorClass = buttonColors[index % buttonColors.length];
-                        const imgSrc = imgSources[index % imgSources.length];
+                    const imgSources = {
+                        Activity: "/assets/layer-1.svg",
+                        Quiz: "/assets/english-4.svg"
+                    };
+                
+                    const activityList = activityRooms.filter(room => room.activityType.includes("Activity"));
+                    const quizList = activityRooms.filter(room => room.activityType.includes("Quiz"));
+                
+                    activityList.forEach(function(activityRoom) { 
                     %>
-                    <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" 
+                    <li class="list-group-item btn-act color-activity" 
                         data-room-id="<%= activityRoom._id %>" 
                         onclick="showRoomContent('<%= activityRoom._id %>')">
-                        <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
-                        <img src="<%= imgSrc %>" alt="Activity Icon" class="ml-2" style="width: 40px;">
+                        
+                        <div class="act-content">
+                            <strong><%= activityRoom.activityType %></strong>  
+                            <span><%= activityRoom.subject %></span>
+                        </div>
+                
+                        <img src="<%= imgSources.Activity %>" alt="Activity Icon" class="act-icon">
                     
-                        <!-- Kebab Menu -->
-                        <div class="kebab-menu ml-auto" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
+                        <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
                             &#x22EE;
                         </div>
                     
-                        <!-- Dropdown Menu -->
                         <div class="dropdown-menu" id="menu-<%= activityRoom._id %>">
                             <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
                         </div>
                     </li>                    
                     <% }); %>
                 </ul>
+                
+                <h5>Existing Quiz Rooms</h5>
+                <ul class="list-group d-flex flex-row flex-wrap">
+                    <% 
+                    quizList.forEach(function(activityRoom) { 
+                    %>
+                    <li class="list-group-item btn-act color-quiz" 
+                        data-room-id="<%= activityRoom._id %>" 
+                        onclick="showRoomContent('<%= activityRoom._id %>')">
+                        
+                        <div class="act-content">
+                            <strong><%= activityRoom.activityType %></strong>  
+                            <span><%= activityRoom.subject %></span>
+                        </div>
+                
+                        <img src="<%= imgSources.Quiz %>" alt="Activity Icon" class="act-icon">
+                    
+                        <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
+                            &#x22EE;
+                        </div>
+                    
+                        <div class="dropdown-menu" id="menu-<%= activityRoom._id %>">
+                            <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
+                        </div>
+                    </li>                    
+                    <% }); %>
+                </ul>
+                
+                
             
                 <!-- Quiz Activity Room Content -->
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
