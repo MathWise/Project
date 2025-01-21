@@ -216,19 +216,17 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
 router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
     const { roomPassword } = req.body; // Password entered by the user
-    
+
     try {
         // Find the room by ID
         const room = await Room.findById(roomId);
         if (!room) {
-            req.flash('error', 'Room not found.');
-            return res.redirect('/admin/homeAdmin');
+            return res.status(404).json({ error: 'Room not found.' });
         }
 
         // Check if the entered password matches the room's password
         if (room.roomPassword !== roomPassword) {
-            req.flash('error', 'Incorrect password. Cannot archive the room.');
-            return res.redirect('/admin/homeAdmin');
+            return res.status(400).json({ error: 'Incorrect password. Cannot archive the room.' });
         }
 
         // Archive the room itself
@@ -236,12 +234,10 @@ router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
         // Archive all associated items
         await cascadeArchive(roomId);
 
-        req.flash('success', 'Room and related items archived successfully!');
-        res.redirect('/admin/homeAdmin');
+        return res.status(200).json({ success: true, message: 'Room and related items archived successfully!' });
     } catch (err) {
         console.error('Error archiving room:', err);
-        req.flash('error', 'Error archiving room.');
-        res.redirect('/admin/homeAdmin');
+        return res.status(500).json({ error: 'Error archiving room.' });
     }
 });
 

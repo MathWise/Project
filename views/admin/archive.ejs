@@ -78,6 +78,11 @@
         </div>
     </div>
 
+    
+<div id="loadingOverlay" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
     <script>
         // Function to toggle the display of archived content for each room
 function toggleArchivedContent(roomId) {
@@ -119,6 +124,8 @@ function toggleArchivedContent(roomId) {
             const password = prompt('Enter the room password to confirm deletion:');
             if (password) {
                 // Proceed to delete the room with the entered password
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                loadingOverlay.style.display = 'flex';
                 try {
                     const response = await fetch(`/admin/delete-room/${roomId}`, {
                         method: 'DELETE',
@@ -129,6 +136,10 @@ function toggleArchivedContent(roomId) {
                     });
 
                     const result = await response.json();
+
+                     // Hide the spinner
+                loadingOverlay.style.display = 'none';
+
                     if (response.ok) {
                         alert(result.message || 'Room deleted successfully!');
                         // Optionally, refresh or redirect
@@ -139,6 +150,9 @@ function toggleArchivedContent(roomId) {
                 } catch (error) {
                     console.error('Error deleting room:', error);
                     alert('An unexpected error occurred.');
+
+                     // Hide the spinner
+                loadingOverlay.style.display = 'none';
                 }
             }
         }
@@ -190,5 +204,40 @@ function toggleArchivedContent(roomId) {
             background-color: #f0f0f0;
         }
     </style>
+
+
+<style>
+    /* Basic styles for the spinner and overlay */
+    #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+    }
+
+    .spinner {
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top: 5px solid #fff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
 </body>
 </html>

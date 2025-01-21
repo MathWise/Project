@@ -33,45 +33,50 @@ document.getElementById('roomPassword1').focus();
 }
 
 // Function to submit the password from the modal
-function submitPassword1() {
-const userPassword = document.getElementById('roomPassword1').value;
+async function submitPassword1() {
+    const userPassword = document.getElementById('roomPassword1').value;
 
-document.getElementById('loadingOverlay').style.display = 'flex';
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
 
+    if (modalAction === 'archive') {
+        try {
+            const response = await fetch(`/admin/archive-room/${roomIdForModal}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ roomPassword: userPassword }),
+            });
 
-if (modalAction === 'archive') {
-   // Handle archive functionality
-   if (userPassword) {
-       // Create a form to submit the room ID and password to the server
-       const form = document.createElement('form');
-       form.method = 'POST';
-       form.action = `/admin/archive-room/${roomIdForModal}`;
+            const result = await response.json();
 
-       // Add the password as a hidden input
-       const passwordInput = document.createElement('input');
-       passwordInput.type = 'hidden';
-       passwordInput.name = 'roomPassword';
-       passwordInput.value = userPassword;
-       form.appendChild(passwordInput);
+            document.getElementById('loadingOverlay').style.display = 'none'; // Hide loading overlay
 
-       document.body.appendChild(form);
-       form.submit();
-   } else {
-       alert('Password is required to archive the room.');
-   }
-} else if (modalAction === 'enter') {
-   // Handle entering a room
-   if (userPassword === correctPasswordForModal) {
-       // Redirect to the room's dashboard
-       window.location.href = `/admin/dashboard/${roomIdForModal}`;
-   } else {
-       alert('Incorrect password. Please try again.');
-   }
+            if (response.ok) {
+                alert(result.message || 'Room archived successfully!');
+                window.location.reload(); // Reload to reflect changes
+            } else {
+                alert(result.error || 'Failed to archive the room.'); // Show error message
+            }
+        } catch (error) {
+            console.error('Error archiving room:', error);
+            alert('An unexpected error occurred. Please try again later.');
+            document.getElementById('loadingOverlay').style.display = 'none'; // Hide loading overlay
+        }
+    } else if (modalAction === 'enter') {
+        if (userPassword === correctPasswordForModal) {
+            window.location.href = `/admin/dashboard/${roomIdForModal}`;
+        } else {
+            alert('Incorrect password. Please try again.');
+            document.getElementById('loadingOverlay').style.display = 'none'; // Hide loading overlay
+        }
+    }
+
+    // Close the modal
+    closeModal1();
 }
 
-// Close the modal
-closeModal1();
-}
 
 // Function to close the modal
 function closeModal1() {
