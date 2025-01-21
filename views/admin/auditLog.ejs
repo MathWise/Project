@@ -108,9 +108,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>User Name</th>
+                    <th>Initiotor </th>
                     <th>Action</th>
+                    <th>target User</th>
                     <th>Room Name</th>
+
                     <th>Timestamp</th>
                 </tr>
             </thead>
@@ -119,7 +121,8 @@
                     <tr>
                         <td><%= log.userName %></td>
                         <td><%= log.action %></td>
-                        <td><%= log.roomName %></td>
+                        <td><%= log.targetUserName || 'N/A' %></td> <!-- For delete, targetUserName will be N/A -->
+                        <td><%= log.roomName !== 'N/A' ? log.roomName : 'No Room Involved' %></td>
                         <td><%= new Date(log.timestamp).toLocaleString() %></td>
                     </tr>
                 <% }) %>

@@ -128,14 +128,17 @@ router.delete('/delete-room/:roomId', async (req, res) => {
         await session.commitTransaction();
         console.log(`Room ${roomId} and all associated data deleted successfully.`);
 
-         // Create the audit log entry
-         await AuditLog.create({
-            userName: `${req.user.first_name} ${req.user.last_name}`, // Combine first and last name
-            userId: req.user._id, // User ID from authenticated request
-            action: 'delete', // Action is 'delete'
-            roomId: room._id, // Room ID of the deleted room
-            roomName: room.name, // Name of the deleted room
-        });
+            // Create audit log entry for deleting the room
+            await AuditLog.create({
+                userName: `${req.user.first_name} ${req.user.last_name}`,  // The user performing the delete action
+                userId: req.user._id,  // User ID of the person performing the deletion
+                action: 'delete',  // Action is 'delete'
+                roomId: room._id,  // ID of the room being deleted
+                roomName: room.name,  // Name of the room being deleted
+                timestamp: Date.now(),  // Timestamp when the action happened
+                targetUserName: `${req.user.first_name} ${req.user.last_name}`,  // Target user's name (could be same as the deleting user)
+                targetUserId: req.user._id 
+            });
 
         const gridFSBucketPDF = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'pdfs' });
         const gridFSBucketVideo = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: 'videos' });

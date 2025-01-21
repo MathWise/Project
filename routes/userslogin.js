@@ -80,6 +80,8 @@ router.post('/login',loginLimiter, async (req, res, next) => {
 
             // Redirect based on role
             if (user.role === 'admin') {
+
+                
                 res.send(`
                     <script>
                         sessionStorage.setItem("loggedIn", "true");
@@ -97,6 +99,8 @@ router.post('/login',loginLimiter, async (req, res, next) => {
                 return res.redirect('/login?error=Unauthorized role.');
             }
         });
+
+        
     })(req, res, next);
 });
 

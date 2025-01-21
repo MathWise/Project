@@ -150,8 +150,9 @@ router.get('/manage-access', ensureAdminLoggedIn, async (req, res) => {
 
 router.get('/audit-logs', ensureAdminLoggedIn, async (req, res) => {
     try {
-        const logs = await AuditLog.find()
-            .sort({ timestamp: -1 }); // Sort by timestamp in descending order (latest first)
+           // Filter audit logs where the action is 'grantAccess' or 'revokeAccess' and userId is the current logged-in user's ID
+        const logs = await AuditLog.find({ userId: req.user._id })
+        .sort({ timestamp: -1 });  // Sort by most recent first
 
         res.render('admin/auditLog', { logs });
     } catch (error) {
@@ -165,12 +166,24 @@ router.get('/audit-logs', ensureAdminLoggedIn, async (req, res) => {
 router.post('/give-access/:userId', ensureAdminLoggedIn, async (req, res) => {
     const { userId } = req.params;
 
+
     try {
         const user = await User.findById(userId);
         if (user) {
             if (user.role !== 'admin') {
                 user.role = 'admin'; // Change role to admin
                 await user.save();
+
+                await AuditLog.create({
+                    userName: `${req.user.first_name} ${req.user.last_name}`,  // The admin performing the action
+                    userId: req.user._id,  // Admin's user ID
+                    targetUserName: `${user.first_name} ${user.last_name}`,  // Target user's name (the one who gets access)
+                    targetUserId: user._id,  // Target user's ID
+                    action: 'grantAccess',  // Action is grant access
+                    roomId: null,  // Room ID is not involved in granting access
+                    roomName: 'N/A',  // No room involved, so set to 'N/A'
+                    timestamp: Date.now(),
+                });
                 req.flash('success', 'Access granted successfully!');
             } else {
                 req.flash('error', 'User is already an admin.');
@@ -191,11 +204,23 @@ router.post('/remove-access/:userId', ensureAdminLoggedIn, async (req, res) => {
     const { userId } = req.params;
 
     try {
+
         const user = await User.findById(userId);
         if (user) {
             if (user.role !== 'student') {
                 user.role = 'student'; // Change role to student
                 await user.save();
+
+                await AuditLog.create({
+                    userName: `${req.user.first_name} ${req.user.last_name}`,  // The admin performing the action
+                    userId: req.user._id,  // Admin's user ID
+                    targetUserName: `${user.first_name} ${user.last_name}`,  // Target user's name (the one who loses access)
+                    targetUserId: user._id,  // Target user's ID
+                    action: 'revokeAccess',  // Action is revoke access
+                    roomId: null,  // Room ID is not involved in revoking access
+                    roomName: 'N/A',  // No room involved, so set to 'N/A'
+                    timestamp: Date.now(),
+                });
                 req.flash('success', 'Access revoked successfully!');
             } else {
                 req.flash('error', 'User is already a student.');
@@ -231,8 +256,23 @@ router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
 
         // Archive the room itself
         await archiveItem(Room, roomId);
+
+         // Create an audit log entry for archiving the room
+         await AuditLog.create({
+            userName: `${req.user.first_name} ${req.user.last_name}`,  // The admin performing the archiving action
+            userId: req.user._id,  // User ID of the person performing the archiving
+            action: 'archive',  // Action is 'archive'
+            roomId: room._id,  // ID of the room being archived
+            roomName: room.name,  // Name of the room being archived
+            timestamp: Date.now(),  // Timestamp when the action happened
+            targetUserName: `${req.user.first_name} ${req.user.last_name}`,  // Target user's name (could be same as the deleting user)
+            targetUserId: req.user._id 
+        });
         // Archive all associated items
         await cascadeArchive(roomId);
+
+       
+
 
         return res.status(200).json({ success: true, message: 'Room and related items archived successfully!' });
     } catch (err) {
@@ -241,23 +281,40 @@ router.post('/archive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     }
 });
 
-
 // Unarchive a room
 router.post('/unarchive-room/:roomId', ensureAdminLoggedIn, async (req, res) => {
     const { roomId } = req.params;
 
     try {
         // Unarchive the room itself
-        await Room.findByIdAndUpdate(roomId, { isArchived: false });
+        const room = await Room.findByIdAndUpdate(roomId, { isArchived: false }, { new: true }); // Get the updated room
+
+        if (!room) {
+            return res.status(404).json({ error: 'Room not found.' });
+        }
+
+         // Create an audit log entry for unarchiving the room
+         await AuditLog.create({
+            userName: `${req.user.first_name} ${req.user.last_name}`,  // The admin performing the unarchiving action
+            userId: req.user._id,  // User ID of the person performing the unarchiving
+            action: 'unarchive',  // Action is 'unarchive'
+            roomId: room._id,  // ID of the room being unarchived
+            roomName: room.name,  // Name of the room being unarchived
+            timestamp: Date.now(),  // Timestamp when the action happened
+            targetUserName: `${req.user.first_name} ${req.user.last_name}`,  // Target user's name (could be same as the deleting user)
+            targetUserId: req.user._id 
+        });
+
         // Unarchive all associated items
         await cascadeUnarchive(roomId);
 
         req.flash('success', 'Room and related items restored successfully!');
+        res.redirect('/admin/Archive');
     } catch (err) {
         console.error('Error restoring room:', err);
         req.flash('error', 'Error restoring room.');
+        res.redirect('/admin/Archive');
     }
-    res.redirect('/admin/Archive');
 });
 
 
