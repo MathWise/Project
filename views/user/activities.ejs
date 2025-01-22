@@ -99,49 +99,31 @@
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
-                <h5>Existing Activity Rooms</h5>
-<ul class="list-group d-flex flex-row flex-wrap">
-    <% 
-    const activityList = activityRooms.filter(room => room.activityType === "Activity");
-    const activityImgSource = "/assets/layer-1.svg";  // Single img source for Activity
-
-    activityList.forEach(function(activityRoom) { 
-    %>
-    <li class="list-group-item btn-act color-activity d-flex align-items-center mr-2 clickable"
-        data-room-id="<%= activityRoom._id %>" 
-        onclick="showRoomContent('<%= activityRoom._id %>')">
-        
-        <div class="act-content">
-            <strong><%= activityRoom.activityType %></strong>  
-            <span><%= activityRoom.subject %></span>
-        </div>
-
-        <img src="<%= activityImgSource %>" alt="Activity Icon" class="act-icon">
-    </li>                    
-    <% }); %>
-</ul>
-
-<h5>Existing Quiz Rooms</h5>
-<ul class="list-group d-flex flex-row flex-wrap">
-    <% 
-    const quizList = activityRooms.filter(room => room.activityType === "Quiz");
-    const quizImgSource = "/assets/english-4.svg";  // Single img source for Quiz
-
-    quizList.forEach(function(quizRoom) { 
-    %>
-    <li class="list-group-item btn-act color-quiz d-flex align-items-center mr-2 clickable"
-        data-room-id="<%= quizRoom._id %>" 
-        onclick="showRoomContent('<%= quizRoom._id %>')">
-        
-        <div class="act-content">
-            <strong><%= quizRoom.activityType %></strong>  
-            <span><%= quizRoom.subject %></span>
-        </div>
-
-        <img src="<%= quizImgSource %>" alt="Quiz Icon" class="act-icon">
-    </li>                    
-    <% }); %>
-</ul>
+                <h5 class="existing">Existing Activity/Quiz Rooms</h5>
+                <ul class="list-group d-flex flex-row flex-wrap">
+                    <% 
+                    activityRooms.forEach(function(room) { 
+                        let colorClass = '';
+                        let imgSrc = '';
+                
+                        // Determine button style based on activity type
+                        if (room.activityType === 'Quiz') {
+                            colorClass = 'quiz-button'; // Apply quiz button styles
+                            imgSrc = '/assets/english-4.svg';
+                        } else {
+                            colorClass = 'activity-button'; // Apply activity button styles
+                            imgSrc = '/assets/layer-1.svg';
+                        }
+                    %>
+                    <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" 
+                        data-room-id="<%= room._id %>" 
+                        onclick="showRoomContent('<%= room._id %>')">
+                        <strong><%= room.activityType %></strong> - <%= room.subject %>
+                        <img src="<%= imgSrc %>" alt="<%= room.activityType %> Icon" class="ml-2" style="width: 40px;">
+                    </li>                    
+                    <% }); %>
+                </ul>
+                
 
             
                 <!-- Quiz Activity Room Content -->
@@ -167,19 +149,6 @@
                     </div>
                 </div>
             </div>
-
-                
-    
-            
-                <!-- Card for Create Activity/Quiz Room Form -->
-                <div id="createActivityForm" class="layered-container">
-                    <div class="card-body">
-                        <h5 class="card-title"></h5>
-
-                    </div>
-                </div>
-
-
             </main>            
         </div>  
 

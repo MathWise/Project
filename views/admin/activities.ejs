@@ -86,11 +86,6 @@
                         </li>
                     </ul>
                 </nav>
-
-                <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
-        </div>
             </aside>
 
             <main class="col-md-11 activity">
@@ -121,70 +116,40 @@
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
-                <h5 id="existing">Existing Activity Rooms</h5>
+                <h5 class="existing">Existing Activity/Quiz Rooms</h5>
                 <ul class="list-group d-flex flex-row flex-wrap">
                     <% 
-                    const imgSources = {
-                        Activity: "/assets/layer-1.svg",
-                        Quiz: "/assets/english-4.svg"
-                    };
-                
-                    const activityList = activityRooms.filter(room => room.activityType.includes("Activity"));
-                    const quizList = activityRooms.filter(room => room.activityType.includes("Quiz"));
-                
-                    activityList.forEach(function(activityRoom) { 
+                    activityRooms.forEach(function(activityRoom) { 
+                        let colorClass = '';
+                        let imgSrc = '';
+                        
+                        // Determine button style based on activity type
+                        if (activityRoom.activityType === 'Quiz') {
+                            colorClass = 'quiz-button'; // Apply quiz button styles
+                            imgSrc = '/assets/english-4.svg';
+                        } else {
+                            colorClass = 'activity-button'; // Apply activity button styles
+                            imgSrc = '/assets/layer-1.svg';
+                        }
                     %>
-                    <li class="list-group-item btn-act color-activity" 
+                    <li class="list-group-item d-flex align-items-center mr-2 clickable <%= colorClass %>" 
                         data-room-id="<%= activityRoom._id %>" 
                         onclick="showRoomContent('<%= activityRoom._id %>')">
-                        
-                        <div class="act-content">
-                            <strong><%= activityRoom.activityType %></strong>  
-                            <span><%= activityRoom.subject %></span>
-                        </div>
-                
-                        <img src="<%= imgSources.Activity %>" alt="Activity Icon" class="act-icon">
+                        <strong><%= activityRoom.activityType %></strong> - <%= activityRoom.subject %>
+                        <img src="<%= imgSrc %>" alt="Activity Icon" class="ml-2" style="width: 40px;">
                     
-                        <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
+                        <!-- Kebab Menu -->
+                        <div class="kebab-menu ml-auto" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
                             &#x22EE;
                         </div>
                     
+                        <!-- Dropdown Menu -->
                         <div class="dropdown-menu" id="menu-<%= activityRoom._id %>">
                             <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
                         </div>
                     </li>                    
                     <% }); %>
                 </ul>
-                
-                <h5 id="existing">Existing Quiz Rooms</h5>
-                <ul class="list-group d-flex flex-row flex-wrap">
-                    <% 
-                    quizList.forEach(function(activityRoom) { 
-                    %>
-                    <li class="list-group-item btn-act color-quiz" 
-                        data-room-id="<%= activityRoom._id %>" 
-                        onclick="showRoomContent('<%= activityRoom._id %>')">
-                        
-                        <div class="act-content">
-                            <strong><%= activityRoom.activityType %></strong>  
-                            <span><%= activityRoom.subject %></span>
-                        </div>
-                
-                        <img src="<%= imgSources.Quiz %>" alt="Activity Icon" class="act-icon">
-                    
-                        <div class="kebab-menu" onclick="event.stopPropagation(); toggleMenu('<%= activityRoom._id %>');">
-                            &#x22EE;
-                        </div>
-                    
-                        <div class="dropdown-menu" id="menu-<%= activityRoom._id %>">
-                            <a href="#" onclick="archiveActivityRoom('<%= activityRoom._id %>'); event.stopPropagation();">Archive</a>
-                        </div>
-                    </li>                    
-                    <% }); %>
-                </ul>
-                
-                
-            
                 <!-- Quiz Activity Room Content -->
                 <div id="quizActivityRoomContent" class="big-box" style="display: none;">
                     <div class="content-wrapper">
@@ -286,7 +251,7 @@
                                             <input type="text" name="questions[0][correctAnswer]" required><br>
                                         </div>
             
-                                        <button type="button" class="removeQuestion btn" style="background-color: rgb(212, 139, 97); color: black;">Remove Question</button><br><br>
+                                        <button type="button" class="removeQuestion btn" style="background-color: rgb(26, 177, 153); color: black;">Remove Question</button><br><br>
                                     </div>
                                 </div>
             
@@ -353,10 +318,13 @@
                     </div>
                 </div>
             </div>
+
             </main>            
         </div>  
 
     <script>
+
+        
         //Modal
         function openModal() {
     document.getElementById("instructionsModal").style.display = "block";
@@ -488,7 +456,10 @@ function showRoomContent(roomId) {
         <script src="/js/quiz.js"></script> 
         <script src="/js/activity.js"></script>
         
-        
+        <!-- Logo added outside the sidebar and positioned in the left corner -->
+        <div class="container-fluid">
+            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+        </div>
     </div>
 </body>
 </html>

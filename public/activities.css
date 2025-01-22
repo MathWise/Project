@@ -26,13 +26,15 @@ html,body {
 
 
 .activity {
-    background-image: url('assets/activity.png');
+    background-image: url('assets/act.jpg');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: center; /* Centers the image within the container */
-    height: auto; /* Adjusts height automatically */
-    opacity: 0.1px;
+    background-position: center;
+    height: auto;
+    background-color: rgba(255, 255, 255, 0.3); /* Adjust transparency */
+    background-blend-mode: lighten; /* Change mode as needed */
 }
+
 
 .layered-container {
     position: relative;
@@ -74,33 +76,7 @@ html,body {
 .card-body h5, .card-body label {
     font-weight: bold;
 }
-.color-activity {
-    background-color: #FFDF9F; 
-}
 
-.color-quiz {
-    background-color: #F9B4AB; /* Light Pink */
-}
-
-
-/* Hover Effect */
-.color-activity:hover {
-    background-color: #97845e; 
-    color: white; /* Change text to white */
-}
-
-.color-quiz:hover {
-    background-color: #976a64; /* Dark Pink */
-    color: white; /* Change text to white */
-}
-
-/* Ensure the text inside the button also turns white */
-.color-activity:hover strong, 
-.color-activity:hover span,
-.color-quiz:hover strong, 
-.color-quiz:hover span {
-    color: white;
-}
 
 
 
@@ -471,78 +447,86 @@ input[type="file"]::-webkit-file-upload-button {
 .close-btn:hover {
     color: red;
 }
-.btn-act {
-    display: flex;
+
+
+
+.list-group-item {
+    flex: 1 1 auto; /* Make buttons responsive */
+    min-width: 400px; /* Minimum width for buttons */
+    max-width: 400px; /* Maximum width for buttons */
+    padding: 10px; /* Padding for better appearance */
+    margin: 5px; /* Margin between buttons */
+    display: flex; /* Flex layout to control alignment */
+    align-items: center; /* Vertically center content */
+    justify-content: space-between; /* Distribute items evenly */
     flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 250px; /* Adjust as needed */
-    min-height: 60px;
-    padding: 10px;
-    margin: 5px;
-    border-radius: 8px;
-    text-align: left;
-    word-wrap: break-word;
-    white-space: normal;
-    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    overflow: visible; 
 }
 
-/* Force exactly 2 lines of text */
-.act-content strong, .act-content span {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2; /* Ensures only 2 lines */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-size: 14px;
-    color: #333;
+.quiz-button {
+    background-color: #FFDF9F; /* Quiz button color */
 }
 
+.activity-button {
+    background-color: #F9B4AB; /* Activity button color */
+}
 
-.act-icon {
-    width: 40px;
-    height: auto;
-    margin-left: 10px;
+.quiz-button:hover {
+    background-color: #FFD36B; /* Darker shade for hover effect */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.activity-button:hover {
+    background-color: #F9A6A1; /* Darker shade for hover effect */
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+.clickable {
+    cursor: pointer; /* Change cursor to pointer for clickable items */
 }
 
 .kebab-menu {
     cursor: pointer;
+    font-size: 1.5rem;
+    position: relative; /* Relative positioning within the list item */
     margin-left: auto;
+    z-index: 1000; /* Ensure it's above other elements */
 }
 
-/* Responsive Design */
-@media (max-width: 600px) {
-    .btn-act {
-        max-width: 100%; 
-        flex-direction: column; 
-        align-items: flex-start;
+.kebab-menu.hidden {
+    display: none; /* Hide kebab menu when not needed */
+}
+
+.dropdown-menu {
+    display: none; /* Initially hidden */
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    z-index: 1000;
+}
+
+.dropdown-menu.show {
+    display: block; /* Show dropdown menu when triggered */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .list-group-item {
+        flex-wrap: wrap; /* Allow content to stack for small screens */
+        padding: 15px;
     }
-    .act-content {
-        max-width: 100%;
+    
+    .kebab-menu {
+        font-size: 2rem; /* Larger size for better visibility */
+        margin-left: 10px; /* Provide spacing from text */
+        position: relative; /* Avoid absolute positioning on small devices */
     }
-    .act-icon {
-        align-self: flex-end;
+    
+    .dropdown-menu {
+        position: static; /* Prevent issues with absolute positioning */
+        width: 100%; /* Full width of the parent */
+        margin-top: 10px; /* Add spacing below kebab menu */
     }
-}
-/* For Activity rooms */
-.color-activity {
-    background-color: #FFDF9F;  /* Example color for Activity */
-    color: black;
-}
-
-.color-activity:hover {
-    background-color: #cfb683;  /* Darker color on hover */
-    color: white;
-}
-
-/* For Quiz rooms */
-.color-quiz {
-    background-color: #F9B4AB;  /* Example color for Quiz */
-    color: black;
-}
-
-.color-quiz:hover {
-    background-color: #926f69;  /* Darker color on hover */
-    color: white;
 }

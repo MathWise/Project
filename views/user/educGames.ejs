@@ -83,91 +83,82 @@
                 </div>
         </aside>
 
-            <main class="col-md-11">
-                <div class="d-flex align-items-center mb-4">
-                    <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
-                    <h4 class="font-weight-bold mb-0 text-dark">Educational Games</h4>
-                    <!-- Help icon with custom tooltip -->
-                    <div class="tooltip-container" style="position: relative; display: inline-block;">
-                        <img src="/assets/help.png" alt="Help" style="width: 30px; height: 30px; margin-left: 10px;" onclick="showInstructionsModal()">
-                        <div class="tooltip">Instructions for playing Operation Odyssey</div>
+        <main class="col-md-11">
+            <div class="d-flex align-items-center mb-4">
+                <img src="/assets/grid.svg" alt="Grid" class="mr-2" style="width: 20px; height: 20px;">
+                <h4 class="font-weight-bold mb-0 text-dark">Educational Games</h4>
+            </div>
+        
+            <div class="d-flex flex-wrap mb-4">
+                <!-- Operation Odyssey Button -->
+                <a class="btn game" style="background-color: #F9B4AB; margin-right: 20px;" onclick="toggleNewBigBox('odyssey')">
+                    Operation Odessy
+                    <br>
+                    <img src="/assets/ooth.jpg" alt="Educational Game Thumbnail" style="width: 100px; height: 100px;">
+                </a>
+                
+                <!-- Tens Button -->
+                <a class="btn game" style="background-color: #CECBEC; margin-right: 20px;" onclick="toggleNewBigBox('tens')">
+                    Tens
+                    <br>
+                    <img src="/assets/tth.png" alt="Tens Game Thumbnail" style="width: 100px; height: 100px;">
+                </a>
+                
+                <!-- Cal & Bomba Button -->
+                <a class="btn game" style="background-color: #FFDF9F;" onclick="toggleNewBigBox('calbomba')">
+                    Cal & Bomba
+                    <br>
+                    <img src="/assets/cbth.png" alt="Cal & Bomba Game Thumbnail" style="width: 100px; height: 100px;">
+                </a>
+            </div>
+        
+            <!-- Big-box content (initially hidden) -->
+            <div class="newbig-box" id="newbig-box" style="display: block; justify-content: center; align-items: center; width: 100%;">
+                <div class="content-wrapper">
+                    <div class="left-content" style="flex: 1; padding: 20px;">
+                        <h3 id="game-title">Game Title</h3>
+                        <p id="game-objectives">Objectives:</p>
+                        <p id="game-instructions">Game Instructions:</p>
                     </div>
-                </div>
-                
-
-                <div class="d-flex flex-wrap mb-4">
-                    <!-- Operation Odyssey Button -->
-                    <a class="btn game" style="background-color: #F9B4AB; margin-right: 20px;" onclick="toggleNewBigBox('odyssey')">
-                        Operation Odessy
-                        <br>
-                        <img src="/assets/ooth.jpg" alt="Educational Game Thumbnail" style="width: 100px; height: 100px;">
-                    </a>
-                
-                    <!-- Tens Button -->
-                    <a class="btn game" style="background-color: #CECBEC; margin-right: 20px;" onclick="toggleNewBigBox('tens')">
-                        Tens
-                        <br>
-                        <img src="/assets/tth.png" alt="Tens Game Thumbnail" style="width: 100px; height: 100px;">
-                    </a>
-                
-                    <!-- Cal & Bomba Button -->
-                    <a class="btn game" style="background-color: #FFDF9F;" onclick="toggleNewBigBox('calbomba')">
-                        Cal & Bomba
-                        <br>
-                        <img src="/assets/cbth.png" alt="Cal & Bomba Game Thumbnail" style="width: 100px; height: 100px;">
-                    </a>
-                </div>    
-                
-                <div class="big-box" style="display: flex; justify-content: center; align-items: center;">
-                    
-                    </div>
-
-                    <!-- Big-box content (initially hidden) -->
-                    <div class="newbig-box" id="newbig-box" style="display: none; justify-content: center; align-items: center; width: 100%;">
-                        <div class="content-wrapper">
-                            <div class="left-content" style="flex: 1; padding: 20px;">
-                                <h3 id="game-title">Game Title</h3>
-                                <p id="game-objectives">Objectives:</p>
-                                <p id="game-instructions">Game Instructions:</p>
-                            </div>
-                            <div class="right-content">
-                                <div id="game-thumbnail" style="text-align: center; cursor: pointer;">
-                                    <img id="game-thumbnail-img" alt="Game Thumbnail" style="width: 300px; height: 300px; border: 1px solid #ddd; display: block; margin: 0 auto;">
-                                    <p class="text-center mt-2 text-muted" id="game-thumbnail-text">Click to play the game!</p>
-                                </div>
-                                <div id="game-iframe" style="display: none; text-align: center;">
-                                    <iframe id="game-iframe-src" height="300" frameborder="0" width="300" style="border: 1px solid #ddd; display: block; margin: 0 auto;"></iframe>
-                                    <p class="text-center mt-2">
-                                        <a id="game-link" href="#" class="text-dark">Click to play the game!</a>
-                                    </p>
-                                </div>
-                            </div>
+                    <div class="right-content">
+                        <div id="game-thumbnail" style="text-align: center; cursor: pointer;">
+                            <img id="game-thumbnail-img" alt="Game Thumbnail" style="width: 300px; height: 300px; border: 1px solid #ddd; display: block; margin: 0 auto;">
+                            <p class="text-center mt-2 text-muted" id="game-thumbnail-text">Click to play the game!</p>
+                        </div>
+                        <div id="game-iframe" style="display: none; text-align: center;">
+                            <iframe id="game-iframe-src" height="300" frameborder="0" width="300" style="border: 1px solid #ddd; display: block; margin: 0 auto;"></iframe>
+                            <p class="text-center mt-2">
+                                <a id="game-link" href="#" class="text-dark">Click to play the game!</a>
+                            </p>
                         </div>
                     </div>
-            </main>
-    </div>
+                </div>
+            </div>
+        </main>
+        
         <!-- Modal for PDF -->
         <div id="instructions-modal" 
-        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
+            style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
             <div class="modal-content">
                 <iframe src="/assets/ooi.pdf" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
                 <button id="close-modal" class="close-button">&times;</button>
             </div>
         </div>
-    <script>
+        
+        <script>
+        // Close modal
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('instructions-modal').style.display = 'none';
+        });
+        
+        // Add click event listener to the thumbnail
+        document.getElementById('game-thumbnail').addEventListener('click', function() {
+            document.getElementById('game-thumbnail').style.display = 'none';
+            document.getElementById('game-iframe').style.display = 'block';
+        });
 
-    // Close modal
-    document.getElementById('close-modal').addEventListener('click', function() {
-        document.getElementById('instructions-modal').style.display = 'none';
-    });
-
-    // Add click event listener to the thumbnail
-    document.getElementById('game-thumbnail').addEventListener('click', function() {
-        document.getElementById('game-thumbnail').style.display = 'none';
-        document.getElementById('game-iframe').style.display = 'block';
-    });
-
-          function toggleDropdownMenu() {
+        
+        function toggleDropdownMenu() {
         const menu = document.getElementById("dropdownMenu");
         menu.style.display = menu.style.display === "block" ? "none" : "block";
     }
@@ -181,100 +172,71 @@
             menu.style.display = "none";
         }
     });
-    </script>
-
-    <script>
+        
         // Show the instructions modal when clicking the help icon
-function showInstructionsModal() {
-    document.getElementById('instructions-modal').style.display = 'flex';
-}
+        function showInstructionsModal() {
+            document.getElementById('instructions-modal').style.display = 'flex';
+        }
+        
+        // Close modal
+        document.getElementById('close-modal').addEventListener('click', function() {
+            document.getElementById('instructions-modal').style.display = 'none';
+        });
+        
+        // Toggle the newbig-box
+        function toggleNewBigBox(game) {
+            const newBigBox = document.getElementById('newbig-box');
+        
+            // Game-specific content
+            const games = {
+                odyssey: {
+                    title: "Operation Odessy",
+                    objectives: "• Dodge the obstacles and navigate your way to the correct pipe to input the right answer and advance to the next level. Rack-up points to climb the class leaderboards",
+                    instructions: "1. Use arrow keys to control the character.<br><b>•Left Arrow Key:</b> Move left<br><b>•Right Arrow Key:</b>Move up<br><b>•Up Arrow Key:</b> Move up<br>2. Avoid the obstacles by maneuvering your character through the gaps.<br>3. Locate the correct pipe corresponding to the answer.<br>4.Fly into the correct pipe to input the answer and proceed to the next level<br>5.Earn points by successfully navigating through the obstacles and providing the right answers.",
+                    thumbnail: "/assets/ooth.jpg",
+                    iframeSrc: "https://itch.io/embed/3088524",
+                    link: "https://kingmighty26.itch.io/mathwise"
+                },
+                tens: {
+                    title: "Tens!",
+                    objectives: "• Select numbers that add up to ten, remove them from the board and try to clear as much space as possible!",
+                    instructions: "1. Drag the numbers to select groups that add up to 10.<br>2. The game ends when there are no more possible moves. Use a hint if you can't find a move.<br>3. There's no limit to how many hints you can use, but they usually don't show you the best options.<br>4. You can turn off music and sounds in the pause menu, press Esc to access it.",
+                    thumbnail: "/assets/tth.png",
+                    iframeSrc: "https://itch.io/embed/2898614",
+                    link: "https://yngvarr.itch.io/tens"
+                },
+                calbomba: {
+                    title: "Cal & Bomba",
+                    objectives: "• In Cal & Bomba, you play as Cal and Bomba. Your job is to solve math problems and use percentages to figure out how far the cannon should fire. After solving the math, you will use tools to change the cannon’s power and direction. Then, you fire the cannon and try to hit the target. Each level gets harder, and you will need to solve more math problems to move to the next level.",
+                    instructions: "1. <b> Start:</b> Choose a level and get ready to solve math problems.<br>2. <b> Calculate Percentages:</b> Solve the math problem to find the right percentage (for example, 50% of the cannon’s power)<br>3. <b> Adjust the Cannon:</b> Use the tools to change the cannon’s strength or angle.<br> 4. <b>Fire the Cannon:</b> After adjusting, fire and see if you hit the target!<br>5. <b>Progress:</b> If you hit the target, move to the next level. If not, try again with new calculations.",
+                    thumbnail: "/assets/cbth.png",
+                    iframeSrc: "https://itch.io/embed/2485333",
+                    link: "https://filiokusgames.itch.io/cal-bomba"
+                }
+            };
+        
+            const selectedGame = games[game];
+        
+            // Update content
+            document.getElementById('game-title').textContent = selectedGame.title;
+            document.getElementById('game-objectives').textContent = selectedGame.objectives;
+            document.getElementById('game-instructions').innerHTML = selectedGame.instructions; // Use innerHTML for line breaks
+            document.getElementById('game-thumbnail-img').src = selectedGame.thumbnail;
+            document.getElementById('game-iframe-src').src = selectedGame.iframeSrc;
+            document.getElementById('game-link').href = selectedGame.link;
+        
+            // Show the newbig-box
+            newBigBox.style.display = 'block';
+        }
+        </script>
 
-// Close modal
-document.getElementById('close-modal').addEventListener('click', function() {
-    document.getElementById('instructions-modal').style.display = 'none';
-});
-
-function toggleNewBigBox() {
-    const bigBox = document.querySelector('.big-box'); // Select the big-box element
-    const newBigBox = document.getElementById('newbig-box'); // Select the newbig-box element
-
-    // Hide the big-box and show the newbig-box
-    bigBox.style.display = 'none';
-    newBigBox.style.display = 'block'; // Toggle the newbig-box to show
-}
-
-
-// Add click event listener to the game-thumbnail
-document.getElementById('game-thumbnail').addEventListener('click', function() {
-    document.getElementById('game-thumbnail').style.display = 'none';
-    document.getElementById('game-iframe').style.display = 'block';
-});
-
-// Toggle the dropdown menu visibility
-function toggleDropdownMenu() {
-    const menu = document.getElementById("dropdownMenu");
-    menu.style.display = menu.style.display === "block" ? "none" : "block";
-}
-
-// Close dropdown when clicking outside
-document.addEventListener("click", function(event) {
-    const menu = document.getElementById("dropdownMenu");
-    const trigger = document.querySelector(".settings-icon");
-
-    if (!menu.contains(event.target) && event.target !== trigger) {
-        menu.style.display = "none";
-    }
-    
-});
-function toggleNewBigBox(game) {
-    const bigBox = document.querySelector('.big-box');
-    const newBigBox = document.getElementById('newbig-box');
-
-    // Game-specific content
-    const games = {
-    odyssey: {
-        title: "Operation Odessy",
-        objectives: "• Dodge the obstacles and navigate your way to the correct pipe to input the right answer and advance to the next level. Rack-up points to climb the class leaderboards",
-        instructions: "1. Use arrow keys to control the character.<br><b>•Left Arrow Key:</b> Move left<br><b>•Right Arrow Key:</b>Move up<br><b>•Up Arrow Key:</b> Move up<br>2. Avoid the obstacles by maneuvering your character through the gaps.<br>3. Locate the correct pipe corresponding to the answer.<br>4.Fly into the correct pipe to input the answer and proceed to the next level<br>5.Earn points by successfully navigating through the obstacles and providing the right answers.",
-        thumbnail: "/assets/ooth.jpg",
-        iframeSrc: "https://itch.io/embed/3088524",
-        link: "https://kingmighty26.itch.io/mathwise"
-    },
-    tens: {
-        title: "Tens!",
-        objectives: "• Select numbers that add up to ten, remove them from the board and try to clear as much space as possible!",
-        instructions: "1. Drag the numbers to select groups that add up to 10.<br>2. The game ends when there are no more possible moves. Use a hint if you can't find a move.<br>3. There's no limit to how many hints you can use, but they usually don't show you the best options.<br>4. You can turn off music and sounds in the pause menu, press Esc to access it.",
-        thumbnail: "/assets/tth.png",
-        iframeSrc: "https://itch.io/embed/2898614",
-        link: "https://yngvarr.itch.io/tens"
-    },
-    calbomba: {
-        title: "Cal & Bomba",
-        objectives: "• In Cal & Bomba, you play as Cal and Bomba. Your job is to solve math problems and use percentages to figure out how far the cannon should fire. After solving the math, you will use tools to change the cannon’s power and direction. Then, you fire the cannon and try to hit the target. Each level gets harder, and you will need to solve more math problems to move to the next level.",
-        instructions: "1. <b> Start:</b> Choose a level and get ready to solve math problems.<br>2. <b> Calculate Percentages:</b> Solve the math problem to find the right percentage (for example, 50% of the cannon’s power)<br>3. <b> Adjust the Cannon:</b> Use the tools to change the cannon’s strength or angle.<br> 4. <b>Fire the Cannon:</b> After adjusting, fire and see if you hit the target!<br>5. <b>Progress:</b> If you hit the target, move to the next level. If not, try again with new calculations.",
-        thumbnail: "/assets/cbth.png",
-        iframeSrc: "https://itch.io/embed/2485333",
-        link: "https://filiokusgames.itch.io/cal-bomba"
-    }
-};
-
-const selectedGame = games[game];
-
-// Update content
-document.getElementById('game-title').textContent = selectedGame.title;
-document.getElementById('game-objectives').textContent = selectedGame.objectives;
-document.getElementById('game-instructions').innerHTML = selectedGame.instructions; // Use innerHTML for line breaks
-document.getElementById('game-thumbnail-img').src = selectedGame.thumbnail;
-document.getElementById('game-iframe-src').src = selectedGame.iframeSrc;
-document.getElementById('game-link').href = selectedGame.link;
-
-// Hide big-box and show newbig-box
-bigBox.style.display = 'none';
-newBigBox.style.display = 'block';
-}
-
-
-
+<script>
+    window.onload = function() {
+        // Automatically display the "Operation Odyssey" game
+        toggleNewBigBox('odyssey');
+    };
 </script>
+
+        
 </body>
 </html>
