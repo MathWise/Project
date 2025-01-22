@@ -97,8 +97,11 @@
             <div class="modalcontent">
                 <label for="roomPassword">Enter the room password:</label>
                 <input type="password" id="roomPassword" onkeydown="checkEnterKey(event)" />
+
+                <div class="modal-buttons">
                 <button  id="Enterpassword" onclick="submitPassword()">Submit</button>
-                <button id="Enterpassword" onclick="closeModal()">Cancel</button>
+                <button id="Cancelpassword1" onclick="closeModal()">Cancel</button>
+            </div>
             </div>
         </div>
 
@@ -106,10 +109,15 @@
             <div class="Archivemodal-content">
                 <label for="roomPassword1">Enter the room password to archive:</label>
                 <input type="password" id="roomPassword1" onkeydown="checkEnterKey1(event)" />
-                <button id="Enterpassword1" onclick="submitPassword1() ">Submit</button>
-                <button id="Enterpassword1" onclick="closeModal1()">Cancel</button>
+        
+                <!-- Wrapping buttons in a div for better control -->
+                <div class="modal-buttons">
+                    <button id="Enterpassword1" onclick="submitPassword1()">Submit</button>
+                    <button id="Cancelpassword1" onclick="closeModal1()">Cancel</button>
+                </div>
             </div>
         </div>
+        
         
         <!-- Button to show Create Room form -->
         <br>

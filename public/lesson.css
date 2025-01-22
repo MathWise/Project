@@ -139,6 +139,18 @@ html,body {
     overflow: hidden; /* Ensure the pseudo-element stays within the bounds */
 }
 
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white; /* Background color */
+    opacity: 0.5; /* Apply transparency only to the background */
+    z-index: -1; /* Place the background behind the content */
+}
+
 .card-body h5, .card-body label {
     font-weight: bold;
 }
@@ -457,41 +469,41 @@ html,body {
     border-color: transparent transparent transparent #1e90ff; /* Arrowhead color */
 }
 
-        .rounded-sidebar {
-            border-radius: 15px; /* Adjust the radius as needed */
-        }
-        
-        .lesson-button {
-            background-color: #FFDF9F; /* Set background color for the Lesson button */
-            padding: 10px; /* Add padding for better appearance */
-            border-radius: 5px; /* Round the corners of the Lesson button */
-            display: block;
-        }
-
-
-        
-      /* Styling for the video inside the modal */
-      video {
-        display: block;
-        width: 100%; /* Make video fill the width of the modal */
-        max-width: 90%; /* Prevent video from being too large */
-        max-height: 80vh; /* Limit the height to 80% of the viewport height */
-        border: 7px solid #FFDF9F; /* Border with soft yellow color */
-        background-color: #f9f9f9;
-        border-radius: 5px;
-        padding: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        object-fit: contain; /* Maintain aspect ratio */
-        cursor: pointer;
+.rounded-sidebar {
+    border-radius: 15px; /* Adjust the radius as needed */
     }
+        
+.lesson-button {
+    background-color: #FFDF9F; /* Set background color for the Lesson button */
+    padding: 10px; /* Add padding for better appearance */
+    border-radius: 5px; /* Round the corners of the Lesson button */
+    display: block;
+}
+
+
+        
+/* Styling for the video inside the modal */
+.video {
+    display: block;
+    width: 100%; /* Make video fill the width of the modal */
+    max-width: 90%; /* Prevent video from being too large */
+    max-height: 80vh; /* Limit the height to 80% of the viewport height */
+    border: 7px solid #FFDF9F; /* Border with soft yellow color */
+    background-color: #f9f9f9;
+    border-radius: 5px;
+    padding: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    object-fit: contain; /* Maintain aspect ratio */
+    cursor: pointer;
+}
     
-    /* Video thumbnail styling */
-    #uploadedVideos video {
-        border: 7px solid #FFDF9F; /* Soft yellow border for thumbnails */
-        border-radius: 5px; /* Rounded corners for consistency */
-        padding: 5px; /* Padding between content and border */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-    }
+/* Video thumbnail styling */
+#uploadedVideos video {
+    border: 7px solid #FFDF9F; /* Soft yellow border for thumbnails */
+    border-radius: 5px; /* Rounded corners for consistency */
+    padding: 5px; /* Padding between content and border */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
 
 /* Styling for the modal container */
 #videoModal {

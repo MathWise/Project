@@ -353,6 +353,19 @@ border-radius: 5px;
     text-align: center;
 }
 
+#Cancelpassword1 {
+    width: 30%;
+    background-color: #FFDF9F; /* Matches your secondary color */
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin: 10px 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 #Enterpassword1 {
     width: 30%;
     background-color: #FFDF9F; /* Matches your secondary color */

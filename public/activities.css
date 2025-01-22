@@ -65,6 +65,10 @@ html,body {
     z-index: -1; /* Place the background behind the content */
 }
 
+.existing {
+    font-weight: bold;
+}
+
 
 
 .card-body h5, .card-body label {

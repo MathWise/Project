@@ -84,6 +84,12 @@
                         </li>
                     </ul>
                 </nav>
+
+                <!-- Logo added outside the sidebar and positioned in the left corner -->
+        <div class="container-fluid">
+            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+        </div>
+        
             </aside>
 
             <main class="col-md-11 activity">
@@ -266,17 +272,25 @@ function showRoomContent(roomId) {
 
 </script>
 
+<script>
+    window.addEventListener('resize', adjustBodyPadding);
+ 
+ function adjustBodyPadding() {
+     const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+     document.body.style.paddingTop = `${headerHeight}px`;
+ }
+ 
+ // Call the function on page load to set initial padding
+ adjustBodyPadding();
+ 
+ </script>
+
             
 
     
         <script src="/js/quizUser.js"></script> 
         <script src="/js/activityUser.js"></script>
         
-        <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/logo.png" alt="Logo" class="img-fluid text-left mt-2" style="width: 80px;">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
-        </div>
     </div>
 </body>
 </html>

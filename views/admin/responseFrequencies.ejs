@@ -5,36 +5,58 @@
     <title>Response Frequencies</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            background-color: #E0F4F9;
-            color: white;
+        html,body {
+
             margin: 0;
             font-family: Arial, sans-serif;
             background-image: url('/assets/analytics.png');
             background-size: cover;
-            background-repeat: no-repeat;
             background-position: center;
+            height: 100%;
+
         }
 
-        .container {
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            max-width: 100%;
-            width: 100%;
-            margin: 0 auto;
-            text-align: center;
-        }
+        .layered-container {
+    position: relative;
+    max-width: 550px; /* Adjust the width as needed */
+    height: auto; /* Set the height as needed */
+    margin: auto; /* Center the container horizontally */
+    overflow: hidden; /* Ensures any overflow is hidden */
+    border-radius: 8px; /* Optional: add rounded corners */
+}
+
+.card-body {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure content is above the background */
+    color: black; /* Change text color for visibility */
+    text-align: center; /* Center text content for smaller screens */
+    background-color: transparent; /* Remove the default background color */
+    overflow: hidden; /* Ensure the pseudo-element stays within the bounds */
+}
+
+.card-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: white; /* Background color */
+    opacity: 0.5; /* Apply transparency only to the background */
+    z-index: -1; /* Place the background behind the content */
+}
+
 
         h1, h3 {
             font-size: 1.5rem;
             margin-bottom: 20px;
-            color: white;
+            color: black;
         }
 
         p {
             font-size: 1rem;
-            color: white;
+            color: black;
         }
 
         .btn {
@@ -51,24 +73,32 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Frequency of Responses for <%= quiz.title %></h1>
-        <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-secondary">Back to Overall Summary</a>
-        <a href="/admin/responseFrequencies/<%= quiz._id %>/export" class="btn btn-success">Export Correct Responses</a>
+    <div class="layered-container">
+    <div class="card-body">
+        <div class="card-header">
+            <h1>Frequency of Responses for <%= quiz.title %></h1>
+        </div>
+        <div class="form-group">
+            <a href="/admin/overallSummary/<%= quiz._id %>" class="btn btn-secondary">Back to Overall Summary</a>
+            <a href="/admin/responseFrequencies/<%= quiz._id %>/export" class="btn btn-success">Export Correct Responses</a>
 
-        <% Object.keys(frequencyData).forEach((questionId, index) => { %>
-            <h3><%= frequencyData[questionId].questionText %></h3>
-            <p><strong>Total Answers:</strong> <%= frequencyData[questionId].total %></p>
-            <p><strong>Correct Answer:</strong> <%= frequencyData[questionId].correctAnswer %></p>
-            <p><strong>Answer Distribution:</strong></p>
+            <% Object.keys(frequencyData).forEach((questionId, index) => { %>
+                <div class="question-section">
+                    <h3><%= frequencyData[questionId].questionText %></h3>
+                    <p><strong>Total Answers:</strong> <%= frequencyData[questionId].total %></p>
+                    <p><strong>Correct Answer:</strong> <%= frequencyData[questionId].correctAnswer %></p>
+                    <p><strong>Answer Distribution:</strong></p>
 
-            <% if (frequencyData[questionId].total === 0) { %>
-                <p>No responses yet.</p>
-            <% } else { %>
-                <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
-            <% } %>
-        <% }) %>
+                    <% if (frequencyData[questionId].total === 0) { %>
+                        <p>No responses yet.</p>
+                    <% } else { %>
+                        <canvas id="chart-<%= index %>" width="300" height="300"></canvas>
+                    <% } %>
+                </div>
+            <% }) %>
+        </div>
     </div>
+</div>
 
     <script>
         // Pass frequencyData from the server to the client as JSON

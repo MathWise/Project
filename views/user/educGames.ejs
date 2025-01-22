@@ -77,6 +77,10 @@
                     </li>
                 </ul>
             </nav>
+            <!-- Logo added outside the sidebar and positioned in the left corner -->
+                <div class="container-fluid">
+                    <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+                </div>
         </aside>
 
             <main class="col-md-11">
@@ -112,7 +116,11 @@
                         <br>
                         <img src="/assets/cbth.png" alt="Cal & Bomba Game Thumbnail" style="width: 100px; height: 100px;">
                     </a>
-                </div>               
+                </div>    
+                
+                <div class="big-box" style="display: flex; justify-content: center; align-items: center;">
+                    
+                    </div>
 
                     <!-- Big-box content (initially hidden) -->
                     <div class="newbig-box" id="newbig-box" style="display: none; justify-content: center; align-items: center; width: 100%;">
@@ -136,30 +144,16 @@
                             </div>
                         </div>
                     </div>
-
-                <div class="big-box" style="display: flex; justify-content: center; align-items: center;">
-                    
-</div>
-                    </div>
-                </div>
             </main>
-        </div>
-
+    </div>
         <!-- Modal for PDF -->
         <div id="instructions-modal" 
         style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); z-index: 9999; justify-content: center; align-items: center;">
-       <div class="modal-content">
-           <iframe src="/assets/ooi.pdf" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
-           <button id="close-modal" class="close-button">&times;</button>
-       </div>
-   </div>
-
-        <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+            <div class="modal-content">
+                <iframe src="/assets/ooi.pdf" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
+                <button id="close-modal" class="close-button">&times;</button>
+            </div>
         </div>
-    </div>
-
     <script>
 
     // Close modal
@@ -281,6 +275,6 @@ newBigBox.style.display = 'block';
 
 
 
-    </script>
+</script>
 </body>
 </html>

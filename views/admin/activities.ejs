@@ -121,7 +121,7 @@
                 </div>
             
                 <!-- Display existing activity/quiz rooms -->
-                <h5>Existing Activity Rooms</h5>
+                <h5 id="existing">Existing Activity Rooms</h5>
                 <ul class="list-group d-flex flex-row flex-wrap">
                     <% 
                     const imgSources = {
@@ -156,7 +156,7 @@
                     <% }); %>
                 </ul>
                 
-                <h5>Existing Quiz Rooms</h5>
+                <h5 id="existing">Existing Quiz Rooms</h5>
                 <ul class="list-group d-flex flex-row flex-wrap">
                     <% 
                     quizList.forEach(function(activityRoom) { 

@@ -11,23 +11,31 @@
     <style>
  body {
     background-color: #E0F4F9;
-    font-family: 'Baloo 2', cursive; 
-    background-image: url('/assets/bg.png');
-    background-repeat: no-repeat;    
-    background-size: cover;         
-    background-position: center;   
+    font-family: 'Baloo 2', cursive;    
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;                 
+    height: 100%;                 
     margin: 0;                     
     position: relative;
     color: #000000;
     font-weight: bold;
 }
 
+body::before {
+    content: ""; /* Necessary to render the pseudo-element */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('/assets/bigbg.png');
+    background-size: cover; /* Adjust size: cover, contain, or specific dimensions */
+    background-position: center;
+    z-index: -1; /* Places the pseudo-element behind the body content */
+    opacity: 1; /* Adjust opacity if needed */
+}
 
-.big-box {
+
+.container {
     width: 90%;
     max-width: 800px;
     margin: 20px auto;
@@ -51,12 +59,6 @@
 .big-box img.top-right {
     top: 10px;
     right: 10px;
-    width: 90px; /* Adjust size as needed */
-}
-
-.big-box img.top-left {
-    top: 10px;
-    left: 10px;
     width: 90px; /* Adjust size as needed */
 }
 
@@ -97,9 +99,82 @@ button:hover {
 
 /* Media Queries for small screens */
 @media only screen and (max-width: 768px) {
-    .big-box {
-        padding: 15px;
-    }
+   body {
+    background-color: #E0F4F9;
+    font-family: 'Baloo 2', cursive;    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;                 
+    margin: 0;                     
+    position: relative;
+    color: #000000;
+    font-weight: bold;
+}
+
+body::before {
+    content: ""; /* Necessary to render the pseudo-element */
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: url('/assets/bigbg.png');
+    background-size: cover; /* Adjust size: cover, contain, or specific dimensions */
+    background-position: center;
+    z-index: -1; /* Places the pseudo-element behind the body content */
+    opacity: 1; /* Adjust opacity if needed */
+}
+
+
+.container{
+    width: 90%;
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #E0F4F9;
+    background-image: url('/assets/qm.png');
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-size: cover;
+    background-position: center;
+    position: relative; /* Positioning context for the gl.png and other images */
+    text-align: center;
+}
+
+.big-box {
+    position: relative;
+    padding: 20px; /* Add padding for the form */
+    z-index: 1; /* Ensure content is above the background */
+    color: white; /* Change text color for visibility */
+    text-align: center; /* Center text content for smaller screens */
+    background-color: transparent; /* Remove the default background color */
+    overflow: hidden; /* Ensure the pseudo-element stays within the bounds */
+}
+
+.big-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: black; /* Background color */
+    opacity: 0.5; /* Apply transparency only to the background */
+    z-index: -1; /* Place the background behind the content */
+}
+
+/* Positioning the images */
+.big-box img {
+    position: absolute;
+    height: auto;
+    display: none;
+}
+
+
+.big-box img.bottom-left {
+    bottom: 10px;
+    left: 10px;
+    width: 90px; /* Adjust size as needed */
+}
 
     form {
         max-width: 100%;
@@ -128,6 +203,7 @@ button:hover {
     top: 10px;
     left: 10px;
     width: 120px; /* Adjust the size as needed */
+    display: none;
 }
 
 #mw {
@@ -144,51 +220,56 @@ button:hover {
     <!-- Fixed logo on the left -->
     <img src="/assets/logo.png" alt="Logo" id="logo">
     
-    <div class="big-box">
-        <!-- GL image positioned inside the container -->
-        <img src="/assets/gl.png" alt="GL Icon" class="top-right">
+    <div class="container">
+        <div class="layered big-box">
+            <!-- GL image positioned inside the container -->
+            <img src="/assets/gl.png" alt="GL Icon" class="top-right">
         
-        <h2><%= quiz.title %></h2>
-        <p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>
-
-        <!-- Timer display -->
-        <div id="timer-display" data-timer="<%= quiz.timer %>" data-start-time="<%= quizStartTime %>">
-            Time Remaining: <span id="timer">Loading...</span>
-        </div>
-
-        <!-- Notification message when time runs out -->
-        <div id="time-up-message" style="display: none; color: red; font-weight: bold; margin-top: 10px;">
-            Time's up! Submitting your quiz automatically.
-        </div>
-
-        <!-- Form for submitting quiz answers -->
-        <form id="quizForm" action="/user/quiz/submit/<%= quiz._id %>" method="POST" onsubmit="clearLocalStorage()">
-            <input type="hidden" name="roomId" value="<%= quiz.roomId %>">
-
-            <% quiz.questions.forEach((question, qIndex) => { %>
-                <div class="question">
-                    <p>Question <%= qIndex + 1 %>: <%= question.questionText %></p>
-
-                    <% if (question.type === 'multiple-choice') { %>
-                        <% question.choices.forEach((choice) => { %>
+            <h2><%= quiz.title %></h2>
+            <p>You have <%= attemptsLeft %> out of <%= maxAttempts %> attempts remaining.</p>
+    
+            <!-- Timer display -->
+            <div id="timer-display" data-timer="<%= quiz.timer %>" data-start-time="<%= quizStartTime %>">
+                Time Remaining: <span id="timer">Loading...</span>
+            </div>
+    
+            <!-- Notification message when time runs out -->
+            <div id="time-up-message" style="display: none; color: red; font-weight: bold; margin-top: 10px;">
+                Time's up! Submitting your quiz automatically.
+            </div>
+    
+            <!-- Form for submitting quiz answers -->
+            <form id="quizForm" action="/user/quiz/submit/<%= quiz._id %>" method="POST" onsubmit="clearLocalStorage()">
+                <input type="hidden" name="roomId" value="<%= quiz.roomId %>">
+                
+                <% quiz.questions.forEach((question, qIndex) => { %>
+                    <div class="question">
+                        <p>Question <%= qIndex + 1 %>: <%= question.questionText %></p>
+    
+                        <% if (question.type === 'multiple-choice') { %>
+                            <% question.choices.forEach((choice) => { %>
+                                <label>
+                                    <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>" required>
+                                    <%= choice.text %>
+                                </label><br>
+                            <% }); %>
+                        <% } else if (question.type === 'fill-in-the-blank') { %>
                             <label>
-                                <input type="radio" name="answers[<%= qIndex %>]" value="<%= choice.text %>"  required>
-                                <%= choice.text %>
+                                <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer" required>
                             </label><br>
-                        <% }); %>
-                    <% } else if (question.type === 'fill-in-the-blank') { %>
-                        <label>
-                            <input type="text" name="answers[<%= qIndex %>]" placeholder="Your answer"  required>
-                        </label><br>
-                    <% } %>
-                </div>
-            <% }); %>
-
-            <input type="hidden" name="userId" value="<%= currentUserId %>">
-            <button type="submit">Submit Quiz</button>
-        </form>
+                        <% } %>
+                    </div>
+                <% }); %>
+    
+                <input type="hidden" name="userId" value="<%= currentUserId %>">
+                <button type="submit">Submit Quiz</button>
+            </form>
+    
+        <div class="layer bottom-layer">
+            <!-- Add any additional content for bottom layer -->
+        </div>
     </div>
-
+    
     <!-- Fixed mw image at the bottom left -->
     <img src="/assets/mw.png" alt="MW Icon" id="mw">
 

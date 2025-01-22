@@ -76,6 +76,12 @@
                         </li>
                     </ul>
                 </nav>
+
+                 <!-- Logo added outside the sidebar and positioned in the left corner -->
+        <div class="container-fluid">
+            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
+        </div>
+        
             </aside>
 
             <main class="col-md-11 lesson">
@@ -671,10 +677,19 @@ function savePdfProgress(userId, pdfFileId, progress) {
 });
 </script>
 
-        <!-- Logo added outside the sidebar and positioned in the left corner -->
-        <div class="container-fluid">
-            <img src="/assets/mw.png" alt="MW" class="img-fluid text-right mt-4" style="width: 80px;">
-        </div>
+<script>
+    window.addEventListener('resize', adjustBodyPadding);
+ 
+ function adjustBodyPadding() {
+     const headerHeight = document.querySelector('.fixed-header').offsetHeight;
+     document.body.style.paddingTop = `${headerHeight}px`;
+ }
+ 
+ // Call the function on page load to set initial padding
+ adjustBodyPadding();
+ 
+ </script>
+
     </div>
 </body>
 </html>
