@@ -41,17 +41,20 @@ html,body {
     position: relative;
 }
 
-.girl-image {
-    position: absolute;
-    bottom: -25px;
-    right: -25px;
-    width: 100%;
-    max-width: 340px;
-    height: auto;
+.goback {
+    width: 60px; 
+    cursor: pointer; 
+    margin-right: 130px;
+}
+
+.goback:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
 }
 
 .settings-icon {
     transition: transform 0.3s, opacity 0.3s;
+    margin-right: 10px; /* Space between settings icon and back button */
 }
 
 .settings-icon:hover {
@@ -120,10 +123,6 @@ html,body {
         font-size: 14x !important;
     }
 
-    .settings-icon {
-        width: 30px !important;
-        margin-right: 25px !important;
-    }
 
     .home-button img {
         width: 40px !important;
@@ -179,10 +178,6 @@ html,body {
         font-size: 15px !important;
     }
 
-    .settings-icon {
-        width: 30px !important;
-        margin-right: 25px !important;
-    }
 
     .home-button img {
         width: 40px !important;
@@ -212,6 +207,7 @@ html,body {
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
     display: none; top: 50px; right: 10px;
+    margin-right: 140px;
 }
 
 .dropdown-content a {
@@ -277,3 +273,34 @@ html,body {
     }
 }
 
+@media (max-width: 768px) {
+    .goback {
+        width: 50px;
+        margin-right: 80px; /* Adjusted more to the right */
+    }
+
+    .settings-icon {
+        width: 30px !important;
+        margin-right: 25px !important;
+    }
+
+    .dropdown-content {
+        right: -30px; /* Moves dropdown further right */
+    }
+}
+
+/* Media Query for Mobile Devices (max-width: 480px) */
+@media (max-width: 480px) {
+    .goback {
+        width: 40px;
+        margin-right: 50px; /* Further adjusted */
+    }
+
+    .settings-icon {
+        margin-right: 40px; /* Moved further to the right */
+    }
+
+    .dropdown-content {
+        right: -50px; /* Moves dropdown further right */
+    }
+}

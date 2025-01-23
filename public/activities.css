@@ -271,6 +271,7 @@ html,body {
     border-radius: 5px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
+    margin-right: 90px;
 }
 
 .dropdown-content a {
@@ -528,5 +529,56 @@ input[type="file"]::-webkit-file-upload-button {
         position: static; /* Prevent issues with absolute positioning */
         width: 100%; /* Full width of the parent */
         margin-top: 10px; /* Add spacing below kebab menu */
+    }
+}
+.goback {
+    width: 60px; 
+    cursor: pointer; 
+    margin-right: 130px;
+}
+
+.goback:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+.settings-icon {
+    transition: transform 0.3s, opacity 0.3s;
+    margin-right: 10px; /* Space between settings icon and back button */
+}
+
+.settings-icon:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+@media (max-width: 768px) {
+    .goback {
+        width: 50px;
+        margin-right: 80px; /* Adjusted more to the right */
+    }
+
+    .settings-icon {
+        margin-right: 60px; /* Adjusted spacing */
+    }
+
+    .dropdown-content {
+        right: -30px; /* Moves dropdown further right */
+        min-width: 140px;
+    }
+}
+
+/* Media Query for Mobile Devices (max-width: 480px) */
+@media (max-width: 480px) {
+    .goback {
+        width: 40px;
+        margin-right: 50px; /* Further adjusted */
+    }
+
+    .settings-icon {
+        margin-right: 40px; /* Moved further to the right */
+    }
+
+    .dropdown-content {
+        right: -50px; /* Moves dropdown further right */
+        min-width: 120px;
     }
 }

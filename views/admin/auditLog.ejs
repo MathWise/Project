@@ -1,4 +1,3 @@
-<!-- views/admin/manageAccess.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -17,26 +16,25 @@
             background-repeat: no-repeat;
             background-position: center center;
         }
-    
 
         .container {
-    padding: 2rem;
-    max-width: 800px;
-    margin: 0 auto;
-    background-image: url('/assets/vector.png');
-    background-color: #fff;
-    background-size: 1000px 1000px; /* Set specific dimensions for the background image */
-    background-position: center -50px; /* Moves the image upward */
-    background-repeat: no-repeat;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            background-image: url('/assets/vector.png');
+            background-color: #fff;
+            background-size: 1000px 1000px; /* Set specific dimensions for the background image */
+            background-position: center -50px; /* Moves the image upward */
+            background-repeat: no-repeat;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
         h1 {
-        text-align: center;
-        margin-bottom: 1.5rem;
-        color: #680A76; 
-    }
+            text-align: center !important;
+            margin-bottom: 1.5rem;
+            color: #680A76; 
+        }
 
         .alert {
             padding: 10px;
@@ -53,10 +51,11 @@
             background-color: #28a745;
         }
 
-        table {
+       table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1rem;
+            
         }
 
         th, td {
@@ -65,16 +64,21 @@
             text-align: left;
         }
 
-        th {
+        .th {
             background-color: #f2f2f2;
         }
 
-        button {
+        .button {
             border: none;
             padding: 5px 10px;
-            color: white;
+            color: black;
+            background-color: #4CAF50;
             cursor: pointer;
             border-radius: 5px;
+        }
+        
+        .button:hover {
+            background-color: #004900;;
         }
 
         .btn-primary {
@@ -92,27 +96,107 @@
         .btn-danger:hover {
             background-color: #c82333;
         }
+
+        /* Loading overlay */
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000; /* Ensure it appears above everything else */
+        }
+
+        /* Spinner */
+        .spinner {
+            border: 8px solid #f3f3f3; /* Light gray */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+        padding: 1rem;
+        width: 95%; /* Make the container take up more space */
+        background-size: cover; /* Ensure background image remains full width */
+        background-position: center center; /* Keep background centered */
+    }
+
+    .h1 {
+        font-size: 1.5rem; /* Adjust header size */
+        text-align: center;
+    }
+
+    table {
+        font-size: 0.9rem; /* Make table text smaller */
+    }
+
+    .button {
+        font-size: 0.9rem; /* Smaller button text */
+        padding: 8px 16px; /* Adjust button size */
+    }
+}
+
+/* For screens smaller than 480px (mobile phones) */
+@media (max-width: 480px) {
+    .container {
+        padding: 0.5rem;
+        width: 100%; /* Full width for small screens */
+        background-size: cover; /* Ensure background image fills the screen */
+        background-position: center center; /* Keep background centered */
+    }
+
+    .h1 {
+        text-align: center;
+        font-size: 1.2rem; /* Smaller header font size */
+    }
+
+    table {
+        font-size: 0.8rem; /* Make table text even smaller */
+    }
+
+    .button {
+        font-size: 0.8rem; /* Smaller button text */
+        padding: 6px 12px; /* Smaller button size */
+    }
+
+    .spinner {
+        width: 40px; /* Smaller spinner */
+        height: 40px;
+    }
+}
     </style>
 </head>
 <body>
 
-    
-
     <div class="container" id="grantAccess">
-    
-       
         <div>
-            <a href="/admin/homeAdmin" onclick="showLoadingOverlay()">Go Back</a>
-            <h1>Audit Logs</h1>
+            <button class="button" onclick="goBack()">Go Back</button>
         </div>
+        <h1>Audit Logs</h1>
         <table>
             <thead>
                 <tr>
-                    <th>Initiotor </th>
+                    <th>Initiator</th>
                     <th>Action</th>
-                    <th>target User</th>
+                    <th>Target User</th>
                     <th>Room Name</th>
-
                     <th>Timestamp</th>
                 </tr>
             </thead>
@@ -121,48 +205,37 @@
                     <tr>
                         <td><%= log.userName %></td>
                         <td><%= log.action %></td>
-                        <td><%= log.targetUserName || 'N/A' %></td> <!-- For delete, targetUserName will be N/A -->
+                        <td><%= log.targetUserName || 'N/A' %></td>
                         <td><%= log.roomName !== 'N/A' ? log.roomName : 'No Room Involved' %></td>
                         <td><%= new Date(log.timestamp).toLocaleString() %></td>
                     </tr>
                 <% }) %>
             </tbody>
         </table>
+    </div>
 
-<style>
-    /* Loading overlay */
-    #loadingOverlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000; /* Ensure it appears above everything else */
-    }
+    <script>
+        function showLoadingOverlay() {
+            var overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            var spinner = document.createElement('div');
+            spinner.className = 'spinner';
+            overlay.appendChild(spinner);
+            document.body.appendChild(overlay);
 
-    /* Spinner */
-    .spinner {
-        border: 8px solid #f3f3f3; /* Light gray */
-        border-top: 8px solid #3498db; /* Blue */
-        border-radius: 50%;
-        width: 60px;
-        height: 60px;
-        animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-        0% {
-            transform: rotate(0deg);
+            // Optionally, remove the overlay after some time (e.g., 1 second) for demo purposes
+            setTimeout(function() {
+                document.body.removeChild(overlay);
+            }, 10); // Adjust time as needed
         }
-        100% {
-            transform: rotate(360deg);
+
+        function goBack() {
+            showLoadingOverlay(); // Display loading overlay
+            setTimeout(function() {
+                window.location.href = '/admin/homeAdmin'; // Navigate after loading overlay
+            }, 10); // Adjust time to match overlay duration
         }
-    }
-</style>
+    </script>
     
 </body>
 </html>

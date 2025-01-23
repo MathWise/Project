@@ -654,7 +654,14 @@ html,body {
     border-radius: 5px;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     z-index: 1000;
+    position: absolute; /* Ensures positioning relative to parent */
+    top: 100%; /* Position below the settings button */
+    right: 0; /* Default position */
+    min-width: 150px;
+    display: none; /* Initially hidden */
+    margin-right: 90px;
 }
+
 
 .dropdown-content a {
     display: block;
@@ -831,4 +838,55 @@ h5, label {
 .form-control {
     color: black;
     border-color: #ccc; /* Optional: to make the input borders lighter */
+}
+.goback {
+    width: 60px; 
+    cursor: pointer; 
+    margin-right: 130px;
+}
+
+.goback:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+.settings-icon {
+    transition: transform 0.3s, opacity 0.3s;
+    margin-right: 10px; /* Space between settings icon and back button */
+}
+
+.settings-icon:hover {
+    transform: scale(1.1);
+    opacity: 0.8;
+}
+@media (max-width: 768px) {
+    .goback {
+        width: 50px;
+        margin-right: 80px; /* Adjusted more to the right */
+    }
+
+    .settings-icon {
+        margin-right: 60px; /* Adjusted spacing */
+    }
+
+    .dropdown-content {
+        right: -30px; /* Moves dropdown further right */
+        min-width: 140px;
+    }
+}
+
+/* Media Query for Mobile Devices (max-width: 480px) */
+@media (max-width: 480px) {
+    .goback {
+        width: 40px;
+        margin-right: 50px; /* Further adjusted */
+    }
+
+    .settings-icon {
+        margin-right: 40px; /* Moved further to the right */
+    }
+
+    .dropdown-content {
+        right: -50px; /* Moves dropdown further right */
+        min-width: 120px;
+    }
 }

@@ -37,12 +37,15 @@
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu" 
                      style="display: none; top: 50px; right: 10px;">
-                    <a href="/admin/homeAdmin">Go back</a>
                     <a href="/admin/lessonRoomArchive/<%= room._id %>">Lesson Room Archive</a>
                     <a href="/admin/pdfAndVideoArchive/<%= room._id %>">PDF and Video Archive</a>
                     <a href="/admin/activitiesArchive/<%= room._id %>">Activity Archive</a>
                     <a href="/logout">Logout</a>
                 </div>
+                <!-- Back Button -->
+                <a href="/admin/homeAdmin" onclick="showLoadingOverlay()" class="ml-2">
+                    <img src="/assets/back.png" alt="Go Back" class="goback">
+                </a>
             </div>
         </div>
     </div>
@@ -202,6 +205,12 @@
                                     <a href="/admin/activities/<%= room._id %>" class="arrow-text">Would you like to take a Quiz?</a>
                                 </div>
                             </div>
+
+                            <button class="btn btn-custom, lesson-button" onclick="window.location.href='/admin/lesson/<%= room._id %>'">
+                                Go back to Lesson
+                            </button>
+                            
+
                         </div>
 
                          <!-- Video (Upload Video) Section -->
@@ -216,18 +225,15 @@
                                 <button type="submit" class="btn btn-primary">Upload Video</button>
                             </form>
 
-                            <div id="videoModal" style="display: none;">
-                                <button onclick="closeVideoModal()" id="closeButton">&times;</button>
-                                <video id="modalVideo" controls>
-                                    <source id="videoSource" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
             
                             <div class="lesson-content">
                                 <h3>Uploaded Videos</h3>
                                 <ul id="uploadedVideos"></ul>
                             </div>
+
+                            <button class="btn btn-custom, lesson-button" onclick="window.location.href='/admin/lesson/<%= room._id %>'">
+                                Go back to Lesson
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -392,16 +398,12 @@ if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
 
         // Verify Videos are populated correctly
         if (Array.isArray(lessonData.videoFiles) && lessonData.videoFiles.length > 0) {
-    console.log('Videos found:', lessonData.videoFiles); // Debug log
-
     lessonData.videoFiles.forEach(video => {
-        console.log('Rendering video:', video);
-
         const videoFileId = video.videoFileId;
         const videoFileName = video.videoFileName;
-        const videoUrl = `/admin/video/${videoFileId}`;
+        const videoUrl = `/user/video/${videoFileId}`;
 
-        // Create the video element and canvas to capture the thumbnail
+        // Create the video element for capturing the thumbnail
         const videoElement = document.createElement('video');
         videoElement.src = videoUrl;
 
@@ -414,34 +416,34 @@ if (Array.isArray(lessonData.pdfFiles) && lessonData.pdfFiles.length > 0) {
         };
 
         videoElement.onseeked = () => {
-            // Draw the video frame onto the canvas and set the thumbnail image
+            // Draw the video frame onto the canvas
             canvas.width = 300;
             canvas.height = 200;
             ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
 
-            const thumbnailUrl = canvas.toDataURL(); // Get the image URL from canvas
+            const thumbnailUrl = canvas.toDataURL(); // Get the thumbnail image URL
 
             const listItem = document.createElement('li');
             listItem.innerHTML = `
-    <div class="video-item" style="display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; margin-bottom: 20px;">
-        <!-- Video Thumbnail -->
-        <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" onclick="openVideoModal('${videoUrl}')" style="cursor: pointer;" />
+                <div class="video-item" style="display: flex; flex-direction: column; align-items: center; position: relative; width: 100%; margin-bottom: 20px;">
+                    <!-- Video Thumbnail (click to play) -->
+                    <img src="${thumbnailUrl}" width="300" height="200" alt="Thumbnail" class="video-thumbnail" 
+                        onclick="replaceWithVideo(this, '${videoUrl}')" style="cursor: pointer;" />
 
-        <!-- Video Name -->
-        <div class="video-file-name" style="font-weight: bold; color: #333; text-align: center; margin-top: 5px; width: 100%; display: flex; justify-content: center; align-items: center; position: relative;">
-            <span>${videoFileName}</span>
-            <!-- Kebab Menu -->
-            <div class="kebab-menu" style="position: absolute; right: 0; cursor: pointer;" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();">
-                &#x22EE;
-                <!-- Dropdown Menu -->
-                <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
-                    <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+                    <!-- Video Name -->
+                    <div class="video-file-name" style="font-weight: bold; color: #333; text-align: center; margin-top: 5px; width: 100%; display: flex; justify-content: center; align-items: center; position: relative;">
+                        <span>${videoFileName}</span>
+                        <!-- Kebab Menu -->
+                        <div class="kebab-menu" style="position: absolute; right: 0; cursor: pointer;" onclick="toggleVideoMenu('${videoFileId}'); event.stopPropagation();">
+                            &#x22EE;
+                            <!-- Dropdown Menu -->
+                            <div class="dropdown-menu" id="videoMenu-${videoFileId}" style="display: none; position: absolute; top: 20px; right: 0; z-index: 10; background: white; border: 1px solid #ddd; padding: 5px;">
+                                <a href="#" onclick="archiveVideo('${videoFileId}'); return false;">Archive</a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-    </div>
-`;
+            `;
 
             videoList.appendChild(listItem);
         };
@@ -645,20 +647,17 @@ function savePdfProgress(userId, pdfFileId, progress) {
     });
 }
 
-            function openVideoModal(videoUrl) {
-            const modalVideo = document.getElementById("modalVideo");
-            const videoSource = document.getElementById("videoSource");
-            videoSource.src = videoUrl; // Set the video source
-            modalVideo.load(); // Load the new video
-            document.getElementById("videoModal").style.display = "block"; // Show the modal
-        }
+function replaceWithVideo(thumbnail, videoUrl) {
+    const video = document.createElement("video");
+    video.src = videoUrl;
+    video.width = 300;
+    video.height = 200;
+    video.controls = true;
+    video.autoplay = true;
 
-        function closeVideoModal() {
-            document.getElementById("videoModal").style.display = "none"; // Hide the modal
-            const modalVideo = document.getElementById("modalVideo");
-            modalVideo.pause(); // Stop the video when modal is closed
-            modalVideo.currentTime = 0; // Reset video to start
-        }
+    // Replace the thumbnail with the video
+    thumbnail.parentNode.replaceChild(video, thumbnail);
+}
         
             // Other functions remain unchanged (e.g., openPdfModal, closePdfModal, savePdfProgress)
         

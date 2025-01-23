@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap" rel="stylesheet"> <!-- Baloo 2 font -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet"> <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="/homepage.css">
-    <title>Admin Dashboard</title>
+    <title>Student Dashboard</title>
     <head>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     </head>
@@ -28,7 +28,7 @@
             <!-- Greetings in the Center -->
             <div class="col-4 col-4 text-center">
                 <span class="greeting-text font-weight-bold text-muted" style="font-size: 24px;">
-                    <br> Welcome to <%= room.name %>
+                    <br> Hello, Student! <br> Welcome to <%= room.name %>
                 </span>
             </div>
     
@@ -41,12 +41,13 @@
                 
                 <!-- Dropdown Menu Content -->
                 <div class="dropdown-content position-absolute" id="dropdownMenu">
-                    <a href="/admin/homeAdmin" onclick="showLoadingOverlay()">Go back</a>
-                    <a href="/admin/lessonRoomArchive/<%= room._id %>" onclick="showLoadingOverlay()">Lesson Room Archive</a>
-                    <a href="/admin/pdfAndVideoArchive/<%= room._id %>" onclick="showLoadingOverlay()">PDF and Video Archive</a>
-                    <a href="/admin/activitiesArchive/<%= room._id %>" onclick="showLoadingOverlay()">Activity Archive</a>
                     <a href="/logout">Logout</a>
                 </div>
+
+                <!-- Back Button -->
+                <a href="/user/homeUser" onclick="showLoadingOverlay()" class="ml-2">
+                    <img src="/assets/back.png" alt="Go Back" class="goback">
+                </a>
             </div>
         </div>
     </div>
